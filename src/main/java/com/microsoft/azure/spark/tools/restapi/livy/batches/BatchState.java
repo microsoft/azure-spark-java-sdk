@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi;
+package com.microsoft.azure.spark.tools.restapi.livy.batches;
 
-public enum SparkBatchJobState {
+public enum BatchState {
     NOT_STARTED("not_started"),
     STARTING("starting"),
     RECOVERING("recovering"),
@@ -17,7 +17,7 @@ public enum SparkBatchJobState {
 
     private final String state;
 
-    SparkBatchJobState(String state) {
+    BatchState(String state) {
         this.state = state;
     }
 

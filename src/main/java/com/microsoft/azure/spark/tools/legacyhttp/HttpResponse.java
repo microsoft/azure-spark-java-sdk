@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi;
+package com.microsoft.azure.spark.tools.legacyhttp;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi;
+package com.microsoft.azure.spark.tools.restapi.livy.batches.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.spark.tools.restapi.Convertible;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class SparkSubmissionParameter implements Convertible {
+public class PostBatches implements Convertible {
     /*
      * For interactive spark job:
      *
@@ -70,19 +71,19 @@ public class SparkSubmissionParameter implements Convertible {
 
     public static final String NAME = "name";
 
-    public SparkSubmissionParameter() {
+    public PostBatches() {
     }
 
-    public SparkSubmissionParameter(String clusterName,
-                                    boolean isLocalArtifact,
-                                    String artifactName,
-                                    String localArtifactPath,
-                                    String filePath,
-                                    String className,
-                                    List<String> referencedFiles,
-                                    List<String> referencedJars,
-                                    List<String> args,
-                                    Map<String, Object> jobConfig) {
+    public PostBatches(String clusterName,
+                       boolean isLocalArtifact,
+                       String artifactName,
+                       String localArtifactPath,
+                       String filePath,
+                       String className,
+                       List<String> referencedFiles,
+                       List<String> referencedJars,
+                       List<String> args,
+                       Map<String, Object> jobConfig) {
         this.clusterName = clusterName;
         this.isLocalArtifact = isLocalArtifact;
         this.artifactName = artifactName;
@@ -254,11 +255,11 @@ public class SparkSubmissionParameter implements Convertible {
     }
 
     public static final String[] parameterList = new String[] {
-            SparkSubmissionParameter.DriverMemory,
-            SparkSubmissionParameter.DriverCores,
-            SparkSubmissionParameter.ExecutorMemory,
-            SparkSubmissionParameter.ExecutorCores,
-            SparkSubmissionParameter.NumExecutors
+            PostBatches.DriverMemory,
+            PostBatches.DriverCores,
+            PostBatches.ExecutorMemory,
+            PostBatches.ExecutorCores,
+            PostBatches.NumExecutors
     };
 
     /**
@@ -268,6 +269,6 @@ public class SparkSubmissionParameter implements Convertible {
      * @return true if the key is a member of submission parameters; false otherwise
      */
     public static boolean isSubmissionParameter(String key) {
-        return Arrays.stream(SparkSubmissionParameter.parameterList).anyMatch(key::equals);
+        return Arrays.stream(PostBatches.parameterList).anyMatch(key::equals);
     }
 }

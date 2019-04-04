@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-package com.microsoft.azure.spark.tools.restapi;
+package com.microsoft.azure.spark.tools.legacyhttp;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -73,7 +73,7 @@ public final class ObjectConvertUtils {
         return Optional.ofNullable(myLists);
     }
 
-    static <T> Optional<String> convertObjectToJsonString(T obj) {
+    public static <T> Optional<String> convertObjectToJsonString(T obj) {
         try {
             return Optional.ofNullable(objectMapper.writeValueAsString(obj));
         } catch (JsonProcessingException e) {

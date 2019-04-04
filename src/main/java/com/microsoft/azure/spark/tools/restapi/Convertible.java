@@ -3,6 +3,8 @@
 
 package com.microsoft.azure.spark.tools.restapi;
 
+import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
+
 import java.util.Optional;
 
 /**
@@ -11,7 +13,7 @@ import java.util.Optional;
 public interface Convertible {
     // serialize an object to xml-format string
     default Optional<String> convertToXml() {
-        return ObjectConvertUtils.convertObjectToJsonString(this);
+        return ObjectConvertUtils.convertObjectToXmlString(this);
     }
 
     // serialize an object to json-format string

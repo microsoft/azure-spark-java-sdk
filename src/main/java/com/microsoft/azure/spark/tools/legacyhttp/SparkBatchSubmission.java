@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi;
+package com.microsoft.azure.spark.tools.legacyhttp;
 
 import com.microsoft.azure.spark.tools.log.Logger;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -162,7 +163,7 @@ public class SparkBatchSubmission implements Logger {
      * @return response result
      */
     public HttpResponse createBatchSparkJob(String connectUrl,
-                                            SparkSubmissionParameter submissionParameter) throws IOException {
+                                            PostBatches submissionParameter) throws IOException {
         CloseableHttpClient httpclient = getHttpClient();
         HttpPost httpPost = new HttpPost(connectUrl);
         httpPost.addHeader("Content-Type", "application/json");

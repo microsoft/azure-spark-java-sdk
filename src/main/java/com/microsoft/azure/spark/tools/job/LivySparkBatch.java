@@ -15,13 +15,13 @@ import com.microsoft.azure.spark.tools.clusters.LivyCluster;
 import com.microsoft.azure.spark.tools.errors.SparkJobException;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.log.Logger;
-import com.microsoft.azure.spark.tools.restapi.HttpResponse;
-import com.microsoft.azure.spark.tools.restapi.ObjectConvertUtils;
-import com.microsoft.azure.spark.tools.restapi.SparkBatchJobState;
-import com.microsoft.azure.spark.tools.restapi.SparkBatchSubmission;
-import com.microsoft.azure.spark.tools.restapi.SparkJobLog;
-import com.microsoft.azure.spark.tools.restapi.SparkSubmissionParameter;
-import com.microsoft.azure.spark.tools.restapi.SparkSubmitResponse;
+import com.microsoft.azure.spark.tools.legacyhttp.HttpResponse;
+import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.BatchState;
+import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.batch.GetLogResponse;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatchesResponse;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
@@ -81,7 +81,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     /**
      * The Spark Batch Job submission parameter.
      */
-    protected SparkSubmissionParameter submissionParameter;
+    protected PostBatches submissionParameter;
 
     /**
      * The Spark Batch Job submission for RestAPI transaction.
@@ -115,7 +115,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     public LivySparkBatch(
             LivyCluster cluster,
-            SparkSubmissionParameter submissionParameter,
+            PostBatches submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
         this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null);
@@ -124,7 +124,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     public LivySparkBatch(
             LivyCluster cluster,
-            SparkSubmissionParameter submissionParameter,
+            PostBatches submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable String accessToken,
@@ -142,7 +142,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      *
      * @return the instance of Spark Batch Job submission parameter
      */
-    public SparkSubmissionParameter getSubmissionParameter() {
+    public PostBatches getSubmissionParameter() {
         return submissionParameter;
     }
 
@@ -242,8 +242,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
         // Get the batch ID from response and save it
         if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-            SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                    httpResponse.getMessage(), SparkSubmitResponse.class)
+            PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                    httpResponse.getMessage(), PostBatchesResponse.class)
                     .orElseThrow(() -> new UnknownServiceException(
                             "Bad spark job response: " + httpResponse.getMessage()));
 
@@ -293,8 +293,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                         this.getConnectUri().toString(), batchId);
 
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                    SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), SparkSubmitResponse.class)
+                    PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                            httpResponse.getMessage(), PostBatchesResponse.class)
                             .orElseThrow(() -> new UnknownServiceException(
                                     "Bad spark job response: " + httpResponse.getMessage()));
 
@@ -333,8 +333,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                         batchBaseUri.toString(), livyBatchId);
 
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                    SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), SparkSubmitResponse.class)
+                    PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                            httpResponse.getMessage(), PostBatchesResponse.class)
                             .orElseThrow(() -> new UnknownServiceException(
                                     "Bad spark job response: " + httpResponse.getMessage()));
 
@@ -369,8 +369,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     getConnectUri().toString(), getBatchId());
 
             if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                        httpResponse.getMessage(), SparkSubmitResponse.class)
+                PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                        httpResponse.getMessage(), PostBatchesResponse.class)
                         .orElseThrow(() -> new UnknownServiceException(
                                 "Bad spark job response: " + httpResponse.getMessage()));
 
@@ -510,8 +510,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
             try {
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                    SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), SparkSubmitResponse.class)
+                    PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                            httpResponse.getMessage(), PostBatchesResponse.class)
                             .orElseThrow(() -> new UnknownServiceException(
                                     "Bad spark job response: " + httpResponse.getMessage()));
 
@@ -563,17 +563,17 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
                     HttpResponse httpResponse = this.getSubmission().getHttpResponseViaGet(logUrl);
 
-                    SparkJobLog sparkJobLog = ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(),
-                            SparkJobLog.class)
+                    GetLogResponse getLogResponse = ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(),
+                            GetLogResponse.class)
                             .orElseThrow(() -> new UnknownServiceException(
                                     "Bad spark log response: " + httpResponse.getMessage()));
 
                     // To subscriber
-                    sparkJobLog.getLog().stream()
+                    getLogResponse.getLog().stream()
                             .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
                             .forEach(line -> ob.onNext(new SimpleImmutableEntry<>(Log, line)));
 
-                    linesGot = sparkJobLog.getLog().size();
+                    linesGot = getLogResponse.getLog().size();
                     start += linesGot;
 
                     // Retry interval
@@ -601,8 +601,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                         this.getConnectUri().toString(), batchId);
 
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                    SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), SparkSubmitResponse.class)
+                    PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                            httpResponse.getMessage(), PostBatchesResponse.class)
                             .orElseThrow(() -> new UnknownServiceException(
                                     "Bad spark job response: " + httpResponse.getMessage()));
 
@@ -628,7 +628,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         return Observable.create((Subscriber<? super SimpleImmutableEntry<String, String>> ob) -> {
             try {
                 boolean isJobActive;
-                SparkBatchJobState state = SparkBatchJobState.NOT_STARTED;
+                BatchState state = BatchState.NOT_STARTED;
                 String diagnostics = "";
 
                 do {
@@ -636,12 +636,12 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                             this.getConnectUri().toString(), batchId);
 
                     if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                        SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                                httpResponse.getMessage(), SparkSubmitResponse.class)
+                        PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                                httpResponse.getMessage(), PostBatchesResponse.class)
                                 .orElseThrow(() -> new UnknownServiceException(
                                         "Bad spark job response: " + httpResponse.getMessage()));
 
-                        state = SparkBatchJobState.valueOf(jobResp.getState().toUpperCase());
+                        state = BatchState.valueOf(jobResp.getState().toUpperCase());
                         diagnostics = String.join("\n", jobResp.getLog());
 
                         isJobActive = !isDone(state.toString());
@@ -692,7 +692,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     @Override
     public boolean isDone(String state) {
-        switch (SparkBatchJobState.valueOf(state.toUpperCase())) {
+        switch (BatchState.valueOf(state.toUpperCase())) {
             case SHUTTING_DOWN:
             case ERROR:
             case DEAD:
@@ -711,12 +711,12 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     @Override
     public boolean isRunning(String state) {
-        return SparkBatchJobState.valueOf(state.toUpperCase()) == SparkBatchJobState.RUNNING;
+        return BatchState.valueOf(state.toUpperCase()) == BatchState.RUNNING;
     }
 
     @Override
     public boolean isSuccess(String state) {
-        return SparkBatchJobState.valueOf(state.toUpperCase()) == SparkBatchJobState.SUCCESS;
+        return BatchState.valueOf(state.toUpperCase()) == BatchState.SUCCESS;
     }
 
     /**
@@ -724,14 +724,14 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      *
      * @return Spark Job observable
      */
-    public Observable<? extends SparkSubmitResponse> getStatus() {
+    public Observable<? extends PostBatchesResponse> getStatus() {
         return Observable.fromCallable(() -> {
             HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
                     this.getConnectUri().toString(), getBatchId());
 
             if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
                 return ObjectConvertUtils.convertJsonToObject(
-                        httpResponse.getMessage(), SparkSubmitResponse.class)
+                        httpResponse.getMessage(), PostBatchesResponse.class)
                         .orElseThrow(() -> new UnknownServiceException(
                                 "Bad spark job response: " + httpResponse.getMessage()));
             }

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi;
+package com.microsoft.azure.spark.tools.restapi.livy.batches.api;
 
 import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("nullness")
-public class SparkSubmitResponse {
+public class PostBatchesResponse {
     private int id;
     private String state;
 
