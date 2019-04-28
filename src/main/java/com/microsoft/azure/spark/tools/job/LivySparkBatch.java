@@ -23,6 +23,7 @@ import com.microsoft.azure.spark.tools.restapi.livy.batches.api.batch.GetLogResp
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatchesResponse;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
+import com.microsoft.azure.spark.tools.utils.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
 import rx.Observer;
@@ -31,7 +32,6 @@ import rx.Subscriber;
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownServiceException;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -50,7 +50,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     @Nullable
     private String currentLogUrl;
-    private Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
+    private Observer<Pair<MessageInfoType, String>> ctrlSubject;
 
     @Nullable
     private String getCurrentLogUrl() {
@@ -117,7 +117,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
             LivyCluster cluster,
             PostBatches submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+            Observer<Pair<MessageInfoType, String>> ctrlSubject) {
         this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null);
     }
 
@@ -126,7 +126,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
             LivyCluster cluster,
             PostBatches submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            Observer<Pair<MessageInfoType, String>> ctrlSubject,
             @Nullable String accessToken,
             @Nullable String destinationRootPath) {
         this.cluster = cluster;
@@ -386,7 +386,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      *
      * @return The string pair Observable of Host and Container Id
      */
-    Observable<SimpleImmutableEntry<URI, String>> getSparkJobYarnContainersObservable(AppAttempt appAttempt) {
+    Observable<Pair<URI, String>> getSparkJobYarnContainersObservable(AppAttempt appAttempt) {
         return loadPageByBrowserObservable(getConnectUri().resolve("/yarnui/hn/cluster/appattempt/")
                                                           .resolve(appAttempt.getAppAttemptId()).toString())
                 .retry(getRetriesMax())
@@ -422,7 +422,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     URI hostUrl = URI.create(row.getCell(1).getTextContent().trim());
                     String containerId = row.getCell(0).getTextContent().trim();
 
-                    return new SimpleImmutableEntry<>(hostUrl, containerId);
+                    return new Pair<>(hostUrl, containerId);
                 });
     }
 
@@ -539,7 +539,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     @Override
-    public Observable<SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
+    public Observable<Pair<MessageInfoType, String>> getSubmissionLog() {
         // Those lines are carried per response,
         // if there is no value followed, the line should not be sent to console
         final Set<String> ignoredEmptyLines = new HashSet<>(Arrays.asList(
@@ -571,7 +571,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     // To subscriber
                     getLogResponse.getLog().stream()
                             .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
-                            .forEach(line -> ob.onNext(new SimpleImmutableEntry<>(Log, line)));
+                            .forEach(line -> ob.onNext(new Pair<>(Log, line)));
 
                     linesGot = getLogResponse.getLog().size();
                     start += linesGot;
@@ -584,7 +584,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     }
                 }
             } catch (IOException ex) {
-                ob.onNext(new SimpleImmutableEntry<>(MessageInfoType.Error, ex.getMessage()));
+                ob.onNext(new Pair<>(MessageInfoType.Error, ex.getMessage()));
             } catch (InterruptedException ignored) {
             } finally {
                 ob.onCompleted();
@@ -624,8 +624,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                 "Failed to detect job activity: Unknown service error after " + --retries + " retries");
     }
 
-    protected Observable<SimpleImmutableEntry<String, String>> getJobDoneObservable() {
-        return Observable.create((Subscriber<? super SimpleImmutableEntry<String, String>> ob) -> {
+    protected Observable<Pair<String, String>> getJobDoneObservable() {
+        return Observable.create((Subscriber<? super Pair<String, String>> ob) -> {
             try {
                 boolean isJobActive;
                 BatchState state = BatchState.NOT_STARTED;
@@ -654,7 +654,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     sleep(1000);
                 } while (isJobActive);
 
-                ob.onNext(new SimpleImmutableEntry<>(state.toString(), diagnostics));
+                ob.onNext(new Pair<>(state.toString(), diagnostics));
                 ob.onCompleted();
             } catch (IOException ex) {
                 ob.onError(ex);
@@ -665,7 +665,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     @Override
-    public Observer<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
+    public Observer<Pair<MessageInfoType, String>> getCtrlSubject() {
         return ctrlSubject;
     }
 
@@ -743,11 +743,11 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     @Override
     public Observable<String> awaitStarted() {
         return getStatus()
-                .map(status -> new SimpleImmutableEntry<>(status.getState(), String.join("\n", status.getLog())))
+                .map(status -> new Pair<>(status.getState(), String.join("\n", status.getLog())))
                 .retry(getRetriesMax())
                 .repeatWhen(ob -> ob
                         .doOnNext(ignored -> {
-                            getCtrlSubject().onNext(new SimpleImmutableEntry<>(Info, "The Spark job is starting..."));
+                            getCtrlSubject().onNext(new Pair<>(Info, "The Spark job is starting..."));
                         })
                         .delay(getDelaySeconds(), TimeUnit.SECONDS)
                 )
@@ -764,7 +764,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     @Override
-    public Observable<SimpleImmutableEntry<String, String>> awaitDone() {
+    public Observable<Pair<String, String>> awaitDone() {
         return getJobDoneObservable();
     }
 

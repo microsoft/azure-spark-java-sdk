@@ -21,6 +21,7 @@ import com.microsoft.azure.spark.tools.restapi.yarn.rm.App;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppResponse;
+import com.microsoft.azure.spark.tools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.CredentialsProvider;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -29,11 +30,11 @@ import rx.Observable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownServiceException;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +52,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
      * A {DriverLogConversionMode} is a type of enum to present Yarn log UI URI combining ways.
      */
     private enum DriverLogConversionMode {
+        UNKNOWN,
         WITHOUT_PORT,
         WITH_PORT,
         ORIGINAL;
@@ -59,7 +61,11 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
             List<DriverLogConversionMode> modes = Arrays.asList(DriverLogConversionMode.values());
 
             int found = modes.indexOf(current);
-            return found + 1 >= modes.size() ? ORIGINAL : modes.get(found + 1);
+            if (found + 1 >= modes.size()) {
+                throw new NoSuchElementException();
+            } else {
+                return modes.get(found + 1);
+            }
         }
     }
 
@@ -67,13 +73,15 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
     
     @Nullable
     private String currentLogUrl;
-    private DriverLogConversionMode logUriConversionMode = DriverLogConversionMode.WITHOUT_PORT;
+    private DriverLogConversionMode logUriConversionMode = DriverLogConversionMode.UNKNOWN;
     private final Cache globalCache;
     private final String applicationId;
     private final YarnCluster cluster;
     private final SparkBatchSubmission submission;
 
-    public YarnSparkApplicationDriverLog(String applicationId, YarnCluster cluster, SparkBatchSubmission submission) {
+    public YarnSparkApplicationDriverLog(final String applicationId,
+                                         final YarnCluster cluster,
+                                         final SparkBatchSubmission submission) {
         this.applicationId = applicationId;
         this.cluster = cluster;
         this.submission = submission;
@@ -81,8 +89,8 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
         this.globalCache = new Cache();
     }
 
-    public URI getYarnNMConnectUri() {
-        return this.yarnNMConnectUri;
+    public Observable<URI> getYarnNMConnectUri() {
+        return Observable.just(this.yarnNMConnectUri);
     }
 
     @Nullable
@@ -105,43 +113,52 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
     /**
      * Get the current Spark job Yarn application attempt log URI Observable.
      */
-    private Observable<URI> getSparkJobYarnCurrentAppAttemptLogsLink(final String appId) {
-        return Observable.fromCallable(() -> {
-            URI getYarnAppAttemptsURI = URI.create(YarnSparkApplicationDriverLog.this.getYarnNMConnectUri() + appId
-                    + "/appattempts");
-            HttpResponse httpResponse = YarnSparkApplicationDriverLog.this.submission.getHttpResponseViaGet(
-                    getYarnAppAttemptsURI.toString());
-            Objects.requireNonNull(httpResponse, "httpResponse");
-            Optional<AppAttempt> currentAttempt = Optional.empty();
+    Observable<URI> getSparkJobYarnCurrentAppAttemptLogsLink(final String appId) {
+        return this.getYarnNMConnectUri().map(connectUri -> {
+            URI getYarnAppAttemptsURI = URI.create(connectUri.toString() + appId + "/appattempts");
+            try {
+                final HttpResponse httpResponse = YarnSparkApplicationDriverLog.this.submission.getHttpResponseViaGet(
+                        getYarnAppAttemptsURI.toString());
 
-            int httpResponseCode = httpResponse.getCode();
-            if (200 <= httpResponseCode && httpResponseCode <= 299) {
-                currentAttempt =  ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(),
-                                                                         AppAttemptsResponse.class)
-                        .flatMap(it -> it.getAppAttempts().appAttempt.stream()
-                                                          .max((o1, o2) -> Integer.compare(o1.getId(), o2.getId())));
+                Objects.requireNonNull(httpResponse, "httpResponse");
+                Optional<AppAttempt> currentAttempt = Optional.empty();
+
+                int httpResponseCode = httpResponse.getCode();
+                if (200 <= httpResponseCode && httpResponseCode <= 299) {
+                    currentAttempt =  ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(),
+                            AppAttemptsResponse.class)
+                            .flatMap(it -> it.getAppAttempts().appAttempt.stream()
+                                    .max((o1, o2) -> Integer.compare(o1.getId(), o2.getId())));
+                }
+
+                return currentAttempt.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
+                        + getYarnAppAttemptsURI + ", response " + httpResponse.getMessage()));
+            } catch (IOException e) {
+                throw propagate(e);
             }
-
-            return currentAttempt.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
-                    + getYarnAppAttemptsURI + ", response " + httpResponse.getMessage()));
         }).map(it -> URI.create(it.getLogsLink()));
     }
 
     private Observable<App> getSparkJobYarnApplication() {
-        return Observable.fromCallable(() -> {
-            URI getYarnClusterAppURI = URI.create(this.getYarnNMConnectUri() + this.getApplicationId());
-            HttpResponse httpResponse = this.submission.getHttpResponseViaGet(getYarnClusterAppURI.toString());
-            Objects.requireNonNull(httpResponse, "httpResponse");
-            Optional<App> appResponse = Optional.empty();
+        return this.getYarnNMConnectUri().map(connectUri -> {
+            URI getYarnClusterAppURI = URI.create(connectUri.toString() + this.getApplicationId());
 
-            int httpResponseCode = httpResponse.getCode();
-            if (200 <= httpResponseCode && httpResponseCode <= 299) {
-                appResponse = ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(), AppResponse.class)
-                        .map(AppResponse::getApp);
+            try {
+                HttpResponse httpResponse = this.submission.getHttpResponseViaGet(getYarnClusterAppURI.toString());
+                Objects.requireNonNull(httpResponse, "httpResponse");
+                Optional<App> appResponse = Optional.empty();
+
+                int httpResponseCode = httpResponse.getCode();
+                if (200 <= httpResponseCode && httpResponseCode <= 299) {
+                    appResponse = ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(), AppResponse.class)
+                            .map(AppResponse::getApp);
+                }
+
+                return appResponse.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
+                        + getYarnClusterAppURI + ", response " + httpResponse.getMessage()));
+            } catch (IOException e) {
+                throw propagate(e);
             }
-
-            return appResponse.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
-                    + getYarnClusterAppURI + ", response " + httpResponse.getMessage()));
         });
     }
 
@@ -172,7 +189,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
     /**
      * Get the Spark job driver log URI observable from the container.
      */
-    private Observable<URI> getSparkJobDriverLogUrlObservable() {
+    Observable<URI> getSparkJobDriverLogUrlObservable() {
         return this.getSparkJobYarnCurrentAppAttemptLogsLink(this.getApplicationId())
                 .filter(uri -> StringUtils.isNotBlank(uri.getHost()))
                 .flatMap(this::convertToPublicLogUri);
@@ -183,17 +200,20 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                 this.submission.getHttpResponseViaGet(uriProbe.toString()).getCode() < 300);
     }
 
-    private Optional<URI> convertToPublicLogUri(DriverLogConversionMode mode, URI internalLogUrl) {
+    private Optional<URI> convertToPublicLogUri(final DriverLogConversionMode mode, final URI internalLogUrl) {
         String normalizedPath = Optional.of(internalLogUrl.getPath()).filter(StringUtils::isNoneBlank)
                 .orElse("/");
-        URI yarnUiBase = URI.create(cluster.getYarnUIBaseUrl() + (cluster.getYarnUIBaseUrl().endsWith("/") ? "" : "/"));
+        URI yarnUiBase = URI.create(getCluster().getYarnUIBaseUrl()
+                        + (getCluster().getYarnUIBaseUrl().endsWith("/") ? "" : "/"));
 
         switch (mode) {
+            case UNKNOWN:
+                return Optional.empty();
             case WITHOUT_PORT:
                 return Optional.of(yarnUiBase.resolve(String.format("%s%s", internalLogUrl.getHost(), normalizedPath)));
             case WITH_PORT:
                 return Optional.of(yarnUiBase.resolve(String.format("%s/port/%s%s",
-                        internalLogUrl.getHost(), internalLogUrl.getPath(), normalizedPath)));
+                        internalLogUrl.getHost(), internalLogUrl.getPort(), normalizedPath)));
             case ORIGINAL:
                 return Optional.of(internalLogUrl);
             default:
@@ -209,9 +229,10 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                     // Probe usable driver log URI
                     DriverLogConversionMode probeMode = YarnSparkApplicationDriverLog.this.getLogUriConversionMode();
 
-                    while (probeMode != null) {
+                    boolean isNoMoreTry = false;
+                    while (!isNoMoreTry) {
                         Optional<URI> uri = this.convertToPublicLogUri(probeMode, internalLogUri)
-                                .filter(uriProbe -> isUriValid(uriProbe).toBlocking().singleOrDefault(false));
+                                .filter(uriProbe -> isUriValid(uriProbe).toBlocking().firstOrDefault(false));
 
                         if (uri.isPresent()) {
                             // Find usable one
@@ -219,7 +240,12 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                             return Observable.just(uri.get());
                         }
 
-                        probeMode = DriverLogConversionMode.next(probeMode);
+                        try {
+                            probeMode = DriverLogConversionMode.next(probeMode);
+                        } catch (NoSuchElementException ignore) {
+                            log().warn("Can't find conversion mode of Yarn " + getYarnNMConnectUri());
+                            isNoMoreTry = true;
+                        }
                     }
 
                     // All modes were probed and all failed
@@ -227,9 +253,9 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                 });
     }
 
-    public Observable<SimpleImmutableEntry<String, Long>> getDriverLog(final String type,
-                                                                       final long logOffset,
-                                                                       final int size) {
+    public Observable<Pair<String, Long>> getDriverLog(final String type,
+                                                       final long logOffset,
+                                                       final int size) {
         return this.getSparkJobDriverLogUrlObservable()
                 .map(Object::toString)
                 .flatMap(logUrl -> {
@@ -250,7 +276,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
 
                     return StringUtils.isEmpty(logGot)
                             ? Observable.empty()
-                            : Observable.just(new SimpleImmutableEntry<>(logGot, offset));
+                            : Observable.just(Pair.of(logGot, offset));
                 });
     }
 
@@ -285,7 +311,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
      * @param driverHttpAddress the host:port combination string to parse
      * @return the host got, otherwise null
      */
-    private String parseAmHostHttpAddressHost(String driverHttpAddress) {
+    String parseAmHostHttpAddressHost(final @Nullable String driverHttpAddress) {
         if (driverHttpAddress == null) {
             return null;
         } else {

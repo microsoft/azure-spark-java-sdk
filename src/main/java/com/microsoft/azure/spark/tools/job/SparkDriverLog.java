@@ -3,14 +3,14 @@
 
 package com.microsoft.azure.spark.tools.job;
 
+import com.microsoft.azure.spark.tools.utils.Pair;
 import rx.Observable;
 import java.net.URI;
-import java.util.AbstractMap;
 
 interface SparkDriverLog {
-    URI getYarnNMConnectUri();
+    Observable<URI> getYarnNMConnectUri();
 
     Observable<String> getDriverHost();
 
-    Observable<AbstractMap.SimpleImmutableEntry<String, Long>> getDriverLog(String type, long logOffset, int size);
+    Observable<Pair<String, Long>> getDriverLog(String type, long logOffset, int size);
 }

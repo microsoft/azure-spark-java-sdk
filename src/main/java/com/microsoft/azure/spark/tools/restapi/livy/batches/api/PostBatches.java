@@ -7,10 +7,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.spark.tools.restapi.Convertible;
+import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,6 +249,45 @@ public class PostBatches implements Convertible {
             return Integer.parseInt(maybeInteger.toString());
         } catch (Exception ignored) {
             return null;
+        }
+    }
+
+    public List<Pair<String, String>> flatJobConfig() {
+        List<Pair<String, String>> flattedConfigs = new ArrayList<>();
+
+        Map<String, Object> jobConf = getJobConfig();
+
+        if (jobConf == null) {
+            return Collections.emptyList();
+        }
+
+        jobConf.forEach((key, value) -> {
+            if (isSubmissionParameter(key)) {
+                flattedConfigs.add(Pair.of(key, value == null ? null : value.toString()));
+            } else if (key.equals(Conf)) {
+                new SparkConfigures(value).forEach((scKey, scValue) ->
+                        flattedConfigs.add(Pair.of(scKey, scValue == null ? null : scValue.toString())));
+            }
+        });
+
+        return flattedConfigs;
+    }
+
+    public void applyFlattedJobConf(final List<Pair<String, String>> jobConfFlatted) {
+        jobConfig.clear();
+
+        SparkConfigures sparkConfig = new SparkConfigures();
+
+        jobConfFlatted.forEach(kvPair -> {
+            if (isSubmissionParameter(kvPair.getLeft())) {
+                jobConfig.put(kvPair.getLeft(), kvPair.getRight());
+            } else {
+                sparkConfig.put(kvPair.getLeft(), kvPair.getRight());
+            }
+        });
+
+        if (!sparkConfig.isEmpty()) {
+            jobConfig.put(Conf, sparkConfig);
         }
     }
 

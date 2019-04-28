@@ -4,11 +4,11 @@
 package com.microsoft.azure.spark.tools.job;
 
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
+import com.microsoft.azure.spark.tools.utils.Pair;
 import rx.Observable;
 import rx.Observer;
 
 import java.net.URI;
-import java.util.AbstractMap.SimpleImmutableEntry;
 
 public interface SparkBatchJob {
     /**
@@ -77,14 +77,14 @@ public interface SparkBatchJob {
      * @param size the fetching size, -1 for all.
      * @return the log and its starting offset pair observable
      */
-    // Observable<SimpleImmutableEntry<String, Long>> getDriverLog(String type, long logOffset, int size);
+    // Observable<Pair<String, Long>> getDriverLog(String type, long logOffset, int size);
 
     /**
      * Get Spark job submission log observable.
      *
      * @return the log type and content pair observable
      */
-    Observable<SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog();
+    Observable<Pair<MessageInfoType, String>> getSubmissionLog();
 
     /**
      * Await the job started observable.
@@ -98,7 +98,7 @@ public interface SparkBatchJob {
      *
      * @return the job state string and its diagnostics message
      */
-    Observable<SimpleImmutableEntry<String, String>> awaitDone();
+    Observable<Pair<String, String>> awaitDone();
 
     /**
      * Await the job post actions done, such as the log aggregation.
@@ -111,7 +111,7 @@ public interface SparkBatchJob {
      *
      * @return the job control message type and content pair observable
      */
-    Observer<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject();
+    Observer<Pair<MessageInfoType, String>> getCtrlSubject();
 
     /**
      * Deploy the job artifact into cluster.
