@@ -3,7 +3,7 @@
 
 package com.microsoft.azure.spark.tools.errors;
 
-public class NotInitializedException extends Exception {
+public class NotInitializedException extends RuntimeException {
     public NotInitializedException(final String message) {
         super(message);
     }

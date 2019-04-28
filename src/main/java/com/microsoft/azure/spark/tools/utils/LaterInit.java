@@ -18,7 +18,7 @@ public class LaterInit<T> {
         return delegation.filter(obj -> Objects.nonNull(obj)).first();
     }
 
-    public synchronized void set(final T value) throws InitializedException {
+    public synchronized void set(final T value) {
         if (isInitialized()) {
             throw new InitializedException(this.toString() + " delegation has already been initialized.");
         }
@@ -38,7 +38,7 @@ public class LaterInit<T> {
         return delegation.getValue();
     }
 
-    public T get() throws NotInitializedException {
+    public T get() {
         if (!isInitialized()) {
             throw new NotInitializedException(this.toString() + " delegation has not been initialized.");
         }
