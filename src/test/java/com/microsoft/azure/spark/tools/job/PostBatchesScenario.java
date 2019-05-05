@@ -5,10 +5,10 @@ package com.microsoft.azure.spark.tools.job;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
+import com.microsoft.azure.spark.tools.utils.Pair;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -58,7 +58,7 @@ public class PostBatchesScenario {
     }
 
     @Then("^the parameter map should include key '(.+)' with value '(.+)'$")
-    public void verifyParameterKeyAndValueExist(String key, String value) throws Throwable{
+    public void verifyParameterKeyAndValueExist(String key, String value) {
         Map<String, Object> param = sparkSubmissionParameter.getJobConfig();
         assertTrue(param.containsKey(key));
         assertEquals(value, param.get(key).toString());
@@ -78,22 +78,22 @@ public class PostBatchesScenario {
     }
 
     @And("^mock reference jars to (.+)$")
-    public void mockReferenceJars(String jars) throws Throwable {
+    public void mockReferenceJars(String jars) {
         mockReferencedJars = Arrays.asList(jars.split(","));
     }
 
     @And("^mock args to (.+)$")
-    public void mockArgs(String args) throws Throwable {
+    public void mockArgs(String args) {
         mockArgs = Arrays.asList(args.split(","));
     }
 
     @And("^mock file to (.+)$")
-    public void mockFilePath(String filePath) throws Throwable {
+    public void mockFilePath(String filePath) {
         mockFilePath = filePath;
     }
 
     @And("^mock reference files to (.+)$")
-    public void mockReferencedFiles(String files) throws Throwable {
+    public void mockReferencedFiles(String files) {
         mockReferencedFiles = Arrays.asList(files.split(","));
     }
 }

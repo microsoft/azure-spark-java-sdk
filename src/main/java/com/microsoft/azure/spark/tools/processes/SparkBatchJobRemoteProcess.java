@@ -11,6 +11,7 @@ import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmissionEvent;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmittedEvent;
 import com.microsoft.azure.spark.tools.job.SparkBatchJob;
 import com.microsoft.azure.spark.tools.log.Logger;
+import com.microsoft.azure.spark.tools.utils.Pair;
 import com.microsoft.azure.spark.tools.ux.IdeSchedulers;
 import org.apache.commons.io.output.NullOutputStream;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -20,7 +21,6 @@ import rx.subjects.PublishSubject;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
 
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
@@ -30,7 +30,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     private IdeSchedulers schedulers;
     private String artifactPath;
     private final String title;
-    private final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
+    private final PublishSubject<Pair<MessageInfoType, String>> ctrlSubject;
     private SparkJobLogInputStream jobStdoutLogInputSteam;
     private SparkJobLogInputStream jobStderrLogInputSteam;
     @Nullable
@@ -41,11 +41,11 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
 
     private boolean isDisconnected;
 
-    public SparkBatchJobRemoteProcess(IdeSchedulers schedulers,
-                                      SparkBatchJob sparkJob,
-                                      String artifactPath,
-                                      String title,
-                                      PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+    public SparkBatchJobRemoteProcess(final IdeSchedulers schedulers,
+                                      final SparkBatchJob sparkJob,
+                                      final String artifactPath,
+                                      final String title,
+                                      final PublishSubject<Pair<MessageInfoType, String>> ctrlSubject) {
         this.schedulers = schedulers;
         this.sparkJob = sparkJob;
         this.artifactPath = artifactPath;
@@ -75,7 +75,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     }
 
     @Nullable
-    public HostAndPort getLocalTunnel(int i) {
+    public HostAndPort getLocalTunnel(final int i) {
         return null;
     }
 
@@ -164,13 +164,13 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                         });
     }
 
-    private Observable<? extends SparkBatchJob> awaitForJobStarted(SparkBatchJob job) {
+    private Observable<? extends SparkBatchJob> awaitForJobStarted(final SparkBatchJob job) {
         return job.awaitStarted()
                 .map(state -> job);
     }
 
-    private Observable<? extends SparkBatchJob> attachJobInputStream(SparkJobLogInputStream inputStream,
-                                                                     SparkBatchJob job) {
+    private Observable<? extends SparkBatchJob> attachJobInputStream(final SparkJobLogInputStream inputStream,
+                                                                     final SparkBatchJob job) {
         return Observable.just(inputStream)
                 .map(stream -> stream.attachJob(job))
                 .subscribeOn(schedulers.processBarVisibleAsync(
@@ -186,26 +186,26 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         this.getJobSubscription().ifPresent(Subscription::unsubscribe);
     }
 
-    protected void ctrlInfo(String message) {
-        ctrlSubject.onNext(new SimpleImmutableEntry<>(Info, message));
+    protected void ctrlInfo(final String message) {
+        ctrlSubject.onNext(new Pair<>(Info, message));
     }
 
-    protected void ctrlError(String message) {
-        ctrlSubject.onNext(new SimpleImmutableEntry<>(MessageInfoType.Error, message));
+    protected void ctrlError(final String message) {
+        ctrlSubject.onNext(new Pair<>(MessageInfoType.Error, message));
     }
 
     public PublishSubject<SparkBatchJobSubmissionEvent> getEventSubject() {
         return eventSubject;
     }
 
-    protected Observable<SparkBatchJob> startJobSubmissionLogReceiver(SparkBatchJob job) {
+    protected Observable<SparkBatchJob> startJobSubmissionLogReceiver(final SparkBatchJob job) {
         return job.getSubmissionLog()
                 .doOnNext(ctrlSubject::onNext)
                 // "ctrlSubject::onNext" lead to uncaught exception
                 // while "ctrlError" only print error message in console view
                 .doOnError(err -> ctrlError(err.getMessage()))
                 .lastOrDefault(null)
-                .map((@Nullable SimpleImmutableEntry<MessageInfoType, String> messageTypeText) -> job);
+                .map((@Nullable Pair<MessageInfoType, String> messageTypeText) -> job);
     }
 
     // Build and deploy artifact
@@ -220,7 +220,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                 .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
     }
 
-    protected Observable<? extends SparkBatchJob> submitJob(SparkBatchJob batchJob) {
+    protected Observable<? extends SparkBatchJob> submitJob(final SparkBatchJob batchJob) {
         return batchJob
                 .submit()
                 .subscribeOn(schedulers.processBarVisibleAsync("Submit the Spark batch job"))
@@ -236,14 +236,14 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         return title;
     }
 
-    private Observable<? extends SparkBatchJob> attachInputStreams(SparkBatchJob job) {
+    private Observable<? extends SparkBatchJob> attachInputStreams(final SparkBatchJob job) {
         return Observable.zip(
                 attachJobInputStream((SparkJobLogInputStream) getErrorStream(), job),
                 attachJobInputStream((SparkJobLogInputStream) getInputStream(), job),
                 (job1, job2) -> job);
     }
 
-    Observable<SimpleImmutableEntry<String, String>> awaitForJobDone(SparkBatchJob runningJob) {
+    Observable<Pair<String, String>> awaitForJobDone(final SparkBatchJob runningJob) {
         return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
                 .flatMap(jobStateDiagnosticsPair -> runningJob
@@ -253,7 +253,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                         .map(any -> jobStateDiagnosticsPair));
     }
 
-    public PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
+    public PublishSubject<Pair<MessageInfoType, String>> getCtrlSubject() {
         return ctrlSubject;
     }
 

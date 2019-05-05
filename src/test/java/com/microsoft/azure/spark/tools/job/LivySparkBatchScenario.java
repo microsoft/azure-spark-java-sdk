@@ -3,6 +3,7 @@
 
 package com.microsoft.azure.spark.tools.job;
 
+import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmissionMock;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
@@ -29,7 +30,6 @@ import static org.mockito.Mockito.*;
 public class LivySparkBatchScenario {
     private SparkBatchSubmission submissionMock;
     private Throwable caught;
-    private ArgumentCaptor<PostBatches> submissionParameterArgumentCaptor;
     private MockHttpService httpServerMock;
     private LivySparkBatch jobMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(LivySparkBatchScenario.class);
@@ -37,19 +37,14 @@ public class LivySparkBatchScenario {
 
     @Before
     public void setUp() throws Throwable {
-        submissionParameterArgumentCaptor = ArgumentCaptor.forClass(PostBatches.class);
-        submissionMock = mock(SparkBatchSubmission.class);
-        when(submissionMock.getBatchSparkJobStatus(anyString(), anyInt())).thenCallRealMethod();
-        when(submissionMock.getHttpResponseViaGet(anyString())).thenCallRealMethod();
-        when(submissionMock.getHttpClient()).thenCallRealMethod();
-        when(submissionMock.createBatchSparkJob(anyString(), submissionParameterArgumentCaptor.capture())).thenCallRealMethod();
+        submissionMock = SparkBatchSubmissionMock.create();
 
         jobMock = mock(LivySparkBatch.class, CALLS_REAL_METHODS);
         when(jobMock.getSubmission()).thenReturn(submissionMock);
 
         caught = null;
 
-        this.httpServerMock = new MockHttpService();
+        this.httpServerMock = MockHttpService.create();
     }
 
     @Given("^setup a mock Livy service for (.+) request '(.+)' to return '(.+)' with status code (\\d+)$")
@@ -153,6 +148,7 @@ public class LivySparkBatchScenario {
 
     @After
     public void cleanUp(){
+        this.httpServerMock.getServer().stop();
         TestLoggerFactory.clear();
     }
 }

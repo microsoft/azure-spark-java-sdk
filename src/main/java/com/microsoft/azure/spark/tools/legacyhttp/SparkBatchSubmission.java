@@ -5,7 +5,11 @@ package com.microsoft.azure.spark.tools.legacyhttp;
 
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
@@ -18,8 +22,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class SparkBatchSubmission implements Logger {
     SparkBatchSubmission() {
@@ -72,7 +79,7 @@ public class SparkBatchSubmission implements Logger {
         return HttpClients.custom()
                 .useSystemProperties()
                 // .setSSLSocketFactory(sslSocketFactory)
-                .setDefaultCredentialsProvider(credentialsProvider)
+                // .setDefaultCredentialsProvider(credentialsProvider)
                 .build();
     }
 
@@ -98,6 +105,7 @@ public class SparkBatchSubmission implements Logger {
         httpGet.addHeader("Content-Type", "application/json");
         httpGet.addHeader("User-Agent", getUserAgentPerRequest(false));
         httpGet.addHeader("X-Requested-By", "ambari");
+        httpGet.addHeader(getBasicAuthHeader());
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
@@ -110,6 +118,7 @@ public class SparkBatchSubmission implements Logger {
         httpHead.addHeader("Content-Type", "application/json");
         httpHead.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpHead.addHeader("X-Requested-By", "ambari");
+        httpHead.addHeader(getBasicAuthHeader());
 
         // WORKAROUND: https://github.com/Microsoft/azure-tools-for-java/issues/1358
         // The Ambari local account will cause Kerberos authentication initializing infinitely.
@@ -144,6 +153,19 @@ public class SparkBatchSubmission implements Logger {
         return "Azure Spark Maven plugin";
     }
 
+    @Nullable
+    Header getBasicAuthHeader() {
+        Credentials basic = getCredentialsProvider().getCredentials(new AuthScope(AuthScope.ANY));
+
+        if (basic == null) {
+            return null;
+        }
+
+        String auth = basic.getUserPrincipal().getName() + ":" + basic.getPassword();
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+        return new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuth));
+    }
+
     /**
      * Get all batches spark jobs.
      *
@@ -169,6 +191,7 @@ public class SparkBatchSubmission implements Logger {
         httpPost.addHeader("Content-Type", "application/json");
         httpPost.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpPost.addHeader("X-Requested-By", "ambari");
+        httpPost.addHeader(getBasicAuthHeader());
         StringEntity postingString = new StringEntity(submissionParameter.serializeToJson());
         httpPost.setEntity(postingString);
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
@@ -202,6 +225,7 @@ public class SparkBatchSubmission implements Logger {
         httpDelete.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpDelete.addHeader("Content-Type", "application/json");
         httpDelete.addHeader("X-Requested-By", "ambari");
+        httpDelete.addHeader(getBasicAuthHeader());
 
         try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
             return StreamUtil.getResultFromHttpResponse(response);

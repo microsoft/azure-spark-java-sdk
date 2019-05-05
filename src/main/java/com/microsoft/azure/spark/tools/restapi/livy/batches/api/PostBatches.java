@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.spark.tools.restapi.Convertible;
-import org.apache.commons.lang3.tuple.Pair;
+import com.microsoft.azure.spark.tools.utils.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
