@@ -1,0 +1,37 @@
+{
+  "id" : "f7c2ef79-c0f0-446e-ac8c-4d24a7ee9096",
+  "name" : "livy_batches",
+  "request" : {
+    "url" : "/livy/batches",
+    "method" : "POST",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    },
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"className\":\"sample.LogQuery\",\"file\":\"adl://zhwespkwesteu.azuredatalakestore.net/clusters/zhwe-spk23-adlsgen1/SparkSubmission/2019/04/28/4c017893-dd57-4a01-8bf9-593f002cd391/default_artifact.jar\"}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 201,
+    "body" : "{\"id\":83,\"state\":\"starting\",\"appId\":null,\"appInfo\":{\"driverLogUrl\":null,\"sparkUiUrl\":null},\"log\":[\"stdout: \",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Location" : "/batches/83",
+      "request-id" : "d70346d17ba64e618a326ad6547d6604",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Sun, 05 May 2019 07:54:16 GMT"
+    }
+  },
+  "uuid" : "f7c2ef79-c0f0-446e-ac8c-4d24a7ee9096",
+  "persistent" : true,
+  "insertionIndex" : 19
+}

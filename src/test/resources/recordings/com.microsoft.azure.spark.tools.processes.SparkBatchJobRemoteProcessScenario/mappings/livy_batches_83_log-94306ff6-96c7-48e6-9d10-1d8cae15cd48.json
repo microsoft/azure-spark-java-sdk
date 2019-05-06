@@ -1,0 +1,31 @@
+{
+  "id" : "94306ff6-96c7-48e6-9d10-1d8cae15cd48",
+  "name" : "livy_batches_83_log",
+  "request" : {
+    "url" : "/livy/batches/83/log?from=19&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":83,\"from\":19,\"total\":19,\"log\":[]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "3fc46c93240e4d9fbe28f5bbd2bb7670",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Sun, 05 May 2019 07:54:18 GMT"
+    }
+  },
+  "uuid" : "94306ff6-96c7-48e6-9d10-1d8cae15cd48",
+  "persistent" : true,
+  "insertionIndex" : 29
+}
