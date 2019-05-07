@@ -736,7 +736,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                                 "Bad spark job response: " + httpResponse.getMessage()));
             }
 
-            throw new SparkJobException("Can't get cluster " + getSubmissionParameter().getClusterName() + " status.");
+            throw new SparkJobException("Can't get cluster " + cluster.getLivyConnectionUrl() + " status.");
         });
     }
 

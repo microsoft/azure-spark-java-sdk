@@ -33,7 +33,7 @@ public class LivySparkBatchScenario {
     private MockHttpService httpServerMock;
     private LivySparkBatch jobMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(LivySparkBatchScenario.class);
-    private PostBatches debugSubmissionParameter;
+//    private PostBatches debugSubmissionParameter;
 
     @Before
     public void setUp() throws Throwable {
@@ -65,25 +65,25 @@ public class LivySparkBatchScenario {
         assertEquals(expectedMessage, caught.getMessage());
     }
 
-    @Then("^the Spark driver JVM option should be '(.+)'$")
-    public void checkSparkDriverJVMOption(String expectedDriverJvmOption) throws Throwable {
-        assertNull(caught);
-
-        String submittedDriverJavaOption =
-                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.driver.extraJavaOptions").toString();
-
-        assertEquals(expectedDriverJvmOption, submittedDriverJavaOption);
-    }
-
-    @Then("^the Spark driver max retries should be '(.+)'$")
-    public void checkSparkDriverMaxRetries(String expectedMaxRetries) {
-        assertNull(caught);
-
-        String maxRetries =
-                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.yarn.maxAppAttempts").toString();
-
-        assertEquals(expectedMaxRetries, maxRetries);
-    }
+//    @Then("^the Spark driver JVM option should be '(.+)'$")
+//    public void checkSparkDriverJVMOption(String expectedDriverJvmOption) throws Throwable {
+//        assertNull(caught);
+//
+//        String submittedDriverJavaOption =
+//                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.driver.extraJavaOptions").toString();
+//
+//        assertEquals(expectedDriverJvmOption, submittedDriverJavaOption);
+//    }
+//
+//    @Then("^the Spark driver max retries should be '(.+)'$")
+//    public void checkSparkDriverMaxRetries(String expectedMaxRetries) {
+//        assertNull(caught);
+//
+//        String maxRetries =
+//                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.yarn.maxAppAttempts").toString();
+//
+//        assertEquals(expectedMaxRetries, maxRetries);
+//    }
 
     @Then("^getting spark job url '(.+)', batch ID (\\d+)'s application id should be '(.+)'$")
     public void checkGetSparkJobApplicationId(

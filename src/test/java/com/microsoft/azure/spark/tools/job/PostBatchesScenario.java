@@ -3,97 +3,87 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
-import com.microsoft.azure.spark.tools.utils.Pair;
+import com.microsoft.azure.spark.tools.utils.JsonConverter;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
 public class PostBatchesScenario {
-    private static ObjectMapper mapper = new ObjectMapper();
-    private String mockSelectedClusterName = "";
-    private boolean mockIsLocalArtifactRadioButtionSelected = true;
-    private String mockArtifactName = "";
-    private String mockLocalArtifactPath = "";
-    private String mockFilePath = "";
-    private String mockClassName = "";
-    private List<String> mockReferencedFiles = new ArrayList<>();
-    private List<String> mockReferencedJars = new ArrayList<>();
-    private List<String> mockArgs = new ArrayList<>();
-
-    private PostBatches sparkSubmissionParameter = new PostBatches();
-    private Map<String, String> sparkConfig;
+    private JsonConverter converter = JsonConverter.of(PostBatches.class);
+    private PostBatches.Options sparkParameterOptions = new PostBatches.Options();
 
     @Given("^apply spark configs$")
-    public void applySparkConfigures(Map<String, String> config) throws Throwable {
-        List<Pair<String, String>> mergedJobConf = sparkSubmissionParameter.flatJobConfig();
-        config.forEach( (k, v) -> mergedJobConf.add(Pair.of(k, v)));
-        sparkSubmissionParameter.applyFlattedJobConf(mergedJobConf);
+    public void applySparkConfigures(Map<String, String> config) {
+        config.forEach( (k, v) -> sparkParameterOptions.conf(k, v));
     }
 
 
     @Given("^create PostBatches with the following job config$")
-    public void createPostBatchesWithJobConfig(Map<String, String> jobConfig) throws Throwable {
-        sparkSubmissionParameter = new PostBatches(
-                mockSelectedClusterName,
-                mockIsLocalArtifactRadioButtionSelected,
-                mockArtifactName,
-                mockLocalArtifactPath,
-                mockFilePath,
-                mockClassName,
-                mockReferencedFiles,
-                mockReferencedJars,
-                mockArgs,
-                new HashMap<>());
-
+    public void createPostBatchesWithJobConfig(Map<String, String> jobConfig) {
         applySparkConfigures(jobConfig);
     }
 
     @Then("^the parameter map should include key '(.+)' with value '(.+)'$")
     public void verifyParameterKeyAndValueExist(String key, String value) {
-        Map<String, Object> param = sparkSubmissionParameter.getJobConfig();
+        Map<String, Object> param = JsonConverter.of(Map.class).parseFrom(converter.toJson(sparkParameterOptions.build()));
         assertTrue(param.containsKey(key));
         assertEquals(value, param.get(key).toString());
     }
 
     @Then("^the serialized JSON should be '(.+)'$")
-    public void verifySerializedJSON(String json) throws Throwable {
-        String actualJson = sparkSubmissionParameter.serializeToJson();
+    public void verifySerializedJSON(String expect) throws Throwable {
+        String actualJson = converter.toJson(sparkParameterOptions.build());
 
-        assertThat(mapper.readValue(actualJson, HashMap.class)).isEqualTo(mapper.readValue(json, HashMap.class));
+        JSONAssert.assertEquals(expect, actualJson, JSONCompareMode.STRICT);
     }
 
 
     @And("^mock className to (.+)$")
-    public void mockClassName(String className) throws Throwable {
-        mockClassName = className;
+    public void mockClassName(String className) {
+        sparkParameterOptions.className(className);
     }
 
     @And("^mock reference jars to (.+)$")
     public void mockReferenceJars(String jars) {
-        mockReferencedJars = Arrays.asList(jars.split(","));
+        sparkParameterOptions.referJars(jars.split(","));
     }
 
     @And("^mock args to (.+)$")
     public void mockArgs(String args) {
-        mockArgs = Arrays.asList(args.split(","));
+        sparkParameterOptions.args(args.split(","));
     }
 
     @And("^mock file to (.+)$")
     public void mockFilePath(String filePath) {
-        mockFilePath = filePath;
+        sparkParameterOptions.artifactUri(filePath);
     }
 
     @And("^mock reference files to (.+)$")
     public void mockReferencedFiles(String files) {
-        mockReferencedFiles = Arrays.asList(files.split(","));
+        sparkParameterOptions.referFiles(files.split(","));
+    }
+
+    @And("mock application name to (.+)$")
+    public void mockApplicationName(String appName) {
+        sparkParameterOptions.name(appName);
+    }
+
+    @And("mock executor memory size to {float} Gigabytes")
+    public void mockExecutorMemorySizeToGigabytes(float size) {
+        sparkParameterOptions.setExecutorMemory(new PostBatches.MemorySize(size, PostBatches.MemorySize.Unit.GIGABYTES));
+    }
+
+    @And("mock driver memory size to {int} Megabytes")
+    public void mockDriverMemorySizeToMegabytes(int size) {
+        sparkParameterOptions.setDriverMemory(new PostBatches.MemorySize(size, PostBatches.MemorySize.Unit.MEGABYTES));
     }
 }

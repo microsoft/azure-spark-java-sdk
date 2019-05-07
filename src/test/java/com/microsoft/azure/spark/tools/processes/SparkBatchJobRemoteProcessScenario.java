@@ -131,11 +131,11 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
     private URI artifactUri;
 
     private PostBatches createSubmitParamFromArgs() {
-        PostBatches batchParam = new PostBatches();
-        batchParam.setClassName(mainClassName);
-        batchParam.setFile(artifactUri.toString());
+        PostBatches.Options batchParamOptions = new PostBatches.Options()
+                .className(mainClassName)
+                .artifactUri(artifactUri.toString());
 
-        return batchParam;
+        return batchParamOptions.build();
     }
 
     public static void main(String[] args) {

@@ -5,6 +5,7 @@ package com.microsoft.azure.spark.tools.legacyhttp;
 
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
+import com.microsoft.azure.spark.tools.utils.JsonConverter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -173,7 +174,7 @@ public class SparkBatchSubmission implements Logger {
      * @return response result
      * @throws IOException
      */
-    public HttpResponse getAllBatchesSparkJobs(String connectUrl) throws IOException {
+    public HttpResponse getAllBatchesSparkJobs(final String connectUrl) throws IOException {
         return getHttpResponseViaGet(connectUrl);
     }
 
@@ -184,15 +185,15 @@ public class SparkBatchSubmission implements Logger {
      * @param submissionParameter : spark submission parameter
      * @return response result
      */
-    public HttpResponse createBatchSparkJob(String connectUrl,
-                                            PostBatches submissionParameter) throws IOException {
+    public HttpResponse createBatchSparkJob(final String connectUrl,
+                                            final PostBatches submissionParameter) throws IOException {
         CloseableHttpClient httpclient = getHttpClient();
         HttpPost httpPost = new HttpPost(connectUrl);
         httpPost.addHeader("Content-Type", "application/json");
         httpPost.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpPost.addHeader("X-Requested-By", "ambari");
         httpPost.addHeader(getBasicAuthHeader());
-        StringEntity postingString = new StringEntity(submissionParameter.serializeToJson());
+        StringEntity postingString = new StringEntity(JsonConverter.of(PostBatches.class).toJson(submissionParameter));
         httpPost.setEntity(postingString);
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
             return StreamUtil.getResultFromHttpResponse(response);
