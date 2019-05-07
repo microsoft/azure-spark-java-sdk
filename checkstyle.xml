@@ -222,7 +222,9 @@
 
         <module name="TodoComment"/>
         <module name="UpperEll"/>
-        <module name="CommentsIndentation"/>
+        <module name="CommentsIndentation">
+            <property name="severity" value="warning"/>
+        </module>
     </module>
 
     <module name="SuppressionFilter">
