@@ -441,12 +441,12 @@ public class PostBatches implements Convertible {
                           @Nullable final MemorySize executorMemory,
                           @Nullable final Integer executorCores,
                           @Nullable final Integer yarnNumExecutors,
-                          final List<String> referencedFiles,
-                          final List<String> referencedJars,
-                          final List<String> pyFiles,
-                          final List<String> args,
-                          final List<String> archives,
-                          final Map<String, String> jobConfig) {
+                          @Nullable final List<String> referencedFiles,
+                          @Nullable final List<String> referencedJars,
+                          @Nullable final List<String> archives,
+                          @Nullable final List<String> pyFiles,
+                          @Nullable final List<String> args,
+                          @Nullable final Map<String, String> jobConfig) {
         this.name = name;
         this.file = filePath;
         this.className = className;
