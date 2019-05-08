@@ -22,7 +22,11 @@ import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppResponse;
 import com.microsoft.azure.spark.tools.utils.Pair;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
@@ -30,6 +34,7 @@ import rx.Observable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownServiceException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,18 +52,18 @@ import static rx.exceptions.Exceptions.propagate;
 /**
  * The class is to support fetching Spark Driver log from Yarn application UI.
  */
-public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
+public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
     /**
-     * A {DriverLogConversionMode} is a type of enum to present Yarn log UI URI combining ways.
+     * A {LogConversionMode} is a type of enum to present Yarn log UI URI combining ways.
      */
-    private enum DriverLogConversionMode {
+    private enum LogConversionMode {
         UNKNOWN,
         WITHOUT_PORT,
         WITH_PORT,
         ORIGINAL;
 
-        public static DriverLogConversionMode next(final DriverLogConversionMode current) {
-            List<DriverLogConversionMode> modes = Arrays.asList(DriverLogConversionMode.values());
+        public static LogConversionMode next(final LogConversionMode current) {
+            List<LogConversionMode> modes = Arrays.asList(LogConversionMode.values());
 
             int found = modes.indexOf(current);
             if (found + 1 >= modes.size()) {
@@ -73,15 +78,15 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
     
     @Nullable
     private String currentLogUrl;
-    private DriverLogConversionMode logUriConversionMode = DriverLogConversionMode.UNKNOWN;
+    private LogConversionMode logUriConversionMode = LogConversionMode.UNKNOWN;
     private final Cache globalCache;
     private final String applicationId;
     private final YarnCluster cluster;
     private final SparkBatchSubmission submission;
 
-    public YarnSparkApplicationDriverLog(final String applicationId,
-                                         final YarnCluster cluster,
-                                         final SparkBatchSubmission submission) {
+    public YarnContainerLogFetcher(final String applicationId,
+                                   final YarnCluster cluster,
+                                   final SparkBatchSubmission submission) {
         this.applicationId = applicationId;
         this.cluster = cluster;
         this.submission = submission;
@@ -98,15 +103,15 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
         return this.currentLogUrl;
     }
 
-    private void setCurrentLogUrl(@Nullable String currentLogUrl) {
+    private void setCurrentLogUrl(@Nullable final String currentLogUrl) {
         this.currentLogUrl = currentLogUrl;
     }
 
-    private DriverLogConversionMode getLogUriConversionMode() {
+    private LogConversionMode getLogUriConversionMode() {
         return this.logUriConversionMode;
     }
 
-    private void setLogUriConversionMode(DriverLogConversionMode mode) {
+    private void setLogUriConversionMode(final LogConversionMode mode) {
         this.logUriConversionMode = mode;
     }
 
@@ -117,7 +122,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
         return this.getYarnNMConnectUri().map(connectUri -> {
             URI getYarnAppAttemptsURI = URI.create(connectUri.toString() + appId + "/appattempts");
             try {
-                final HttpResponse httpResponse = YarnSparkApplicationDriverLog.this.submission.getHttpResponseViaGet(
+                final HttpResponse httpResponse = YarnContainerLogFetcher.this.submission.getHttpResponseViaGet(
                         getYarnAppAttemptsURI.toString());
 
                 Objects.requireNonNull(httpResponse, "httpResponse");
@@ -171,7 +176,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                 .map(yarnApp -> yarnApp.getLogAggregationStatus().toUpperCase());
     }
 
-    private boolean isYarnAppLogAggregationDone(App yarnApp) {
+    private boolean isYarnAppLogAggregationDone(final App yarnApp) {
         switch (yarnApp.getLogAggregationStatus()) {
             case "SUCCEEDED":
             case "FAILED":
@@ -187,7 +192,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
     }
 
     /**
-     * Get the Spark job driver log URI observable from the container.
+     * Get the Spark job log URI observable from the container.
      */
     Observable<URI> getSparkJobDriverLogUrlObservable() {
         return this.getSparkJobYarnCurrentAppAttemptLogsLink(this.getApplicationId())
@@ -200,7 +205,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                 this.submission.getHttpResponseViaGet(uriProbe.toString()).getCode() < 300);
     }
 
-    private Optional<URI> convertToPublicLogUri(final DriverLogConversionMode mode, final URI internalLogUrl) {
+    private Optional<URI> convertToPublicLogUri(final LogConversionMode mode, final URI internalLogUrl) {
         String normalizedPath = Optional.of(internalLogUrl.getPath()).filter(StringUtils::isNoneBlank)
                 .orElse("/");
         URI yarnUiBase = URI.create(getCluster().getYarnUIBaseUrl()
@@ -217,7 +222,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
             case ORIGINAL:
                 return Optional.of(internalLogUrl);
             default:
-                throw new AssertionError("Unknown DriverLogConversionMode, shouldn't be reached");
+                throw new AssertionError("Unknown LogConversionMode, shouldn't be reached");
         }
     }
 
@@ -226,8 +231,8 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
         return this.convertToPublicLogUri(this.getLogUriConversionMode(), internalLogUri)
                 .map(Observable::just)
                 .orElseGet(() -> {
-                    // Probe usable driver log URI
-                    DriverLogConversionMode probeMode = YarnSparkApplicationDriverLog.this.getLogUriConversionMode();
+                    // Probe usable log URI
+                    LogConversionMode probeMode = YarnContainerLogFetcher.this.getLogUriConversionMode();
 
                     boolean isNoMoreTry = false;
                     while (!isNoMoreTry) {
@@ -236,12 +241,12 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
 
                         if (uri.isPresent()) {
                             // Find usable one
-                            YarnSparkApplicationDriverLog.this.setLogUriConversionMode(probeMode);
+                            YarnContainerLogFetcher.this.setLogUriConversionMode(probeMode);
                             return Observable.just(uri.get());
                         }
 
                         try {
-                            probeMode = DriverLogConversionMode.next(probeMode);
+                            probeMode = LogConversionMode.next(probeMode);
                         } catch (NoSuchElementException ignore) {
                             log().warn("Can't find conversion mode of Yarn " + getYarnNMConnectUri());
                             isNoMoreTry = true;
@@ -253,9 +258,10 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                 });
     }
 
-    public Observable<Pair<String, Long>> getDriverLog(final String type,
-                                                       final long logOffset,
-                                                       final int size) {
+    @Override
+    public Observable<Pair<String, Long>> fetch(final String type,
+                                                final long logOffset,
+                                                final int size) {
         return this.getSparkJobDriverLogUrlObservable()
                 .map(Object::toString)
                 .flatMap(logUrl -> {
@@ -266,18 +272,36 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
                         offset = 0L;
                     }
 
-                    String driverLogUrl = this.getCurrentLogUrl();
-                    if (driverLogUrl == null) {
+                    String probedLogUrl = this.getCurrentLogUrl();
+                    if (probedLogUrl == null) {
                         return Observable.empty();
                     }
 
                     String logGot = this.getInformationFromYarnLogDom(
-                            this.submission.getCredentialsProvider(), driverLogUrl, type, offset, size);
+                            this.submission.getCredentialsProvider(), probedLogUrl, type, offset, size);
 
                     return StringUtils.isEmpty(logGot)
-                            ? Observable.empty()
+                            ? getSparkJobYarnApplication()
+                                    .flatMap(app -> {
+                                        if (isLogFetchable(app.getState())) {
+                                            return Observable.empty();
+                                        } else {
+                                            return Observable.just(Pair.of("", -1L));
+                                        }
+                                    })
                             : Observable.just(Pair.of(logGot, offset));
                 });
+    }
+
+    private boolean isLogFetchable(final String status) {
+        switch (status.toUpperCase()) {
+            case "RUNNING":
+            case "SUBMITTED":
+            case "ACCEPTED":
+                return true;
+            default:
+                return false;
+        }
     }
 
     public Observable<String> getDriverHost() {
@@ -311,7 +335,7 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
      * @param driverHttpAddress the host:port combination string to parse
      * @return the host got, otherwise null
      */
-    String parseAmHostHttpAddressHost(final @Nullable String driverHttpAddress) {
+    String parseAmHostHttpAddressHost(@Nullable final String driverHttpAddress) {
         if (driverHttpAddress == null) {
             return null;
         } else {
@@ -333,14 +357,22 @@ public class YarnSparkApplicationDriverLog implements SparkDriverLog, Logger {
         WebClient webClient = new WebClient(BrowserVersion.CHROME);
         webClient.setCache(this.globalCache);
         if (credentialsProvider != null) {
-            webClient.setCredentialsProvider(credentialsProvider);
+            Credentials basic = credentialsProvider.getCredentials(new AuthScope(AuthScope.ANY));
+
+            if (basic != null) {
+                String auth = basic.getUserPrincipal().getName() + ":" + basic.getPassword();
+                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+                webClient.addRequestHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuth));
+            }
         }
 
-        URI url = URI.create("$baseUrl/").resolve(
+        URI url = URI.create(StringUtils.stripEnd(baseUrl, "/") + "/").resolve(
                 String.format("%s?start=%d", type, start) + (size <= 0 ? "" : String.format("&&end=%d", start + size)));
 
         try {
             HtmlPage htmlPage = webClient.getPage(Objects.requireNonNull(url, "Can't get Yarn log URL").toString());
+
+            log().debug("Fetch log from " + url + ", got " + htmlPage.asText());
 
             Iterator<DomElement> iterator = htmlPage.getElementById("navcell")
                     .getNextElementSibling()

@@ -7,7 +7,6 @@ package com.microsoft.azure.spark.tools.utils;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
 import com.github.tomakehurst.wiremock.common.FileSource;
 import com.github.tomakehurst.wiremock.common.SingleRootFileSource;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
@@ -16,7 +15,6 @@ import com.github.tomakehurst.wiremock.http.HttpHeaders;
 import com.github.tomakehurst.wiremock.recording.RecordingStatus;
 import com.github.tomakehurst.wiremock.standalone.JsonFileMappingsSource;
 import com.github.tomakehurst.wiremock.standalone.MappingsSource;
-import com.microsoft.azure.spark.tools.processes.SparkBatchJobRemoteProcessScenario;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.lang3.StringUtils;
 
@@ -110,12 +108,11 @@ public class MockHttpService {
     public static MockHttpService createFromSaving(String className) {
         MockHttpService mockHttpService = new MockHttpService();
         FileSource fileSource = new SingleRootFileSource(RECORDINGS_ROOT + className);
-        FileSource filesFileSource = fileSource.child(FILES_ROOT);
         MappingsSource mappingsFileSource = new JsonFileMappingsSource(fileSource.child(MAPPINGS_ROOT));
 
         mockHttpService.httpServerMock = new WireMockServer(wireMockConfig()
                 .dynamicPort()
-                .fileSource(filesFileSource)
+                .fileSource(fileSource)
                 .mappingSource(mappingsFileSource)
                 .notifier(new Slf4jNotifier(true))
         );
@@ -129,11 +126,13 @@ public class MockHttpService {
         MockHttpService mockHttpService = new MockHttpService();
         FileSource fileSource = new SingleRootFileSource(RECORDINGS_ROOT + className);
         FileSource filesFileSource = fileSource.child(FILES_ROOT);
-        MappingsSource mappingsFileSource = new JsonFileMappingsSource(fileSource.child(MAPPINGS_ROOT));
+        filesFileSource.createIfNecessary();
+        FileSource mappingsFileSource = fileSource.child(MAPPINGS_ROOT);
+        mappingsFileSource.createIfNecessary();
 
         WireMockServer mockServer = new WireMockServer(options()
-                .fileSource(filesFileSource)
-                .mappingSource(mappingsFileSource)
+                .fileSource(fileSource)
+                .mappingSource(new JsonFileMappingsSource(mappingsFileSource))
 
                 // uncomment for debugging with console output
                 // .notifier(new ConsoleNotifier(true))

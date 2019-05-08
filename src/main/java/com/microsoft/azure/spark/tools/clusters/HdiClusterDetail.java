@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * The HDInsight Cluster class.
  */
-public final class HdiClusterDetail implements ClusterDetail, LivyCluster, YarnCluster, Cluster {
+public final class HdiClusterDetail implements ClusterDetail, HdiCluster, Cluster {
     private final boolean isGatewayRestAuthCredentialEnabled;
     private final Map<String, String> coreSiteConfig;
     private final Map<String, String> gatewayConf;
@@ -75,7 +75,9 @@ public final class HdiClusterDetail implements ClusterDetail, LivyCluster, YarnC
                 : null;
     }
 
-    public HdiClusterDetail(Cluster cluster, Map<String, String> coreSiteConfig, Map<String, String> gatewayConf) {
+    public HdiClusterDetail(final Cluster cluster,
+                            final Map<String, String> coreSiteConfig,
+                            final Map<String, String> gatewayConf) {
         super();
         this.cluster = cluster;
         this.coreSiteConfig = coreSiteConfig;
@@ -161,7 +163,7 @@ public final class HdiClusterDetail implements ClusterDetail, LivyCluster, YarnC
             return this.key;
         }
 
-        GatewayRestAuthCredentialConfigKey(String key) {
+        GatewayRestAuthCredentialConfigKey(final String key) {
             this.key = key;
         }
     }

@@ -3,13 +3,13 @@
 
 package com.microsoft.azure.spark.tools.processes;
 
-import com.google.common.net.HostAndPort;
 import com.microsoft.azure.spark.tools.errors.SparkJobFinishedException;
 import com.microsoft.azure.spark.tools.errors.SparkJobUploadArtifactException;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmissionEvent;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmittedEvent;
 import com.microsoft.azure.spark.tools.job.SparkBatchJob;
+import com.microsoft.azure.spark.tools.job.SparkLogFetcher;
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.utils.Pair;
 import com.microsoft.azure.spark.tools.ux.IdeSchedulers;
@@ -57,26 +57,12 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     }
 
     /**
-     * To Kill the remote job.
-     *
-     * @return is the remote Spark Job killed
-     */
-    public boolean killProcessTree() {
-        return false;
-    }
-
-    /**
      * Is the Spark job session connected.
      *
      * @return is the Spark Job log getting session still connected
      */
     public boolean isDisconnected() {
         return isDisconnected;
-    }
-
-    @Nullable
-    public HostAndPort getLocalTunnel(final int i) {
-        return null;
     }
 
     @Override
@@ -172,9 +158,15 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     private Observable<? extends SparkBatchJob> attachJobInputStream(final SparkJobLogInputStream inputStream,
                                                                      final SparkBatchJob job) {
         return Observable.just(inputStream)
-                .map(stream -> stream.attachJob(job))
-                .subscribeOn(schedulers.processBarVisibleAsync(
-                        "Attach Spark batch job outputs " + inputStream.getLogType()));
+                .observeOn(schedulers.processBarVisibleAsync(
+                        "Attach Spark batch job outputs " + inputStream.getLogType()))
+                .map(stream -> {
+                    if (job instanceof SparkLogFetcher) {
+                        stream.attachLogFetcher((SparkLogFetcher) job);
+                    }
+
+                    return job;
+                });
     }
 
     public void disconnect() {

@@ -3,12 +3,13 @@
 
 package com.microsoft.azure.spark.tools.processes;
 
-import com.microsoft.azure.spark.tools.clusters.LivyCluster;
+import com.microsoft.azure.spark.tools.clusters.HdiCluster;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
-import com.microsoft.azure.spark.tools.job.LivySparkBatch;
+import com.microsoft.azure.spark.tools.job.HdiSparkBatch;
 import com.microsoft.azure.spark.tools.job.PostBatchesHelper;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
+import com.microsoft.azure.spark.tools.utils.LogMonitor;
 import com.microsoft.azure.spark.tools.utils.MockHttpRecordingArgs;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
 import com.microsoft.azure.spark.tools.utils.Pair;
@@ -17,6 +18,9 @@ import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
@@ -24,7 +28,10 @@ import rx.Scheduler;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -38,6 +45,7 @@ import static org.junit.Assert.*;
 public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
     private PostBatches postBatches;
     private MockHttpService hdiServiceMock;
+    private SparkBatchJobRemoteProcess sparkJobRemoteProcess;
 
     @Before
     public void setUp() {
@@ -56,13 +64,32 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
 
     @And("^submit HDInsight Spark job")
     public void submitJob() {
-        SparkBatchJobRemoteProcess sparkJobRemoteProcess = createSparkJobRemoteProcess(hdiServiceMock, postBatches);
+        sparkJobRemoteProcess = createSparkJobRemoteProcess(hdiServiceMock, postBatches);
         sparkJobRemoteProcess.start();
         assertEquals(0, sparkJobRemoteProcess.exitValue());
     }
 
+    @Then("^check the HDInsight Spark job stdout should be")
+    public void checkStdout(List<String> expect) throws Exception {
+        String actual = IOUtils.toString(sparkJobRemoteProcess.getInputStream(), StandardCharsets.UTF_8);
+
+        assertEquals("Stdout is unmatched, the captured logs:\n"
+                        + StringUtils.join(LogMonitor.getAllPackagesLogs(), "\n") + "\n",
+                StringUtils.join(expect, "\n") + "\n", actual);
+    }
+
     private SparkBatchJobRemoteProcess createSparkJobRemoteProcess(MockHttpService recordingProxyService, PostBatches batchParam) {
-        LivyCluster cluster = new LivyCluster() {
+        HdiCluster cluster = new HdiCluster() {
+            @Override
+            public String getYarnNMConnectionUrl() {
+                return "http://localhost:" + recordingProxyService.getPort() + "yarnui/ws/v1/cluster/apps/";
+            }
+
+            @Override
+            public String getYarnUIBaseUrl() {
+                return "http://localhost:" + recordingProxyService.getPort() + "/yarnui/";
+            }
+
             @Override
             public String getLivyConnectionUrl() {
                 return "http://localhost:" + recordingProxyService.getPort() + "/livy/";
@@ -115,7 +142,7 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
             }
         };
 
-        LivySparkBatch job = new LivySparkBatch(cluster, batchParam, submission, ctrlSubject);
+        HdiSparkBatch job = new HdiSparkBatch(cluster, batchParam, submission, ctrlSubject);
         return new SparkBatchJobRemoteProcess(
                 cliScheduler, job, "/", "Submit Spark Application", ctrlSubject);
     }
@@ -138,7 +165,9 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
         return batchParamOptions.build();
     }
 
-    public static void main(String[] args) {
+//    public String unblockInputStream
+
+    public static void main(String[] args) throws IOException {
         SparkBatchJobRemoteProcessScenario scenario = new SparkBatchJobRemoteProcessScenario();
         CommandLine.call(scenario, args);
 
@@ -151,9 +180,19 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
         SparkBatchJobRemoteProcess sparkJobRemoteProcess = scenario.createSparkJobRemoteProcess(
                 recordingProxyService, scenario.createSubmitParamFromArgs());
         sparkJobRemoteProcess.start();
+        System.out.println("========= stdout =========");
+        String stdout = IOUtils.toString(sparkJobRemoteProcess.getInputStream(), StandardCharsets.UTF_8);
+        System.out.print(stdout);
+
+        System.out.println("========= stderr =========");
+        String stderr = IOUtils.toString(sparkJobRemoteProcess.getErrorStream(), StandardCharsets.UTF_8);
+        System.out.print(stderr);
 
         recordingProxyService.getServer().stopRecording();
         recordingProxyService.getServer().stop();
+
+        System.out.println("========= log4j =========");
+        System.out.println(StringUtils.join(LogMonitor.getAllPackagesLogs(), "\n"));
     }
 
     @Override

@@ -1,4 +1,4 @@
-Feature: YarnSparkApplicationDriverLog unit tests
+Feature: YarnContainerLogFetcher unit tests
   Scenario: parsingAmHostHttpAddressHost unit tests
     Given prepare a Yarn cluster with Node Manager base URL https://127.0.0.1:$port/yarnui/hn/ and UI base URL http://127.0.0.1:$port/yarnui/
     And create a yarn application driver with id application_1492415936046_0015

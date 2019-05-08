@@ -7,12 +7,10 @@ import com.microsoft.azure.spark.tools.clusters.YarnCluster;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmissionMock;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
-import org.mockito.ArgumentCaptor;
 import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
@@ -21,13 +19,13 @@ import java.net.URI;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class YarnSparkApplicationDriverLogScenario {
+public class YarnContainerLogFetcherScenario {
     private SparkBatchSubmission submissionMock;
     private Throwable caught;
     private MockHttpService httpServerMock;
     private YarnCluster yarnClusterMock;
-    private YarnSparkApplicationDriverLog yarnDriverLogMock;
-    private TestLogger logger = TestLoggerFactory.getTestLogger(YarnSparkApplicationDriverLog.class);
+    private YarnContainerLogFetcher yarnDriverLogMock;
+    private TestLogger logger = TestLoggerFactory.getTestLogger(YarnContainerLogFetcher.class);
 
     @Before
     public void setUp() throws Throwable {
@@ -50,7 +48,7 @@ public class YarnSparkApplicationDriverLogScenario {
 
     @Given("^create a yarn application driver with id (.+)$")
     public void createAYarnApplicationDriverWithId(String appIdMock) {
-        yarnDriverLogMock = new YarnSparkApplicationDriverLog(appIdMock, yarnClusterMock, submissionMock);
+        yarnDriverLogMock = new YarnContainerLogFetcher(appIdMock, yarnClusterMock, submissionMock);
     }
 
     @Then("^Parsing driver HTTP address '(.+)' should get host '(.+)'$")

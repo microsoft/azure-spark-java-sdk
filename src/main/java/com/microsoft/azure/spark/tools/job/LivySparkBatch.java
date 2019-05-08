@@ -24,6 +24,7 @@ import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatchesResponse;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
 import com.microsoft.azure.spark.tools.utils.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
 import rx.Observer;
@@ -555,13 +556,20 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                 boolean isSubmitting = true;
 
                 while (isSubmitting) {
+                    String status = this.getState();
                     boolean isAppIdAllocated = !this.getSparkJobApplicationIdObservable().isEmpty()
                             .toBlocking()
                             .lastOrDefault(true);
+
                     String logUrl = String.format("%s/%d/log?from=%d&size=%d",
                             this.getConnectUri().toString(), batchId, start, maxLinesPerGet);
 
                     HttpResponse httpResponse = this.getSubmission().getHttpResponseViaGet(logUrl);
+
+                    log().debug("Status: " + status
+                            + ", Is Application ID allocated: " + isAppIdAllocated
+                            + ", Request to " + logUrl
+                            + ", got " + httpResponse.getMessage());
 
                     GetLogResponse getLogResponse = ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(),
                             GetLogResponse.class)
@@ -578,9 +586,9 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
                     // Retry interval
                     if (linesGot == 0) {
-                        isSubmitting = this.getState().equals("starting") && !isAppIdAllocated;
+                        isSubmitting = StringUtils.equalsIgnoreCase(status, "starting") || !isAppIdAllocated;
 
-                        sleep(TimeUnit.SECONDS.toMillis(this.getDelaySeconds()));
+                        sleep(200);
                     }
                 }
             } catch (IOException ex) {

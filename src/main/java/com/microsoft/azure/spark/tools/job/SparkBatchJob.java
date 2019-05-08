@@ -70,16 +70,6 @@ public interface SparkBatchJob {
     // Observable<String> getSparkDriverHost();
 
     /**
-     * Get Spark job driver log observable.
-     *
-     * @param type the log type, such as `stderr`, `stdout`
-     * @param logOffset the log offset that fetching would start from
-     * @param size the fetching size, -1 for all.
-     * @return the log and its starting offset pair observable
-     */
-    // Observable<Pair<String, Long>> getDriverLog(String type, long logOffset, int size);
-
-    /**
      * Get Spark job submission log observable.
      *
      * @return the log type and content pair observable

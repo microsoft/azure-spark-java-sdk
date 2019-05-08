@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.job;
+package com.microsoft.azure.spark.tools.processes;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
@@ -11,7 +11,8 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         plugin = {"html:target/cucumber"},
         features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                        "job/YarnSparkApplicationDriverLogScenario.feature"}
+                        "processes/SparkBatchJobRemoteProcessScenario.feature"}
 )
-public class YarnSparkApplicationDriverLogTest {
+
+public class SparkBatchJobRemoteProcessTest {
 }

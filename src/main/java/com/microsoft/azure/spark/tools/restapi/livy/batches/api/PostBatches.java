@@ -431,6 +431,11 @@ public class PostBatches implements Convertible {
     private static final String EXECUTOR_CORES = "executorCores";
     public static final int EXECUTOR_CORES_DEFAULT_VALUE = 1;
 
+    private PostBatches() {
+        this.file = "<unset>";
+        this.className = "<unset>";
+    }
+
     protected PostBatches(@Nullable final String name,
                           @Nullable final String proxyUser,
                           final String filePath,

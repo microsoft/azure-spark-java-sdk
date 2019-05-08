@@ -3,17 +3,14 @@
 
 package com.microsoft.azure.spark.tools.job;
 
+import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmissionMock;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.api.SparkConfigures;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
-import org.mockito.ArgumentCaptor;
 import rx.Observable;
 import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
@@ -22,9 +19,8 @@ import java.net.URI;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class LivySparkBatchScenario {
