@@ -29,7 +29,6 @@ public class LivySparkBatchScenario {
     private MockHttpService httpServerMock;
     private LivySparkBatch jobMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(LivySparkBatchScenario.class);
-//    private PostBatches debugSubmissionParameter;
 
     @Before
     public void setUp() throws Throwable {
@@ -61,64 +60,30 @@ public class LivySparkBatchScenario {
         assertEquals(expectedMessage, caught.getMessage());
     }
 
-//    @Then("^the Spark driver JVM option should be '(.+)'$")
-//    public void checkSparkDriverJVMOption(String expectedDriverJvmOption) throws Throwable {
-//        assertNull(caught);
-//
-//        String submittedDriverJavaOption =
-//                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.driver.extraJavaOptions").toString();
-//
-//        assertEquals(expectedDriverJvmOption, submittedDriverJavaOption);
-//    }
-//
-//    @Then("^the Spark driver max retries should be '(.+)'$")
-//    public void checkSparkDriverMaxRetries(String expectedMaxRetries) {
-//        assertNull(caught);
-//
-//        String maxRetries =
-//                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.yarn.maxAppAttempts").toString();
-//
-//        assertEquals(expectedMaxRetries, maxRetries);
-//    }
-
-    @Then("^getting spark job url '(.+)', batch ID (\\d+)'s application id should be '(.+)'$")
+    @Then("^getting spark job application id should be '(.+)'$")
     public void checkGetSparkJobApplicationId(
-            String connectUrl,
-            int batchId,
             String expectedApplicationId) throws Throwable {
         caught = null;
         try {
-            assertEquals(expectedApplicationId, jobMock.getSparkJobApplicationId(
-                    new URI(httpServerMock.completeUrl(connectUrl)), batchId));
+            assertEquals(expectedApplicationId, jobMock.getSparkJobApplicationIdObservable().toBlocking().first());
         } catch (Exception e) {
             caught = e;
             assertEquals(expectedApplicationId, "__exception_got__" + e);
         }
     }
 
-    @Then("^getting spark job url '(.+)', batch ID (\\d+)'s application id, '(.+)' should be got with (\\d+) times retried$")
+    @Then("^getting spark job application id, '(.+)' should be got with (\\d+) times retried$")
     public void checkGetSparkJobApplicationIdRetryCount(
-            String connectUrl,
-            int batchId,
             String getUrl,
             int expectedRetriedCount) throws Throwable {
         when(jobMock.getDelaySeconds()).thenReturn(1);
         when(jobMock.getRetriesMax()).thenReturn(3);
 
         try {
-            jobMock.getSparkJobApplicationId(new URI(httpServerMock.completeUrl(connectUrl)), batchId);
+            jobMock.getSparkJobApplicationIdObservable().retry(expectedRetriedCount - 1).toBlocking().first();
         } catch (Exception ignore) { }
 
         verify(expectedRetriedCount, getRequestedFor(urlEqualTo(getUrl)));
-    }
-
-    @Then("^getting spark job url '(.+)', batch ID (\\d+)'s driver log URL should be '(.+)'$")
-    public void checkGetSparkJobDriverLogUrl(
-            String connectUrl,
-            int batchId,
-            String expectedDriverLogURL) throws Throwable {
-        assertEquals(expectedDriverLogURL, jobMock.getSparkJobDriverLogUrl(
-                new URI(httpServerMock.completeUrl(connectUrl)), batchId));
     }
 
     @And("^mock method getSparkJobApplicationIdObservable to return '(.+)' Observable$")
@@ -128,7 +93,7 @@ public class LivySparkBatchScenario {
 
     @And("^mock Spark job connect URI to be '(.+)'$")
     public void mockSparkJobConnectURI(String mock) throws Throwable {
-        doReturn(URI.create(mock)).when(jobMock).getConnectUri();
+        doReturn(URI.create(httpServerMock.normalizeResponse(mock))).when(jobMock).getConnectUri();
     }
 
     @And("^submit Spark job$")
@@ -146,5 +111,10 @@ public class LivySparkBatchScenario {
     public void cleanUp(){
         this.httpServerMock.getServer().stop();
         TestLoggerFactory.clear();
+    }
+
+    @And("mock Spark job batch id to {int}")
+    public void mockSparkJobBatchIdTo(int expectBatchId) {
+        doReturn(expectBatchId).when(jobMock).getBatchId();
     }
 }

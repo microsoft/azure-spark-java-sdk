@@ -7,6 +7,7 @@ import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.utils.JsonConverter;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.auth.AuthScope;
@@ -209,7 +210,7 @@ public class SparkBatchSubmission implements Logger {
      * @throws IOException
      */
     public HttpResponse getBatchSparkJobStatus(String connectUrl, int batchId) throws IOException {
-        return getHttpResponseViaGet(connectUrl + "/" + batchId);
+        return getHttpResponseViaGet(StringUtils.stripEnd(connectUrl, "/") + "/" + batchId);
     }
 
     /**

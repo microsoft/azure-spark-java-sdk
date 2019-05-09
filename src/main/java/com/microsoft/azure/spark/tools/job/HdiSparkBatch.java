@@ -21,9 +21,8 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher {
                          final PostBatches submissionParameter,
                          final SparkBatchSubmission sparkBatchSubmission,
                          final Observer<Pair<MessageInfoType, String>> ctrlSubject,
-                         @Nullable final String accessToken,
                          @Nullable final String destinationRootPath) {
-        super(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, accessToken, destinationRootPath);
+        super(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, destinationRootPath);
     }
 
     public HdiSparkBatch(final HdiCluster cluster,

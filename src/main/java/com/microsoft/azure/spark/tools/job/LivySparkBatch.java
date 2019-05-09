@@ -3,26 +3,18 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.Cache;
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTableBody;
 import com.microsoft.azure.spark.tools.clusters.LivyCluster;
 import com.microsoft.azure.spark.tools.errors.SparkJobException;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
-import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.legacyhttp.HttpResponse;
 import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.BatchState;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.api.batch.GetLogResponse;
+import com.microsoft.azure.spark.tools.log.Logger;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.BatchState;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatchesResponse;
-import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.batch.GetLogResponse;
+import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -35,8 +27,6 @@ import java.net.URI;
 import java.net.UnknownServiceException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -49,35 +39,12 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
     public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
 
-    @Nullable
-    private String currentLogUrl;
-    private Observer<Pair<MessageInfoType, String>> ctrlSubject;
-
-    @Nullable
-    private String getCurrentLogUrl() {
-        return currentLogUrl;
-    }
-
-    private void setCurrentLogUrl(@Nullable String currentLogUrl) {
-        this.currentLogUrl = currentLogUrl;
-    }
-
-    /**
-     * The base connection URI for HDInsight Spark Job service, such as: http://livy:8998/batches.
-     */
-    @Nullable
-    private URI connectUri;
-
-    /**
-     * The base connection URI for HDInsight Yarn application service, such as: http://hn0-spark2:8088/cluster/app.
-     */
-    @Nullable
-    private URI yarnConnectUri;
+    private final Observer<Pair<MessageInfoType, String>> ctrlSubject;
 
     /**
      * The LIVY Spark batch job ID got from job submission.
      */
-    private int batchId;
+    private LaterInit<Integer> batchId = new LaterInit<>();
 
     /**
      * The Spark Batch Job submission parameter.
@@ -99,42 +66,30 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      */
     private int delaySeconds = 10;
 
-    /**
-     * The global cache for fetched Yarn UI page by browser.
-     */
-    private Cache globalCache = new Cache();
-
-    private LivyCluster cluster;
-    /**
-     * Access token used for uploading files to ADLS storage account.
-     */
-    @Nullable
-    private String accessToken;
+    private final LivyCluster cluster;
 
     @Nullable
     private String destinationRootPath;
 
     public LivySparkBatch(
-            LivyCluster cluster,
-            PostBatches submissionParameter,
-            SparkBatchSubmission sparkBatchSubmission,
-            Observer<Pair<MessageInfoType, String>> ctrlSubject) {
-        this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null);
+            final LivyCluster cluster,
+            final PostBatches submissionParameter,
+            final SparkBatchSubmission sparkBatchSubmission,
+            final Observer<Pair<MessageInfoType, String>> ctrlSubject) {
+        this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, null);
     }
 
 
     public LivySparkBatch(
-            LivyCluster cluster,
-            PostBatches submissionParameter,
-            SparkBatchSubmission sparkBatchSubmission,
-            Observer<Pair<MessageInfoType, String>> ctrlSubject,
-            @Nullable String accessToken,
-            @Nullable String destinationRootPath) {
+            final LivyCluster cluster,
+            final PostBatches submissionParameter,
+            final SparkBatchSubmission sparkBatchSubmission,
+            final Observer<Pair<MessageInfoType, String>> ctrlSubject,
+            @Nullable final String destinationRootPath) {
         this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.submission = sparkBatchSubmission;
         this.ctrlSubject = ctrlSubject;
-        this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
     }
 
@@ -177,16 +132,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      */
     @Override
     public int getBatchId() {
-        return batchId;
-    }
-
-    /**
-     * Setter of LIVY Spark batch job ID got from job submission.
-     *
-     * @param batchId the LIVY Spark batch job ID
-     */
-    protected void setBatchId(int batchId) {
-        this.batchId = batchId;
+        return batchId.get();
     }
 
     /**
@@ -205,7 +151,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      * @param retriesMax the maximum retry count in RestAPI calling
      */
     @Override
-    public void setRetriesMax(int retriesMax) {
+    public void setRetriesMax(final int retriesMax) {
         this.retriesMax = retriesMax;
     }
 
@@ -225,7 +171,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      * @param delaySeconds the delay seconds between tries in RestAPI calling
      */
     @Override
-    public void setDelaySeconds(int delaySeconds) {
+    public void setDelaySeconds(final int delaySeconds) {
         this.delaySeconds = delaySeconds;
     }
 
@@ -248,7 +194,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     .orElseThrow(() -> new UnknownServiceException(
                             "Bad spark job response: " + httpResponse.getMessage()));
 
-            this.setBatchId(jobResp.getId());
+            this.batchId.set(jobResp.getId());
 
             return this;
         }
@@ -291,7 +237,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         do {
             try {
                 HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
-                        this.getConnectUri().toString(), batchId);
+                        this.getConnectUri().toString(), getBatchId());
 
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
                     PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
@@ -318,48 +264,6 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     /**
-     * Get Spark Job Yarn application ID with retries.
-     *
-     * @param batchBaseUri the connection URI
-     * @param livyBatchId the Livy batch job ID
-     * @return the Yarn application ID got
-     * @throws IOException exceptions in transaction
-     */
-    String getSparkJobApplicationId(URI batchBaseUri, int livyBatchId) throws IOException {
-        int retries = 0;
-
-        do {
-            try {
-                HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
-                        batchBaseUri.toString(), livyBatchId);
-
-                if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                    PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), PostBatchesResponse.class)
-                            .orElseThrow(() -> new UnknownServiceException(
-                                    "Bad spark job response: " + httpResponse.getMessage()));
-
-                    if (jobResp.getAppId() != null) {
-                        return jobResp.getAppId();
-                    }
-                }
-            } catch (IOException e) {
-                log().debug("Got exception " + e.toString() + ", waiting for a while to try", e);
-            }
-
-            try {
-                // Retry interval
-                sleep(TimeUnit.SECONDS.toMillis(this.getDelaySeconds()));
-            } catch (InterruptedException ex) {
-                throw new IOException("Interrupted in retry attempting", ex);
-            }
-        } while (++retries < this.getRetriesMax());
-
-        throw new UnknownServiceException(
-                "Failed to get job Application ID: Unknown service error after " + --retries + " retries");
-    }
-
-    /**
      * New RxAPI: Get current job application Id.
      *
      * @return Application Id Observable
@@ -380,163 +284,6 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
             throw new UnknownServiceException("Can't get Spark Application Id");
         });
-    }
-
-    /**
-     * New RxAPI: Get the current Spark job Yarn application attempt containers.
-     *
-     * @return The string pair Observable of Host and Container Id
-     */
-    Observable<Pair<URI, String>> getSparkJobYarnContainersObservable(AppAttempt appAttempt) {
-        return loadPageByBrowserObservable(getConnectUri().resolve("/yarnui/hn/cluster/appattempt/")
-                                                          .resolve(appAttempt.getAppAttemptId()).toString())
-                .retry(getRetriesMax())
-                .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
-                .filter(this::isSparkJobYarnAppAttemptNotJustLaunched)
-                // Get the container table by XPath
-                .map(htmlPage -> htmlPage.getFirstByXPath("//*[@id=\"containers\"]/tbody"))
-                .filter(Objects::nonNull)       // May get null in the last step
-                .map(HtmlTableBody.class::cast)
-                .map(HtmlTableBody::getRows)    // To container rows
-                .buffer(2, 1)
-                // Wait for last two refreshes getting the same rows count, which means the yarn application
-                // launching containers finished
-                .takeUntil(buf -> buf.size() == 2 && buf.get(0).size() == buf.get(1).size())
-                .filter(buf -> buf.size() == 2 && buf.get(0).size() == buf.get(1).size())
-                .map(buf -> buf.get(1))
-                .flatMap(Observable::from)  // From rows to row one by one
-                .filter(containerRow -> {
-                    try {
-                        // Read container URL from YarnUI page
-                        String urlFromPage = ((HtmlAnchor) containerRow.getCell(3).getFirstChild()).getHrefAttribute();
-                        URI containerUri = getConnectUri().resolve(urlFromPage);
-
-                        return loadPageByBrowserObservable(containerUri.toString())
-                                .map(this::isSparkJobYarnContainerLogAvailable)
-                                .toBlocking()
-                                .singleOrDefault(false);
-                    } catch (Exception ignore) {
-                        return false;
-                    }
-                })
-                .map(row -> {
-                    URI hostUrl = URI.create(row.getCell(1).getTextContent().trim());
-                    String containerId = row.getCell(0).getTextContent().trim();
-
-                    return new Pair<>(hostUrl, containerId);
-                });
-    }
-
-    /*
-     * Parsing the Application Attempt HTML page to determine if the attempt is running
-     */
-    private Boolean isSparkJobYarnAppAttemptNotJustLaunched(HtmlPage htmlPage) {
-        // Get the info table by XPath
-        @Nullable
-        HtmlTableBody infoBody = htmlPage.getFirstByXPath("//*[@class=\"info\"]/tbody");
-
-        if (infoBody == null) {
-            return false;
-        }
-
-        return infoBody
-                .getRows()
-                .stream()
-                .filter(row -> row.getCells().size() >= 2)
-                .filter(row -> row.getCell(0)
-                                  .getTextContent()
-                                  .trim()
-                                  .toLowerCase()
-                                  .equals("application attempt state:"))
-                .map(row -> !row.getCell(1)
-                                .getTextContent()
-                                .trim()
-                                .toLowerCase()
-                                .equals("launched"))
-                .findFirst()
-                .orElse(false);
-    }
-
-    private Boolean isSparkJobYarnContainerLogAvailable(HtmlPage htmlPage) {
-        Optional<DomElement> firstContent = Optional.ofNullable(
-                htmlPage.getFirstByXPath("//*[@id=\"layout\"]/tbody/tr/td[2]"));
-
-        return firstContent.map(DomElement::getTextContent)
-                           .map(line -> !line.trim()
-                                            .toLowerCase()
-                                            .contains("no logs available"))
-                           .orElse(false);
-    }
-
-    private Observable<HtmlPage> loadPageByBrowserObservable(String url) {
-        final WebClient HTTP_WEB_CLIENT = new WebClient(BrowserVersion.CHROME);
-        HTTP_WEB_CLIENT.setCache(globalCache);
-
-        if (getSubmission().getCredentialsProvider() != null) {
-            HTTP_WEB_CLIENT.setCredentialsProvider(getSubmission().getCredentialsProvider());
-        }
-
-        return Observable.create(ob -> {
-            try {
-                ob.onNext(HTTP_WEB_CLIENT.getPage(url));
-                ob.onCompleted();
-            } catch (ScriptException e) {
-                log().debug("get Spark job Yarn attempts detail browser rendering Error", e);
-            } catch (IOException e) {
-                ob.onError(e);
-            }
-        });
-    }
-
-    /**
-     * Get Spark Job driver log URL with retries.
-     *
-     * @deprecated
-     *      The Livy Rest API driver log Url field only get the running job.
-     *      Use getSparkJobDriverLogUrlObservable() please, with RxJava supported
-     *
-     * @param batchBaseUri the connection URI
-     * @param livyBatchId the Livy batch job ID
-     * @return the Spark Job driver log URL
-     * @throws IOException exceptions in transaction
-     */
-    @Nullable
-    @Deprecated
-    public String getSparkJobDriverLogUrl(URI batchBaseUri, int livyBatchId) throws IOException {
-        int retries = 0;
-
-        do {
-            HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
-                    batchBaseUri.toString(), livyBatchId);
-
-            try {
-                if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                    PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), PostBatchesResponse.class)
-                            .orElseThrow(() -> new UnknownServiceException(
-                                    "Bad spark job response: " + httpResponse.getMessage()));
-
-                    String driverLogUrl = (String) jobResp.getAppInfo().get("driverLogUrl");
-
-                    if (jobResp.getAppId() != null && driverLogUrl != null) {
-                        return driverLogUrl;
-                    }
-                }
-            } catch (IOException e) {
-                log().debug("Got exception " + e.toString() + ", waiting for a while to try", e);
-            }
-
-
-            try {
-                // Retry interval
-                sleep(TimeUnit.SECONDS.toMillis(this.getDelaySeconds()));
-            } catch (InterruptedException ex) {
-                throw new IOException("Interrupted in retry attempting", ex);
-            }
-        } while (++retries < this.getRetriesMax());
-
-        throw new UnknownServiceException(
-                "Failed to get job driver log URL: Unknown service error after " + --retries + " retries");
     }
 
     @Override
@@ -562,7 +309,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                             .lastOrDefault(true);
 
                     String logUrl = String.format("%s/%d/log?from=%d&size=%d",
-                            this.getConnectUri().toString(), batchId, start, maxLinesPerGet);
+                            this.getConnectUri().toString(), getBatchId(), start, maxLinesPerGet);
 
                     HttpResponse httpResponse = this.getSubmission().getHttpResponseViaGet(logUrl);
 
@@ -606,7 +353,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         do {
             try {
                 HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
-                        this.getConnectUri().toString(), batchId);
+                        this.getConnectUri().toString(), getBatchId());
 
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
                     PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
@@ -641,7 +388,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
                 do {
                     HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
-                            this.getConnectUri().toString(), batchId);
+                            this.getConnectUri().toString(), getBatchId());
 
                     if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
                         PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
@@ -684,7 +431,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      * @return the observable error since not support deploy yet
      */
     @Override
-    public Observable<? extends SparkBatchJob> deploy(String artifactPath) {
+    public Observable<? extends SparkBatchJob> deploy(final String artifactPath) {
         return Observable.error(new UnsupportedOperationException());
     }
 
@@ -699,7 +446,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     @Override
-    public boolean isDone(String state) {
+    public boolean isDone(final String state) {
         switch (BatchState.valueOf(state.toUpperCase())) {
             case SHUTTING_DOWN:
             case ERROR:
@@ -718,12 +465,12 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     @Override
-    public boolean isRunning(String state) {
+    public boolean isRunning(final String state) {
         return BatchState.valueOf(state.toUpperCase()) == BatchState.RUNNING;
     }
 
     @Override
-    public boolean isSuccess(String state) {
+    public boolean isSuccess(final String state) {
         return BatchState.valueOf(state.toUpperCase()) == BatchState.SUCCESS;
     }
 
@@ -778,7 +525,6 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     @Override
     public Observable<String> awaitPostDone() {
-        // return getJobLogAggregationDoneObservable();
         return Observable.empty();
     }
 }
