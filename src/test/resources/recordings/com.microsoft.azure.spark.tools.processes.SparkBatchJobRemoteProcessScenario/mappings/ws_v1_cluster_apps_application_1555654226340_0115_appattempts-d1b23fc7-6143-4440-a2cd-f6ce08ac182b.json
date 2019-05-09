@@ -1,0 +1,38 @@
+{
+  "id" : "d1b23fc7-6143-4440-a2cd-f6ce08ac182b",
+  "name" : "ws_v1_cluster_apps_application_1555654226340_0115_appattempts",
+  "request" : {
+    "url" : "/ws/v1/cluster/apps/application_1555654226340_0115/appattempts",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"appAttempts\":{\"appAttempt\":[{\"id\":1,\"startTime\":1557371790790,\"finishedTime\":1557371802073,\"containerId\":\"container_e01_1555654226340_0115_01_000001\",\"nodeHttpAddress\":\"wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30060\",\"nodeId\":\"wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050\",\"logsLink\":\"http://wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30060/node/containerlogs/container_e01_1555654226340_0115_01_000001/livy\",\"blacklistedNodes\":\"\",\"appAttemptId\":\"appattempt_1555654226340_0115_000001\"}]}}",
+    "headers" : {
+      "Cache-Control" : "no-cache",
+      "Pragma" : "no-cache",
+      "Content-Type" : "application/json",
+      "Expires" : "Thu, 09 May 2019 03:16:57 GMT",
+      "request-id" : "1406f6c7950b487cb6ff93ce69340265",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 09 May 2019 03:16:57 GMT"
+    }
+  },
+  "uuid" : "d1b23fc7-6143-4440-a2cd-f6ce08ac182b",
+  "persistent" : true,
+  "scenarioName" : "scenario-ws-v1-cluster-apps-application_1555654226340_0115-appattempts",
+  "requiredScenarioState" : "scenario-ws-v1-cluster-apps-application_1555654226340_0115-appattempts-7",
+  "newScenarioState" : "scenario-ws-v1-cluster-apps-application_1555654226340_0115-appattempts-8",
+  "insertionIndex" : 78
+}

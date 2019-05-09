@@ -1,0 +1,31 @@
+{
+  "id" : "baba0276-d38a-464c-aaa6-869274be0345",
+  "name" : "livy_batches_159_log",
+  "request" : {
+    "url" : "/livy/batches/159/log?from=27&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":159,\"from\":27,\"total\":42,\"log\":[\"19/05/09 03:16:31 INFO Client: \",\"\\t client token: N/A\",\"\\t diagnostics: AM container is launched, waiting for AM container to Register with RM\",\"\\t ApplicationMaster host: N/A\",\"\\t ApplicationMaster RPC port: -1\",\"\\t queue: default\",\"\\t start time: 1557371790756\",\"\\t final status: UNDEFINED\",\"\\t tracking URL: http://hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:8088/proxy/application_1555654226340_0115/\",\"\\t user: livy\",\"19/05/09 03:16:31 INFO ShutdownHookManager: Shutdown hook called\",\"19/05/09 03:16:31 INFO ShutdownHookManager: Deleting directory /tmp/spark-333eec6c-2e53-4e31-927f-40a33f39a294\",\"19/05/09 03:16:31 INFO ShutdownHookManager: Deleting directory /tmp/spark-c2f4681f-642b-4ba2-9920-7c76cdf4e0bb\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "98f44b0f7ce8429caf67250c2f76d330",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 09 May 2019 03:16:31 GMT"
+    }
+  },
+  "uuid" : "baba0276-d38a-464c-aaa6-869274be0345",
+  "persistent" : true,
+  "insertionIndex" : 28
+}

@@ -1,0 +1,39 @@
+{
+  "id" : "7c152c14-167c-4f5d-b5a9-4c2b0fe8ffa5",
+  "name" : "yarnui_wn2-zhwe-ss4un4f0kknqu5fddjqm2rbsvkdaxinternalcloudappnet_port_30060_node_containerlogs_container_e01_1555654226340_0115_01_000001_livy_stdout",
+  "request" : {
+    "url" : "/yarnui/wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/node/containerlogs/container_e01_1555654226340_0115_01_000001/livy/stdout?start=83",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 307,
+    "body" : "Redirecting to log server : http://hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:19888/jobhistory/logs/wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050/container_e01_1555654226340_0115_01_000001/container_e01_1555654226340_0115_01_000001/livy/stdout?start=83\n",
+    "headers" : {
+      "Cache-Control" : "no-cache",
+      "Pragma" : "no-cache",
+      "Content-Type" : "text/plain; charset=utf-8",
+      "Expires" : "Thu, 09 May 2019 03:16:49 GMT",
+      "Location" : "/yarnui/jobhistory/logs/wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30050/container_e01_1555654226340_0115_01_000001/container_e01_1555654226340_0115_01_000001/livy/stdout?start=83",
+      "request-id" : "2b9bc442a794435db24e1302b6c4c975",
+      "x-ms-hdi-active" : "wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 09 May 2019 03:16:48 GMT"
+    }
+  },
+  "uuid" : "7c152c14-167c-4f5d-b5a9-4c2b0fe8ffa5",
+  "persistent" : true,
+  "scenarioName" : "scenario-yarnui-wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net-port-30060-node-containerlogs-container_e01_1555654226340_0115_01_000001-livy-stdout",
+  "requiredScenarioState" : "Started",
+  "newScenarioState" : "scenario-yarnui-wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net-port-30060-node-containerlogs-container_e01_1555654226340_0115_01_000001-livy-stdout-2",
+  "insertionIndex" : 60
+}

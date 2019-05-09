@@ -1,0 +1,34 @@
+{
+  "id" : "6e4ee5f2-dd29-497a-ac3a-a2b50b574379",
+  "name" : "livy_batches_159",
+  "request" : {
+    "url" : "/livy/batches/159",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":159,\"state\":\"running\",\"appId\":\"application_1555654226340_0115\",\"appInfo\":{\"driverLogUrl\":\"http://wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30060/node/containerlogs/container_e01_1555654226340_0115_01_000001/livy\",\"sparkUiUrl\":\"https://zhwe-spk23-adlsgen1.azurehdinsight.net/yarnui/hn/proxy/application_1555654226340_0115/\"},\"log\":[\"\\t queue: default\",\"\\t start time: 1557371790756\",\"\\t final status: UNDEFINED\",\"\\t tracking URL: https://zhwe-spk23-adlsgen1.azurehdinsight.net/yarnui/hn/proxy/application_1555654226340_0115/\",\"\\t user: livy\",\"19/05/09 03:16:31 INFO ShutdownHookManager: Shutdown hook called\",\"19/05/09 03:16:31 INFO ShutdownHookManager: Deleting directory /tmp/spark-333eec6c-2e53-4e31-927f-40a33f39a294\",\"19/05/09 03:16:31 INFO ShutdownHookManager: Deleting directory /tmp/spark-c2f4681f-642b-4ba2-9920-7c76cdf4e0bb\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "0a91abf3147c47a687e5d81f4d544fb6",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 09 May 2019 03:16:42 GMT"
+    }
+  },
+  "uuid" : "6e4ee5f2-dd29-497a-ac3a-a2b50b574379",
+  "persistent" : true,
+  "scenarioName" : "scenario-livy-batches-159",
+  "requiredScenarioState" : "scenario-livy-batches-159-35",
+  "newScenarioState" : "scenario-livy-batches-159-36",
+  "insertionIndex" : 51
+}
