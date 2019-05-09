@@ -3,39 +3,30 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.Cache;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlParagraph;
-import com.gargoylesoftware.htmlunit.html.HtmlPreformattedText;
 import com.microsoft.azure.spark.tools.clusters.YarnCluster;
-import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.legacyhttp.HttpResponse;
 import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
+import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.App;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppResponse;
 import com.microsoft.azure.spark.tools.utils.Pair;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.client.CredentialsProvider;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownServiceException;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +70,6 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
     @Nullable
     private String currentLogUrl;
     private LogConversionMode logUriConversionMode = LogConversionMode.UNKNOWN;
-    private final Cache globalCache;
     private final String applicationId;
     private final YarnCluster cluster;
     private final SparkBatchSubmission submission;
@@ -91,7 +81,6 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
         this.cluster = cluster;
         this.submission = submission;
         this.yarnNMConnectUri = URI.create(this.cluster.getYarnNMConnectionUrl());
-        this.globalCache = new Cache();
     }
 
     public Observable<URI> getYarnNMConnectUri() {
@@ -259,9 +248,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
     }
 
     @Override
-    public Observable<Pair<String, Long>> fetch(final String type,
-                                                final long logOffset,
-                                                final int size) {
+    public Observable<Pair<String, Long>> fetch(final String type, final long logOffset, final int size) {
         return this.getSparkJobDriverLogUrlObservable()
                 .map(Object::toString)
                 .flatMap(logUrl -> {
@@ -277,8 +264,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
                         return Observable.empty();
                     }
 
-                    String logGot = this.getInformationFromYarnLogDom(
-                            this.submission.getCredentialsProvider(), probedLogUrl, type, offset, size);
+                    String logGot = this.getInformationFromYarnLogDom(probedLogUrl, type, offset, size);
 
                     return StringUtils.isEmpty(logGot)
                             ? getSparkJobYarnApplication()
@@ -345,62 +331,49 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
         }
     }
 
-    public final Cache getGlobalCache() {
-        return this.globalCache;
-    }
-
-    private String getInformationFromYarnLogDom(final CredentialsProvider credentialsProvider,
-                                                final String baseUrl,
+    private String getInformationFromYarnLogDom(final String baseUrl,
                                                 final String type,
                                                 final long start,
                                                 final int size) {
-        WebClient webClient = new WebClient(BrowserVersion.CHROME);
-        webClient.setCache(this.globalCache);
-        if (credentialsProvider != null) {
-            Credentials basic = credentialsProvider.getCredentials(new AuthScope(AuthScope.ANY));
-
-            if (basic != null) {
-                String auth = basic.getUserPrincipal().getName() + ":" + basic.getPassword();
-                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
-                webClient.addRequestHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuth));
-            }
-        }
-
         URI url = URI.create(StringUtils.stripEnd(baseUrl, "/") + "/").resolve(
                 String.format("%s?start=%d", type, start) + (size <= 0 ? "" : String.format("&&end=%d", start + size)));
 
         try {
-            HtmlPage htmlPage = webClient.getPage(Objects.requireNonNull(url, "Can't get Yarn log URL").toString());
+            HttpResponse response = submission.getHttpResponseViaGet(url.toString());
+            log().debug("Fetch log from " + url + ", got " + response.getCode() + " with " + response.getMessage());
 
-            log().debug("Fetch log from " + url + ", got " + htmlPage.asText());
+            Document doc = Jsoup.parse(response.getMessage());
 
-            Iterator<DomElement> iterator = htmlPage.getElementById("navcell")
-                    .getNextElementSibling()
-                    .getChildElements()
-                    .iterator();
+            Iterator<Element> iterator = Optional.ofNullable(doc.getElementById("navcell"))
+                    .map(Element::nextElementSibling)
+                    .map(Element::children)
+                    .map(ArrayList::iterator)
+                    .orElse(Collections.emptyIterator());
 
             HashMap<String, String> logTypeMap = new HashMap<>();
             final AtomicReference<String> logType = new AtomicReference<>();
             String logs = "";
 
             while (iterator.hasNext()) {
-                DomElement node = iterator.next();
+                Element node = iterator.next();
 
-                if (node instanceof HtmlParagraph) {
+                if (StringUtils.equalsIgnoreCase(node.tagName(), "p")) {
                     // In history server, need to read log type paragraph in page
                     final Pattern logTypePattern = Pattern.compile("Log Type:\\s+(\\S+)");
 
-                    Optional.ofNullable(node.getFirstChild())
-                            .map(DomNode::getTextContent)
+                    node.childNodes().stream()
+                            .findFirst()
+                            .map(Node::toString)
                             .map(StringUtils::trim)
                             .map(logTypePattern::matcher)
                             .filter(Matcher::matches)
                             .map(matcher -> matcher.group(1))
                             .ifPresent(logType::set);
-                } else if (node instanceof HtmlPreformattedText) {
+                } else if (StringUtils.equalsIgnoreCase(node.tagName(), "pre")) {
                     // In running, no log type paragraph in page
-                    logs = Optional.ofNullable(node.getFirstChild())
-                            .map(DomNode::getTextContent)
+                    logs = node.childNodes().stream()
+                            .findFirst()
+                            .map(Node::toString)
                             .orElse("");
 
                     if (logType.get() != null) {
@@ -413,7 +386,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
             }
 
             return logTypeMap.getOrDefault(type, logs);
-        } catch (FailingHttpStatusCodeException | IOException serviceError) {
+        } catch (IOException serviceError) {
             // If the URL is wrong, will get 200 response with content:
             //      Unable to locate 'xxx' log for container
             //  OR

@@ -3,17 +3,16 @@
 
 package com.microsoft.azure.spark.tools.legacyhttp;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.StringEntity;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Date;
@@ -21,31 +20,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 public class StreamUtil {
-
-    public static String getResultFromInputStream(InputStream inputStream) throws IOException {
-        // change string buffer to string builder for thread-safe
-        StringBuilder result = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                result.append(line);
-            }
-        }
-
-        return result.toString();
-    }
-
-    public static HttpResponse getResultFromHttpResponse(CloseableHttpResponse response) throws IOException {
+    public static HttpResponse getResultFromHttpResponse(final CloseableHttpResponse response) throws IOException {
         int code = response.getStatusLine().getStatusCode();
         String reason = response.getStatusLine().getReasonPhrase();
         // Entity for HEAD is empty
         HttpEntity entity = Optional.ofNullable(response.getEntity())
                 .orElse(new StringEntity(""));
         try (InputStream inputStream = entity.getContent()) {
-            String responseContent = getResultFromInputStream(inputStream);
+            String responseContent = IOUtils.toString(inputStream, UTF_8);
             return new HttpResponse(code, responseContent, new HashMap<String, List<String>>(), reason);
         }
     }

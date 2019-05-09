@@ -157,6 +157,9 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
     @Option(names = "--artifactUri", description = "Spark job artifact URI")
     private URI artifactUri;
 
+    @Option(names = "--log", description = "Output the logs captured")
+    private boolean doesPrintLog;
+
     private PostBatches createSubmitParamFromArgs() {
         PostBatches.Options batchParamOptions = new PostBatches.Options()
                 .className(mainClassName)
@@ -164,8 +167,6 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
 
         return batchParamOptions.build();
     }
-
-//    public String unblockInputStream
 
     public static void main(String[] args) throws IOException {
         SparkBatchJobRemoteProcessScenario scenario = new SparkBatchJobRemoteProcessScenario();
@@ -191,8 +192,10 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
         recordingProxyService.getServer().stopRecording();
         recordingProxyService.getServer().stop();
 
-        System.out.println("========= log4j =========");
-        System.out.println(StringUtils.join(LogMonitor.getAllPackagesLogs(), "\n"));
+        if (scenario.doesPrintLog) {
+            System.out.println("========= log4j =========");
+            System.out.println(StringUtils.join(LogMonitor.getAllPackagesLogs(), "\n"));
+        }
     }
 
     @Override
