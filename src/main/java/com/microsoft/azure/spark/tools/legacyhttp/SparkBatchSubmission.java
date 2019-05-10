@@ -3,6 +3,7 @@
 
 package com.microsoft.azure.spark.tools.legacyhttp;
 
+import com.microsoft.azure.spark.tools.http.HttpResponse;
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.utils.JsonConverter;
@@ -35,7 +36,7 @@ public class SparkBatchSubmission implements Logger {
     }
 
     // Singleton Instance
-    private static SparkBatchSubmission instance = null;
+    private static @Nullable SparkBatchSubmission instance = null;
 
     public static SparkBatchSubmission getInstance() {
         if (instance == null) {
@@ -109,7 +110,10 @@ public class SparkBatchSubmission implements Logger {
         httpGet.addHeader("X-Requested-By", "ambari");
         httpGet.addHeader(getBasicAuthHeader());
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
-            return StreamUtil.getResultFromHttpResponse(response);
+            HttpResponse messageGot = new HttpResponse(response);
+            messageGot.getMessage();
+
+            return messageGot;
         }
     }
 
@@ -132,7 +136,10 @@ public class SparkBatchSubmission implements Logger {
                         .build());
 
         try (CloseableHttpResponse response = httpclient.execute(httpHead)) {
-            return StreamUtil.getResultFromHttpResponse(response);
+            HttpResponse messageGot = new HttpResponse(response);
+            messageGot.getMessage();
+
+            return messageGot;
         }
     }
 
@@ -155,8 +162,7 @@ public class SparkBatchSubmission implements Logger {
         return "Azure Spark Maven plugin";
     }
 
-    @Nullable
-    Header getBasicAuthHeader() {
+    @Nullable Header getBasicAuthHeader() {
         Credentials basic = getCredentialsProvider().getCredentials(new AuthScope(AuthScope.ANY));
 
         if (basic == null) {
@@ -197,7 +203,10 @@ public class SparkBatchSubmission implements Logger {
         StringEntity postingString = new StringEntity(JsonConverter.of(PostBatches.class).toJson(submissionParameter));
         httpPost.setEntity(postingString);
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-            return StreamUtil.getResultFromHttpResponse(response);
+            HttpResponse messageGot = new HttpResponse(response);
+            messageGot.getMessage();
+
+            return messageGot;
         }
     }
 
@@ -230,7 +239,10 @@ public class SparkBatchSubmission implements Logger {
         httpDelete.addHeader(getBasicAuthHeader());
 
         try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
-            return StreamUtil.getResultFromHttpResponse(response);
+            HttpResponse messageGot = new HttpResponse(response);
+            messageGot.getMessage();
+
+            return messageGot;
         }
     }
 

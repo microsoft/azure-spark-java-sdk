@@ -14,11 +14,11 @@ public class ConsoleScheduler implements IdeSchedulers {
 
     @Override
     public Scheduler processBarVisibleSync(final String title) {
-        return null;
+        return Schedulers.immediate();
     }
 
     @Override
     public Scheduler dispatchUIThread() {
-        return null;
+        return Schedulers.trampoline();
     }
 }

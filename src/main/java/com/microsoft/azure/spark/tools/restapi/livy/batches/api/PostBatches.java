@@ -91,7 +91,7 @@ public class PostBatches implements Convertible {
         }
 
         @Override
-        public boolean equals(@Nullable final Object obj) {
+        public boolean equals(final @Nullable Object obj) {
             if (!(obj instanceof MemorySize)) {
                 return false;
             }
@@ -101,17 +101,13 @@ public class PostBatches implements Convertible {
     }
 
     public static class Options {
-        @Nullable
-        private String name = null;
+        private @Nullable String name = null;
 
-        @Nullable
-        private String proxyUser = null;
+        private @Nullable String proxyUser = null;
 
-        @Nullable
-        private String artifactUri = null;
+        private @Nullable String artifactUri = null;
 
-        @Nullable
-        private String className = null;
+        private @Nullable String className = null;
 
         private List<String> referenceFiles = new ArrayList<>();
 
@@ -125,23 +121,17 @@ public class PostBatches implements Convertible {
 
         private Map<String, String> jobConfig = new HashMap<>();
 
-        @Nullable
-        private String yarnQueue = null;
+        private @Nullable String yarnQueue = null;
 
-        @Nullable
-        private MemorySize driverMemory = null;
+        private @Nullable MemorySize driverMemory = null;
 
-        @Nullable
-        private Integer driverCores = null;
+        private @Nullable Integer driverCores = null;
 
-        @Nullable
-        private MemorySize executorMemory = null;
+        private @Nullable MemorySize executorMemory = null;
 
-        @Nullable
-        private Integer executorCores = null;
+        private @Nullable Integer executorCores = null;
 
-        @Nullable
-        private Integer yarnNumExecutors = null;
+        private @Nullable Integer yarnNumExecutors = null;
 
         /**
          * Set Spark application name.
@@ -356,19 +346,22 @@ public class PostBatches implements Convertible {
          * @return current {@link PostBatches} instance Post body
          */
         public PostBatches build() {
-            if (StringUtils.isBlank(artifactUri)) {
+            String file = this.artifactUri;
+            String mainClassName = this.className;
+
+            if (StringUtils.isBlank(file)) {
                 throw new IllegalArgumentException("Can't find Spark job artifact URI or local artifact to submit");
             }
 
-            if (StringUtils.isBlank(className)) {
+            if (StringUtils.isBlank(mainClassName)) {
                 throw new IllegalArgumentException("Can't find Spark job main class name to submit");
             }
 
             return new PostBatches(
                     this.name,
                     this.proxyUser,
-                    this.artifactUri,
-                    this.className,
+                    file,
+                    mainClassName,
                     this.yarnQueue,
                     this.driverMemory,
                     this.driverCores,
@@ -384,10 +377,8 @@ public class PostBatches implements Convertible {
         }
     }
 
-    @Nullable
-    private String name;
-    @Nullable
-    private String proxyUser;
+    private @Nullable String name;
+    private @Nullable String proxyUser;
     private String file;
     private String className;
 
@@ -398,23 +389,17 @@ public class PostBatches implements Convertible {
     private final List<String> pyFiles = new ArrayList<>();
     private final List<String> archives = new ArrayList<>();
 
-    @Nullable
-    private String yarnQueue;
+    private @Nullable String yarnQueue;
 
-    @Nullable
-    private MemorySize driverMemory;
+    private @Nullable MemorySize driverMemory;
 
-    @Nullable
-    private Integer driverCores;
+    private @Nullable Integer driverCores;
 
-    @Nullable
-    private MemorySize executorMemory;
+    private @Nullable MemorySize executorMemory;
 
-    @Nullable
-    private Integer executorCores;
+    private @Nullable Integer executorCores;
 
-    @Nullable
-    private Integer yarnNumExecutors;
+    private @Nullable Integer yarnNumExecutors;
 
     private static final String DRIVER_MEMORY = "driverMemory";
     public static final String DRIVER_MEMORY_DEFAULT_VALUE = "4G";
@@ -436,22 +421,22 @@ public class PostBatches implements Convertible {
         this.className = "<unset>";
     }
 
-    protected PostBatches(@Nullable final String name,
-                          @Nullable final String proxyUser,
+    protected PostBatches(final @Nullable String name,
+                          final @Nullable String proxyUser,
                           final String filePath,
                           final String className,
-                          @Nullable final String yarnQueue,
-                          @Nullable final MemorySize driverMemory,
-                          @Nullable final Integer driverCores,
-                          @Nullable final MemorySize executorMemory,
-                          @Nullable final Integer executorCores,
-                          @Nullable final Integer yarnNumExecutors,
-                          @Nullable final List<String> referencedFiles,
-                          @Nullable final List<String> referencedJars,
-                          @Nullable final List<String> archives,
-                          @Nullable final List<String> pyFiles,
-                          @Nullable final List<String> args,
-                          @Nullable final Map<String, String> jobConfig) {
+                          final @Nullable String yarnQueue,
+                          final @Nullable MemorySize driverMemory,
+                          final @Nullable Integer driverCores,
+                          final @Nullable MemorySize executorMemory,
+                          final @Nullable Integer executorCores,
+                          final @Nullable Integer yarnNumExecutors,
+                          final @Nullable List<String> referencedFiles,
+                          final @Nullable List<String> referencedJars,
+                          final @Nullable List<String> archives,
+                          final @Nullable List<String> pyFiles,
+                          final @Nullable List<String> args,
+                          final @Nullable Map<String, String> jobConfig) {
         this.name = name;
         this.file = filePath;
         this.className = className;
@@ -489,98 +474,82 @@ public class PostBatches implements Convertible {
     }
 
     @JsonProperty("name")
-    @Nullable
-    public String getName() {
+    public @Nullable String getName() {
         return name;
     }
 
     @JsonProperty("file")
-    @Nullable
-    public String getFile() {
+    public @Nullable String getFile() {
         return file;
     }
 
     @JsonProperty("className")
-    @Nullable
-    public String getClassName() {
+    public @Nullable String getClassName() {
         return className;
     }
 
     @JsonProperty("files")
-    @Nullable
-    public List<String> getReferencedFiles() {
+    public @Nullable List<String> getReferencedFiles() {
         return files;
     }
 
     @JsonProperty("jars")
-    @Nullable
-    public List<String> getReferencedJars() {
+    public @Nullable List<String> getReferencedJars() {
         return jars;
     }
 
     @JsonProperty("args")
-    @Nullable
-    public List<String> getArgs() {
+    public @Nullable List<String> getArgs() {
         return args;
     }
 
     @JsonProperty("archives")
-    @Nullable
-    public List<String> getArchives() {
+    public @Nullable List<String> getArchives() {
         return archives;
     }
 
     @JsonProperty("driverMemory")
-    @Nullable
-    public String getDriverMemory() {
+    public @Nullable String getDriverMemory() {
         return driverMemory == null ? null : driverMemory.toString();
     }
 
     @JsonProperty("driverCores")
-    @Nullable
-    public Integer getDriverCores() {
+    public @Nullable Integer getDriverCores() {
         return driverCores;
     }
 
     @JsonProperty("executorMemory")
-    @Nullable
-    public String getExecutorMemory() {
+    public @Nullable String getExecutorMemory() {
         return executorMemory == null ? null : executorMemory.toString();
     }
 
     @JsonProperty("executorCores")
-    @Nullable
-    public Integer getExecutorCores() {
+    public @Nullable Integer getExecutorCores() {
         return executorCores;
     }
 
     @JsonProperty("numExecutors")
-    @Nullable
-    public Integer getNumExecutors() {
+    public @Nullable Integer getNumExecutors() {
         return yarnNumExecutors;
     }
 
     @JsonProperty("conf")
-    @Nullable
-    public Map<String, String> getConf() {
+    public @Nullable Map<String, String> getConf() {
         return jobConfig.isEmpty() ? null : jobConfig;
     }
 
     @JsonProperty("proxyUser")
-    @Nullable
-    public String getProxyUser() {
+    public @Nullable String getProxyUser() {
         return proxyUser;
     }
 
     @JsonProperty("pyFiles")
-    @Nullable
-    public List<String> getPyFiles() {
+    public @Nullable List<String> getPyFiles() {
         return pyFiles;
     }
 
     @JsonProperty("queue")
-    @Nullable
-    public String getYarnQueue() {
+    public @Nullable String getYarnQueue() {
         return yarnQueue;
     }
 

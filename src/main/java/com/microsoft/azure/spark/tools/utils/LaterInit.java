@@ -9,13 +9,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
-import java.util.Objects;
-
 public class LaterInit<T> {
     private final BehaviorSubject<T> delegation = BehaviorSubject.create();
 
     public Observable<T> observable() {
-        return delegation.filter(obj -> Objects.nonNull(obj)).first();
+        return delegation.filter(obj -> obj != null).first();
     }
 
     public synchronized void set(final T value) {
@@ -33,8 +31,7 @@ public class LaterInit<T> {
         }
     }
 
-    @Nullable
-    public T getWithNull() {
+    public @Nullable T getWithNull() {
         return delegation.getValue();
     }
 

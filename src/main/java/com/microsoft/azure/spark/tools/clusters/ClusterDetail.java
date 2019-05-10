@@ -25,20 +25,17 @@ public interface ClusterDetail {
 
     String getTitle();
 
-    @Nullable
-    default String getState() {
+    default @Nullable String getState() {
         return null;
     }
 
-    @Nullable
-    default String getLocation() {
+    default @Nullable String getLocation() {
         return null;
     }
 
     String getConnectionUrl();
 
-    @Nullable
-    default String getCreateDate() {
+    default @Nullable String getCreateDate() {
         return null;
     }
 
@@ -46,8 +43,8 @@ public interface ClusterDetail {
     //     return null;
     // }
 
-    @Nullable
-    default String getVersion() {
+
+    default @Nullable String getVersion() {
         return null;
     }
 
@@ -57,23 +54,23 @@ public interface ClusterDetail {
         return 0;
     }
 
-    @Nullable
-    default String getHttpUserName() throws HDIException {
+
+    default @Nullable String getHttpUserName() throws HDIException {
         return null;
     }
 
-    @Nullable
-    default String getHttpPassword() throws HDIException {
+
+    default @Nullable String getHttpPassword() throws HDIException {
         return null;
     }
 
-    @Nullable
-    default String getOSType() {
+
+    default @Nullable String getOSType() {
         return null;
     }
 
-    @Nullable
-    default String getResourceGroup() {
+
+    default @Nullable String getResourceGroup() {
         return null;
     }
 
@@ -89,8 +86,8 @@ public interface ClusterDetail {
     default void getConfigurationInfo() throws IOException, HDIException {
     }
 
-    @Nullable
-    default String getSparkVersion() {
+
+    default @Nullable String getSparkVersion() {
         return null;
     }
 

@@ -7,12 +7,9 @@ package com.microsoft.azure.spark.tools.restapi.yarn.rm;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ApplicationMasterLogs {
-    @Nullable
-    private String stderr;
-    @Nullable
-    private String stdout;
-    @Nullable
-    private String directoryInfo;
+    private @Nullable String stderr;
+    private @Nullable String stdout;
+    private @Nullable String directoryInfo;
 
     public ApplicationMasterLogs(@Nullable String standout, @Nullable String standerr, @Nullable String directoryInfo) {
         this.stdout = standout;
@@ -24,8 +21,7 @@ public class ApplicationMasterLogs {
 
     }
 
-    @Nullable
-    public String getStderr() {
+    public @Nullable String getStderr() {
         return stderr;
     }
 
@@ -33,8 +29,7 @@ public class ApplicationMasterLogs {
         this.stderr = stderr;
     }
 
-    @Nullable
-    public String getStdout() {
+    public @Nullable String getStdout() {
         return stdout;
     }
 
@@ -42,8 +37,7 @@ public class ApplicationMasterLogs {
         this.stdout = stdout;
     }
 
-    @Nullable
-    public String getDirectoryInfo() {
+    public @Nullable String getDirectoryInfo() {
         return directoryInfo;
     }
 

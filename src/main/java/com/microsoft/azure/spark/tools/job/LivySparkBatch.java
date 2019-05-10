@@ -6,7 +6,7 @@ package com.microsoft.azure.spark.tools.job;
 import com.microsoft.azure.spark.tools.clusters.LivyCluster;
 import com.microsoft.azure.spark.tools.errors.SparkJobException;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
-import com.microsoft.azure.spark.tools.legacyhttp.HttpResponse;
+import com.microsoft.azure.spark.tools.http.HttpResponse;
 import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import com.microsoft.azure.spark.tools.log.Logger;
@@ -68,8 +68,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     private final LivyCluster cluster;
 
-    @Nullable
-    private String destinationRootPath;
+    private @Nullable String destinationRootPath;
 
     public LivySparkBatch(
             final LivyCluster cluster,
@@ -85,7 +84,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
             final PostBatches submissionParameter,
             final SparkBatchSubmission sparkBatchSubmission,
             final Observer<Pair<MessageInfoType, String>> ctrlSubject,
-            @Nullable final String destinationRootPath) {
+            final @Nullable String destinationRootPath) {
         this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.submission = sparkBatchSubmission;
@@ -189,10 +188,10 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
         // Get the batch ID from response and save it
         if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+            String body = httpResponse.getMessage();
             PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                    httpResponse.getMessage(), PostBatchesResponse.class)
-                    .orElseThrow(() -> new UnknownServiceException(
-                            "Bad spark job response: " + httpResponse.getMessage()));
+                    body, PostBatchesResponse.class)
+                    .orElseThrow(() -> new UnknownServiceException("Bad spark job response: " + body));
 
             this.batchId.set(jobResp.getId());
 
@@ -201,7 +200,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
         throw new UnknownServiceException(String.format(
                 "Failed to submit Spark batch job. error code: %d, type: %s, reason: %s.",
-                httpResponse.getCode(), httpResponse.getContent(), httpResponse.getMessage()));
+                httpResponse.getCode(), httpResponse.getReason(), httpResponse.getMessage()));
     }
 
     /**
@@ -218,7 +217,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
             if (deleteResponse.getCode() > 300) {
                 throw new UnknownServiceException(String.format(
                         "Failed to stop spark job. error code: %d, reason: %s.",
-                        deleteResponse.getCode(), deleteResponse.getContent()));
+                        deleteResponse.getCode(), deleteResponse.getReason()));
             }
 
             return this;
@@ -240,10 +239,11 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                         this.getConnectUri().toString(), getBatchId());
 
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+                    String body = httpResponse.getMessage();
+
                     PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), PostBatchesResponse.class)
-                            .orElseThrow(() -> new UnknownServiceException(
-                                    "Bad spark job response: " + httpResponse.getMessage()));
+                            body, PostBatchesResponse.class)
+                            .orElseThrow(() -> new UnknownServiceException("Bad spark job response: " + body));
 
                     return jobResp.getState();
                 }
@@ -274,10 +274,11 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     getConnectUri().toString(), getBatchId());
 
             if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+                String body = httpResponse.getMessage();
+
                 PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                        httpResponse.getMessage(), PostBatchesResponse.class)
-                        .orElseThrow(() -> new UnknownServiceException(
-                                "Bad spark job response: " + httpResponse.getMessage()));
+                        body, PostBatchesResponse.class)
+                        .orElseThrow(() -> new UnknownServiceException("Bad spark job response: " + body));
 
                 return jobResp.getAppId();
             }
@@ -295,7 +296,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                 "stderr:",
                 "yarn diagnostics:"));
 
-        return Observable.create(ob -> {
+        return Observable.create((@SuppressWarnings("incompatible")
+                                          Subscriber<? super Pair<MessageInfoType, String>> ob) -> {
             try {
                 int start = 0;
                 final int maxLinesPerGet = 128;
@@ -303,25 +305,26 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                 boolean isSubmitting = true;
 
                 while (isSubmitting) {
-                    String status = this.getState();
-                    boolean isAppIdAllocated = !this.getSparkJobApplicationIdObservable().isEmpty()
+                    String status = LivySparkBatch.this.getState();
+                    boolean isAppIdAllocated = !LivySparkBatch.this.getSparkJobApplicationIdObservable().isEmpty()
                             .toBlocking()
                             .lastOrDefault(true);
 
                     String logUrl = String.format("%s/%d/log?from=%d&size=%d",
-                            this.getConnectUri().toString(), getBatchId(), start, maxLinesPerGet);
+                            LivySparkBatch.this.getConnectUri().toString(), LivySparkBatch.this.getBatchId(), start,
+                            maxLinesPerGet);
 
-                    HttpResponse httpResponse = this.getSubmission().getHttpResponseViaGet(logUrl);
+                    HttpResponse httpResponse = LivySparkBatch.this.getSubmission().getHttpResponseViaGet(logUrl);
 
-                    log().debug("Status: " + status
+                    LivySparkBatch.this.log().debug("Status: " + status
                             + ", Is Application ID allocated: " + isAppIdAllocated
                             + ", Request to " + logUrl
                             + ", got " + httpResponse.getMessage());
 
-                    GetLogResponse getLogResponse = ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(),
-                            GetLogResponse.class)
-                            .orElseThrow(() -> new UnknownServiceException(
-                                    "Bad spark log response: " + httpResponse.getMessage()));
+                    String body = httpResponse.getMessage();
+                    GetLogResponse getLogResponse = ObjectConvertUtils
+                            .convertJsonToObject(body, GetLogResponse.class)
+                            .orElseThrow(() -> new UnknownServiceException("Bad spark log response: " + body));
 
                     // To subscriber
                     getLogResponse.getLog().stream()
@@ -356,10 +359,10 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                         this.getConnectUri().toString(), getBatchId());
 
                 if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+                    String body = httpResponse.getMessage();
                     PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                            httpResponse.getMessage(), PostBatchesResponse.class)
-                            .orElseThrow(() -> new UnknownServiceException(
-                                    "Bad spark job response: " + httpResponse.getMessage()));
+                            body, PostBatchesResponse.class)
+                            .orElseThrow(() -> new UnknownServiceException("Bad spark job response: " + body));
 
                     return jobResp.isAlive();
                 }
@@ -380,7 +383,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     protected Observable<Pair<String, String>> getJobDoneObservable() {
-        return Observable.create((Subscriber<? super Pair<String, String>> ob) -> {
+        return Observable.create((@SuppressWarnings("incompatible") Subscriber<? super Pair<String, String>> ob) -> {
             try {
                 boolean isJobActive;
                 BatchState state = BatchState.NOT_STARTED;
@@ -391,10 +394,10 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                             this.getConnectUri().toString(), getBatchId());
 
                     if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+                        String body = httpResponse.getMessage();
                         PostBatchesResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                                httpResponse.getMessage(), PostBatchesResponse.class)
-                                .orElseThrow(() -> new UnknownServiceException(
-                                        "Bad spark job response: " + httpResponse.getMessage()));
+                                body, PostBatchesResponse.class)
+                                .orElseThrow(() -> new UnknownServiceException("Bad spark job response: " + body));
 
                         state = BatchState.valueOf(jobResp.getState().toUpperCase());
                         diagnostics = String.join("\n", jobResp.getLog());
@@ -485,10 +488,9 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     this.getConnectUri().toString(), getBatchId());
 
             if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                return ObjectConvertUtils.convertJsonToObject(
-                        httpResponse.getMessage(), PostBatchesResponse.class)
-                        .orElseThrow(() -> new UnknownServiceException(
-                                "Bad spark job response: " + httpResponse.getMessage()));
+                String body = httpResponse.getMessage();
+                return ObjectConvertUtils.convertJsonToObject(body, PostBatchesResponse.class)
+                        .orElseThrow(() -> new UnknownServiceException("Bad spark job response: " + body));
             }
 
             throw new SparkJobException("Can't get cluster " + cluster.getLivyConnectionUrl() + " status.");

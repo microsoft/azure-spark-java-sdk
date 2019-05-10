@@ -5,21 +5,22 @@ package com.microsoft.azure.spark.tools.processes;
 
 
 import com.microsoft.azure.spark.tools.job.SparkLogFetcher;
+import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 import static java.lang.Thread.sleep;
 
 public class SparkJobLogInputStream extends InputStream {
     private String logType;
-    @Nullable
-    private SparkLogFetcher sparkLogFetcher;
-    @Nullable
-    private String logUrl;
+    private LaterInit<SparkLogFetcher> sparkLogFetcher = new LaterInit<>();
+
+
+    private @Nullable String logUrl;
 
     private long offset = 0;
     private byte[] buffer = new byte[0];
@@ -30,25 +31,24 @@ public class SparkJobLogInputStream extends InputStream {
     }
 
     public SparkLogFetcher attachLogFetcher(final SparkLogFetcher fetcher) {
-        setSparkLogFetcher(fetcher);
+        sparkLogFetcher.set(fetcher);
 
         return fetcher;
     }
 
-    private synchronized Optional<Pair<String, Long>> fetchLog(final long logOffset, final int fetchSize) {
-        return getAttachedLogFetcher()
-                .map(logFetcher -> logFetcher
-                        .fetch(getLogType(), logOffset, fetchSize)
-                        .toBlocking()
-                        .firstOrDefault(null));
+    private synchronized @Nullable Pair<String, Long> fetchLog(final long logOffset, final int fetchSize) {
+        try {
+            return getAttachedLogFetcher()
+                    .fetch(getLogType(), logOffset, fetchSize)
+                    .toBlocking()
+                    .first();
+        } catch (NoSuchElementException ignored) {
+            return null;
+        }
     }
 
-    void setSparkLogFetcher(@Nullable final SparkLogFetcher sparkLogFetcher) {
-        this.sparkLogFetcher = sparkLogFetcher;
-    }
-
-    public Optional<SparkLogFetcher> getAttachedLogFetcher() {
-        return Optional.ofNullable(sparkLogFetcher);
+    public SparkLogFetcher getAttachedLogFetcher() {
+        return sparkLogFetcher.get();
     }
 
     @Override
@@ -79,31 +79,24 @@ public class SparkJobLogInputStream extends InputStream {
     @Override
     public int available() throws IOException {
         if (bufferPos >= buffer.length) {
-            return fetchLog(offset, -1)
-                    .map(sliceOffsetPair -> {
-                        if (sliceOffsetPair.getValue() == -1L) {
-                            return -1;
-                        }
+            Pair<String, Long> sliceOffsetPair = fetchLog(offset, -1);
 
-                        buffer = sliceOffsetPair.getKey().getBytes();
-                        bufferPos = 0;
-                        offset = sliceOffsetPair.getValue() + sliceOffsetPair.getKey().length();
+            if (sliceOffsetPair == null) {
+                return 0;
+            }
 
-                        return buffer.length;
-                    }).orElseGet(() -> {
-                        return 0;
-                    });
+            if (sliceOffsetPair.getValue() == -1L) {
+                return -1;
+            }
+
+            buffer = sliceOffsetPair.getKey().getBytes();
+            bufferPos = 0;
+            offset = sliceOffsetPair.getValue() + sliceOffsetPair.getKey().length();
+
+            return buffer.length;
         } else {
             return buffer.length - bufferPos;
         }
-    }
-
-    void setLogUrl(@Nullable String logUrl) {
-        this.logUrl = logUrl;
-    }
-
-    public Optional<String> getLogUrl() {
-        return Optional.ofNullable(logUrl);
     }
 
     public String getLogType() {

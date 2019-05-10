@@ -61,15 +61,14 @@ public final class HdiClusterDetail implements ClusterDetail, HdiCluster, Cluste
         return this.isGatewayRestAuthCredentialEnabled;
     }
 
-    @Nullable
-    public String getHttpUserName() {
+    public @Nullable String getHttpUserName() {
         return this.isGatewayRestAuthCredentialEnabled
                 ? this.gatewayConf.get(GatewayRestAuthCredentialConfigKey.USERNAME.getKey())
                 : null;
     }
 
-    @Nullable
-    public String getHttpPassword() {
+
+    public @Nullable String getHttpPassword() {
         return this.isGatewayRestAuthCredentialEnabled
                 ? this.gatewayConf.get(GatewayRestAuthCredentialConfigKey.PASSWORD.getKey())
                 : null;

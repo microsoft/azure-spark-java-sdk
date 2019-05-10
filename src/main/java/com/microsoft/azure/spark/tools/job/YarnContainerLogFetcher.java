@@ -4,7 +4,7 @@
 package com.microsoft.azure.spark.tools.job;
 
 import com.microsoft.azure.spark.tools.clusters.YarnCluster;
-import com.microsoft.azure.spark.tools.legacyhttp.HttpResponse;
+import com.microsoft.azure.spark.tools.http.HttpResponse;
 import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
 import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import com.microsoft.azure.spark.tools.log.Logger;
@@ -67,8 +67,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
 
     private final URI yarnNMConnectUri;
     
-    @Nullable
-    private String currentLogUrl;
+    private @Nullable String currentLogUrl;
     private LogConversionMode logUriConversionMode = LogConversionMode.UNKNOWN;
     private final String applicationId;
     private final YarnCluster cluster;
@@ -87,12 +86,11 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
         return Observable.just(this.yarnNMConnectUri);
     }
 
-    @Nullable
-    private String getCurrentLogUrl() {
+    private @Nullable String getCurrentLogUrl() {
         return this.currentLogUrl;
     }
 
-    private void setCurrentLogUrl(@Nullable final String currentLogUrl) {
+    private void setCurrentLogUrl(final @Nullable String currentLogUrl) {
         this.currentLogUrl = currentLogUrl;
     }
 
@@ -125,8 +123,10 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
                                     .max((o1, o2) -> Integer.compare(o1.getId(), o2.getId())));
                 }
 
+                String body = httpResponse.getMessage();
+
                 return currentAttempt.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
-                        + getYarnAppAttemptsURI + ", response " + httpResponse.getMessage()));
+                        + getYarnAppAttemptsURI + ", response " + body));
             } catch (IOException e) {
                 throw propagate(e);
             }
@@ -148,8 +148,10 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
                             .map(AppResponse::getApp);
                 }
 
+                String body = httpResponse.getMessage();
+
                 return appResponse.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
-                        + getYarnClusterAppURI + ", response " + httpResponse.getMessage()));
+                        + getYarnClusterAppURI + ", response " + body));
             } catch (IOException e) {
                 throw propagate(e);
             }
@@ -266,16 +268,18 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
 
                     String logGot = this.getInformationFromYarnLogDom(probedLogUrl, type, offset, size);
 
-                    return StringUtils.isEmpty(logGot)
-                            ? getSparkJobYarnApplication()
-                                    .flatMap(app -> {
-                                        if (isLogFetchable(app.getState())) {
-                                            return Observable.empty();
-                                        } else {
-                                            return Observable.just(Pair.of("", -1L));
-                                        }
-                                    })
-                            : Observable.just(Pair.of(logGot, offset));
+                    if (StringUtils.isEmpty(logGot)) {
+                        return getSparkJobYarnApplication()
+                                .flatMap(app -> {
+                                    if (isLogFetchable(app.getState())) {
+                                        return Observable.empty();
+                                    } else {
+                                        return Observable.just(Pair.of("", -1L));
+                                    }
+                                });
+                    } else {
+                        return Observable.just(Pair.of(logGot, offset));
+                    }
                 });
     }
 
@@ -321,7 +325,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
      * @param driverHttpAddress the host:port combination string to parse
      * @return the host got, otherwise null
      */
-    String parseAmHostHttpAddressHost(@Nullable final String driverHttpAddress) {
+    @Nullable String parseAmHostHttpAddressHost(final @Nullable String driverHttpAddress) {
         if (driverHttpAddress == null) {
             return null;
         } else {

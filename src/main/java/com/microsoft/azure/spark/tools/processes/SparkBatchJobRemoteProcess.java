@@ -11,6 +11,7 @@ import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmittedEvent;
 import com.microsoft.azure.spark.tools.job.SparkBatchJob;
 import com.microsoft.azure.spark.tools.job.SparkLogFetcher;
 import com.microsoft.azure.spark.tools.log.Logger;
+import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
 import com.microsoft.azure.spark.tools.ux.IdeSchedulers;
 import org.apache.commons.io.output.NullOutputStream;
@@ -21,7 +22,6 @@ import rx.subjects.PublishSubject;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Optional;
 
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
 
@@ -33,8 +33,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     private final PublishSubject<Pair<MessageInfoType, String>> ctrlSubject;
     private SparkJobLogInputStream jobStdoutLogInputSteam;
     private SparkJobLogInputStream jobStderrLogInputSteam;
-    @Nullable
-    private Subscription jobSubscription;
+    private LaterInit<Subscription> jobSubscription = new LaterInit<>();
     private final SparkBatchJob sparkJob;
     private final PublishSubject<SparkBatchJobSubmissionEvent> eventSubject = PublishSubject.create();
     private boolean isDestroyed = false;
@@ -107,14 +106,10 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         return sparkJob;
     }
 
-    public Optional<Subscription> getJobSubscription() {
-        return Optional.ofNullable(jobSubscription);
-    }
-
     public void start() {
         // Build, deploy and wait for the job done.
         // jobSubscription = prepareArtifact()
-        jobSubscription = Observable.just(sparkJob)
+        jobSubscription.set(Observable.just(sparkJob)
                 .flatMap(this::submitJob)
                 .flatMap(this::awaitForJobStarted)
                 .flatMap(this::attachInputStreams)
@@ -147,7 +142,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                         },
                         () -> {
                             disconnect();
-                        });
+                        }));
     }
 
     private Observable<? extends SparkBatchJob> awaitForJobStarted(final SparkBatchJob job) {
@@ -175,7 +170,9 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         this.ctrlSubject.onCompleted();
         this.eventSubject.onCompleted();
 
-        this.getJobSubscription().ifPresent(Subscription::unsubscribe);
+        if (this.jobSubscription.isInitialized()) {
+            this.jobSubscription.get().unsubscribe();
+        }
     }
 
     protected void ctrlInfo(final String message) {
