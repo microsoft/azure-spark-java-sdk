@@ -9,17 +9,21 @@ import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmissionEvent;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmittedEvent;
 import com.microsoft.azure.spark.tools.job.SparkBatchJob;
+import com.microsoft.azure.spark.tools.job.SparkBatchJobFactory;
 import com.microsoft.azure.spark.tools.job.SparkLogFetcher;
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
+import com.microsoft.azure.spark.tools.ux.ConsoleScheduler;
 import com.microsoft.azure.spark.tools.ux.IdeSchedulers;
 import org.apache.commons.io.output.NullOutputStream;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
+import rx.Observer;
 import rx.Subscription;
 import rx.subjects.PublishSubject;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -28,9 +32,9 @@ import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
 
 public class SparkBatchJobRemoteProcess extends Process implements Logger {
     private IdeSchedulers schedulers;
-    private String artifactPath;
+    private @Nullable File artifactPath;
     private final String title;
-    private final PublishSubject<Pair<MessageInfoType, String>> ctrlSubject;
+    private final Observer<Pair<MessageInfoType, String>> ctrlSubject;
     private SparkJobLogInputStream jobStdoutLogInputSteam;
     private SparkJobLogInputStream jobStderrLogInputSteam;
     private LaterInit<Subscription> jobSubscription = new LaterInit<>();
@@ -42,12 +46,12 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
 
     public SparkBatchJobRemoteProcess(final IdeSchedulers schedulers,
                                       final SparkBatchJob sparkJob,
-                                      final String artifactPath,
+                                      final @Nullable File artifactToUpload,
                                       final String title,
-                                      final PublishSubject<Pair<MessageInfoType, String>> ctrlSubject) {
+                                      final Observer<Pair<MessageInfoType, String>> ctrlSubject) {
         this.schedulers = schedulers;
         this.sparkJob = sparkJob;
-        this.artifactPath = artifactPath;
+        this.artifactPath = artifactToUpload;
         this.title = title;
         this.ctrlSubject = ctrlSubject;
 
@@ -108,8 +112,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
 
     public void start() {
         // Build, deploy and wait for the job done.
-        // jobSubscription = prepareArtifact()
-        jobSubscription.set(Observable.just(sparkJob)
+        jobSubscription.set(prepareArtifact()
                 .flatMap(this::submitJob)
                 .flatMap(this::awaitForJobStarted)
                 .flatMap(this::attachInputStreams)
@@ -199,14 +202,20 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
 
     // Build and deploy artifact
     protected Observable<? extends SparkBatchJob> prepareArtifact() {
-        return getSparkJob()
-                .deploy(artifactPath)
-                .onErrorResumeNext(err -> {
-                    Throwable rootCause = err.getCause() != null ? err.getCause() : err;
-                    return Observable.error(new SparkJobUploadArtifactException(
-                            "Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
-                })
-                .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
+        File artifactToUpload = this.artifactPath;
+
+        if (artifactToUpload != null) {
+            return getSparkJob()
+                    .deploy(artifactToUpload)
+                    .onErrorResumeNext(err -> {
+                        Throwable rootCause = err.getCause() != null ? err.getCause() : err;
+                        return Observable.error(new SparkJobUploadArtifactException(
+                                "Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
+                    })
+                    .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
+        }
+
+        return Observable.just(getSparkJob());
     }
 
     protected Observable<? extends SparkBatchJob> submitJob(final SparkBatchJob batchJob) {
@@ -242,11 +251,42 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                         .map(any -> jobStateDiagnosticsPair));
     }
 
-    public PublishSubject<Pair<MessageInfoType, String>> getCtrlSubject() {
+    public Observer<Pair<MessageInfoType, String>> getCtrlSubject() {
         return ctrlSubject;
     }
 
     public boolean isDestroyed() {
         return isDestroyed;
+    }
+
+    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory) {
+        return create(sparkBatchJobFactory, (File) null);
+    }
+
+    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory,
+                                                    final @Nullable File artifactToUpload) {
+        return create(sparkBatchJobFactory, artifactToUpload, null);
+    }
+
+    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory,
+                                      final @Nullable Observer<Pair<MessageInfoType, String>> ctrlSubject) {
+        return create(sparkBatchJobFactory, null, ctrlSubject);
+    }
+
+    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory,
+                                      final @Nullable File artifactToUpload,
+                                      final @Nullable Observer<Pair<MessageInfoType, String>> ctrlSubject) {
+        SparkBatchJob sparkBatch = sparkBatchJobFactory.factory();
+        String title = "Spark remote batch process: " + sparkBatch.getName();
+        Observer<Pair<MessageInfoType, String>> subject = ctrlSubject != null
+                ? ctrlSubject
+                : sparkBatch.getCtrlSubject();
+
+        return new SparkBatchJobRemoteProcess(
+                new ConsoleScheduler(),
+                sparkBatch,
+                artifactToUpload,
+                title,
+                subject);
     }
 }

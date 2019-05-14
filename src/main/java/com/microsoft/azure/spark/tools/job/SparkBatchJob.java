@@ -8,9 +8,12 @@ import com.microsoft.azure.spark.tools.utils.Pair;
 import rx.Observable;
 import rx.Observer;
 
+import java.io.File;
 import java.net.URI;
 
 public interface SparkBatchJob {
+    String getName();
+
     /**
      * Getter of the base connection URI for HDInsight Spark Job service.
      *
@@ -110,7 +113,7 @@ public interface SparkBatchJob {
      * @return ISparkBatchJob observable
      *         Observable Error: IOException;
      */
-    Observable<? extends SparkBatchJob> deploy(String artifactPath);
+    Observable<? extends SparkBatchJob> deploy(final File artifactPath);
 
     /**
      * Create a batch Spark job and submit the job into cluster.

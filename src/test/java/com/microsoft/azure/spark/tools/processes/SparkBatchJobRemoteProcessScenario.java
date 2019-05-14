@@ -4,16 +4,13 @@
 package com.microsoft.azure.spark.tools.processes;
 
 import com.microsoft.azure.spark.tools.clusters.HdiCluster;
-import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
-import com.microsoft.azure.spark.tools.job.HdiSparkBatch;
+import com.microsoft.azure.spark.tools.job.HdiSparkBatchFactory;
 import com.microsoft.azure.spark.tools.job.PostBatchesHelper;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.utils.LogMonitor;
 import com.microsoft.azure.spark.tools.utils.MockHttpRecordingArgs;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
-import com.microsoft.azure.spark.tools.utils.Pair;
-import com.microsoft.azure.spark.tools.ux.IdeSchedulers;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -24,9 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
-import rx.Scheduler;
-import rx.schedulers.Schedulers;
-import rx.subjects.PublishSubject;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,7 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @CommandLine.Command(
         description = "Record class SparkBatchJobRemoteProcess all requests and response for testing.",
@@ -96,57 +91,11 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
             }
         };
 
-        PublishSubject<Pair<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
-        ctrlSubject.subscribe(
-                typedMessage -> {
-                    switch (typedMessage.getKey()) {
-                        case Error:
-                            System.err.println(typedMessage.getValue());
-                            fail(typedMessage.getValue());
-                            break;
-                        case Info:
-                        case Log:
-                        case Warning:
-                            System.out.println(typedMessage.getValue());
-                            break;
-                        case Hyperlink:
-                        case HyperlinkWithText:
-                            break;
-                    }
-                },
-                err -> {
-                    System.err.println("Got error: " + err);
-                    throw new RuntimeException(err);
-                }
-        );
+        AmbariHttpObservable http = recordingArgs.getUsername() != null
+                ? new AmbariHttpObservable(recordingArgs.getUsername(), recordingArgs.getPassword())
+                : new AmbariHttpObservable();
 
-        AmbariHttpObservable http;
-        if (recordingArgs.getUsername() != null) {
-            http = new AmbariHttpObservable(recordingArgs.getUsername(), recordingArgs.getPassword());
-        } else {
-            http = new AmbariHttpObservable();
-        }
-
-        IdeSchedulers cliScheduler = new IdeSchedulers() {
-            @Override
-            public Scheduler processBarVisibleAsync(String title) {
-                return Schedulers.trampoline();
-            }
-
-            @Override
-            public Scheduler processBarVisibleSync(String title) {
-                return null;
-            }
-
-            @Override
-            public Scheduler dispatchUIThread() {
-                return null;
-            }
-        };
-
-        HdiSparkBatch job = new HdiSparkBatch(cluster, batchParam, http, ctrlSubject);
-        return new SparkBatchJobRemoteProcess(
-                cliScheduler, job, "/", "Submit Spark Application", ctrlSubject);
+        return SparkBatchJobRemoteProcess.create(new HdiSparkBatchFactory(cluster, batchParam, http));
     }
 
     // Main function for recording mode

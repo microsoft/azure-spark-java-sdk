@@ -25,6 +25,7 @@ import rx.Emitter;
 import rx.Observable;
 import rx.Observer;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -96,6 +97,13 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         this.http = http;
         this.ctrlSubject = ctrlSubject;
         this.destinationRootPath = destinationRootPath;
+    }
+
+    @Override
+    public String getName() {
+        String name = submissionParameter.getName();
+
+        return name != null ? name : submissionParameter.getClassName();
     }
 
     /**
@@ -254,7 +262,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      * @return the observable error since not support deploy yet
      */
     @Override
-    public Observable<? extends SparkBatchJob> deploy(final String artifactPath) {
+    public Observable<? extends SparkBatchJob> deploy(final File artifactPath) {
         return Observable.error(new UnsupportedOperationException());
     }
 

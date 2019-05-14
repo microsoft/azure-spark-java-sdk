@@ -484,7 +484,7 @@ public class PostBatches implements Convertible {
     }
 
     @JsonProperty("className")
-    public @Nullable String getClassName() {
+    public String getClassName() {
         return className;
     }
 
