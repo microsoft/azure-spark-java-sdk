@@ -4,9 +4,10 @@
 package com.microsoft.azure.spark.tools.job;
 
 import com.microsoft.azure.spark.tools.clusters.YarnCluster;
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmissionMock;
+import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
+import com.microsoft.azure.spark.tools.http.HttpObservable;
+import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
@@ -20,16 +21,17 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class YarnContainerLogFetcherScenario {
-    private SparkBatchSubmission submissionMock;
+    private HttpObservable httpMock;
+    private LaterInit<Integer> batchIdMock;
     private Throwable caught;
     private MockHttpService httpServerMock;
     private YarnCluster yarnClusterMock;
-    private YarnContainerLogFetcher yarnDriverLogMock;
+    private YarnContainerLogFetcher yarnDriverLogFetcherMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(YarnContainerLogFetcher.class);
 
     @Before
     public void setUp() throws Throwable {
-        submissionMock = SparkBatchSubmissionMock.create();
+        httpMock = new AmbariHttpObservable();
         caught = null;
         this.httpServerMock = MockHttpService.create();
     }
@@ -48,35 +50,35 @@ public class YarnContainerLogFetcherScenario {
 
     @Given("^create a yarn application driver with id (.+)$")
     public void createAYarnApplicationDriverWithId(String appIdMock) {
-        yarnDriverLogMock = new YarnContainerLogFetcher(appIdMock, yarnClusterMock, submissionMock);
+        yarnDriverLogFetcherMock = new YarnContainerLogFetcher(appIdMock, yarnClusterMock, httpMock);
     }
 
     @Then("^Parsing driver HTTP address '(.+)' should get host '(.+)'$")
     public void checkParsingDriverHTTPAddressHost(
             String httpAddress,
             String expectedHost) {
-        assertEquals(expectedHost, yarnDriverLogMock.parseAmHostHttpAddressHost(httpAddress));
+        assertEquals(expectedHost, yarnDriverLogFetcherMock.parseAmHostHttpAddressHost(httpAddress));
     }
 
     @Then("^Parsing driver HTTP address '(.+)' should be null$")
     public void checkParsingDriverHTTPAddressHostFailure(String httpAddress) {
-        assertNull(yarnDriverLogMock.parseAmHostHttpAddressHost(httpAddress));
+        assertNull(yarnDriverLogFetcherMock.parseAmHostHttpAddressHost(httpAddress));
     }
 
     @Then("^getting Spark driver host should be '(.+)'$")
     public void checkGetSparkDriverHost(String expectedHost) {
         try {
-            assertEquals(expectedHost, yarnDriverLogMock.getDriverHost().toBlocking().single());
+            assertEquals(expectedHost, yarnDriverLogFetcherMock.getDriverHost().toBlocking().single());
         } catch (Exception e) {
             caught = e.getCause();
-            assertEquals(expectedHost, "__exception_got__");
+            assertEquals("Shouldn't get " + e, expectedHost, "__exception_got__");
         }
     }
 
     @Then("^getting current Yarn App attempt should be '(.+)'$")
     public void checkGetCurrentYarnAppAttemptResult(String appAttemptLogsUrlExpect) {
-        URI appAttemptLogsLink = yarnDriverLogMock
-                .getSparkJobYarnCurrentAppAttemptLogsLink(yarnDriverLogMock.getApplicationId())
+        URI appAttemptLogsLink = yarnDriverLogFetcherMock
+                .getSparkJobYarnCurrentAppAttemptLogsLink()
                 .toBlocking()
                 .first();
 
@@ -85,14 +87,14 @@ public class YarnContainerLogFetcherScenario {
 
     @Then("^getting Spark Job driver log URL Observable should be '(.+)'$")
     public void checkSparkJobDriverLogURLObservable(String expect) {
-        URI url = yarnDriverLogMock.getSparkJobDriverLogUrlObservable().toBlocking().last();
+        URI url = yarnDriverLogFetcherMock.getSparkJobDriverLogUrl().toBlocking().last();
 
         assertEquals(httpServerMock.normalizeResponse(expect), url.toString());
     }
 
     @Then("^getting Spark Job driver log URL Observable should be empty$")
     public void gettingSparkJobDriverLogURLObservableShouldBeEmpty() throws Throwable {
-        assertTrue(yarnDriverLogMock.getSparkJobDriverLogUrlObservable().isEmpty().toBlocking().last());
+        assertTrue(yarnDriverLogFetcherMock.getSparkJobDriverLogUrl().isEmpty().toBlocking().last());
     }
 
     @After

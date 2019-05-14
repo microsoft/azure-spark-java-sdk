@@ -3,17 +3,16 @@
 
 package com.microsoft.azure.spark.tools.http;
 
-import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
 import com.microsoft.azure.spark.tools.log.Logger;
+import com.microsoft.azure.spark.tools.utils.JsonConverter;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -29,7 +28,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -43,6 +41,7 @@ import rx.exceptions.Exceptions;
 
 import java.io.IOException;
 import java.net.UnknownServiceException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class HttpObservable implements Logger {
      * @param password Basic authentication password
      */
     public HttpObservable(final @Nullable String username, final @Nullable String password) {
-        this.defaultHeaders = new HeaderGroup();
+        HeaderGroup headerGroup = new HeaderGroup();
 
 //        String loadingClass = this.getClass().getClassLoader().getClass().getName().toLowerCase();
 //        this.userAgentPrefix = loadingClass.contains("intellij")
@@ -97,10 +96,9 @@ public class HttpObservable implements Logger {
         this.userAgent = userAgentPrefix;
 
         // set default headers
-        this.defaultHeaders.setHeaders(new Header[] {
+        headerGroup.setHeaders(new Header[] {
                 new BasicHeader("Content-Type", "application/json"),
                 new BasicHeader("User-Agent", userAgent),
-                new BasicHeader("X-Requested-By", "ambari")
         });
 
         this.cookieStore = new BasicCookieStore();
@@ -122,14 +120,14 @@ public class HttpObservable implements Logger {
                 .setDefaultRequestConfig(this.defaultRequestConfig);
 
         if (StringUtils.isNotBlank(username) && password != null) {
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(
-                    new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
-
-            clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+            headerGroup.addHeader(
+                    new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuth)));
         }
 
         this.httpClient = clientBuilder.build();
+        this.defaultHeaders = headerGroup;
     }
 
     /*
@@ -172,26 +170,26 @@ public class HttpObservable implements Logger {
 
 
     public @Nullable Header[] getDefaultHeaders() throws IOException {
-        return defaultHeaders.getAllHeaders();
+        return getDefaultHeaderGroup().getAllHeaders();
     }
 
-    public HttpObservable setDefaultHeader(final @Nullable Header defaultHeader) {
-        this.defaultHeaders.updateHeader(defaultHeader);
-        return this;
-    }
+//    public HttpObservable setDefaultHeader(final @Nullable Header defaultHeader) {
+//        this.getDefaultHeaderGroup().updateHeader(defaultHeader);
+//        return this;
+//    }
 
     public HeaderGroup getDefaultHeaderGroup()  {
         return defaultHeaders;
     }
 
-    public HttpObservable setDefaultHeaderGroup(final @Nullable HeaderGroup defaultHeaderGroup) {
-        this.defaultHeaders.setHeaders(defaultHeaderGroup == null ? null : defaultHeaderGroup.getAllHeaders());
-
-        return this;
-    }
+//  public HttpObservable setDefaultHeaderGroup(final @Nullable HeaderGroup defaultHeaderGroup) {
+//      this.getDefaultHeaderGroup().setHeaders(defaultHeaderGroup == null ? null : defaultHeaderGroup.getAllHeaders());
+//
+//      return this;
+//  }
 
     public HttpObservable setContentType(final String type) {
-        this.defaultHeaders.updateHeader(new BasicHeader("Content-Type", type));
+        this.getDefaultHeaderGroup().updateHeader(new BasicHeader("Content-Type", type));
         return this;
     }
 
@@ -204,12 +202,12 @@ public class HttpObservable implements Logger {
         return userAgent;
     }
 
-    public HttpObservable setUserAgent(final @Nullable String ua) {
-        this.userAgent = ua;
-
-        // Update the default headers
-        return setDefaultHeader(new BasicHeader("User-Agent", ua));
-    }
+//    public HttpObservable setUserAgent(final @Nullable String ua) {
+//        this.userAgent = ua;
+//
+//        // Update the default headers
+//        return setDefaultHeader(new BasicHeader("User-Agent", ua));
+//    }
 
 
     public List<NameValuePair> getDefaultParameters() {
@@ -306,9 +304,12 @@ public class HttpObservable implements Logger {
     public <T> T convertJsonResponseToObject(final HttpResponse resp, final Class<T> clazz) {
         try {
             String body = resp.getMessage();
-            return ObjectConvertUtils.convertJsonToObject(body, clazz)
-                    .orElseThrow(() -> propagate(
-                            new UnknownServiceException("Unknown HTTP server response: " + body)));
+            T obj = JsonConverter.of(clazz).parseFrom(body);
+            if (obj == null) {
+                throw new UnknownServiceException("Unknown HTTP server response: " + body);
+            }
+
+            return obj;
         } catch (IOException e) {
             throw propagate(e);
         }

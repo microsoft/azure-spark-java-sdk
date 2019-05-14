@@ -38,13 +38,16 @@ public class SparkJobLogInputStream extends InputStream {
 
     private synchronized @Nullable Pair<String, Long> fetchLog(final long logOffset, final int fetchSize) {
         try {
-            return getAttachedLogFetcher()
-                    .fetch(getLogType(), logOffset, fetchSize)
-                    .toBlocking()
-                    .first();
+            if (sparkLogFetcher.isInitialized()) {
+                return getAttachedLogFetcher()
+                        .fetch(getLogType(), logOffset, fetchSize)
+                        .toBlocking()
+                        .first();
+            }
         } catch (NoSuchElementException ignored) {
-            return null;
         }
+
+        return null;
     }
 
     public SparkLogFetcher getAttachedLogFetcher() {

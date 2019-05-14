@@ -5,9 +5,9 @@ package com.microsoft.azure.spark.tools.processes;
 
 import com.microsoft.azure.spark.tools.clusters.HdiCluster;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
+import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
 import com.microsoft.azure.spark.tools.job.HdiSparkBatch;
 import com.microsoft.azure.spark.tools.job.PostBatchesHelper;
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.utils.LogMonitor;
 import com.microsoft.azure.spark.tools.utils.MockHttpRecordingArgs;
@@ -120,9 +120,11 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
                 }
         );
 
-        SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
+        AmbariHttpObservable http;
         if (recordingArgs.getUsername() != null) {
-            submission.setUsernamePasswordCredential(recordingArgs.getUsername(), recordingArgs.getPassword());
+            http = new AmbariHttpObservable(recordingArgs.getUsername(), recordingArgs.getPassword());
+        } else {
+            http = new AmbariHttpObservable();
         }
 
         IdeSchedulers cliScheduler = new IdeSchedulers() {
@@ -142,7 +144,7 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
             }
         };
 
-        HdiSparkBatch job = new HdiSparkBatch(cluster, batchParam, submission, ctrlSubject);
+        HdiSparkBatch job = new HdiSparkBatch(cluster, batchParam, http, ctrlSubject);
         return new SparkBatchJobRemoteProcess(
                 cliScheduler, job, "/", "Submit Spark Application", ctrlSubject);
     }
@@ -159,6 +161,9 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
 
     @Option(names = "--log", description = "Output the logs captured")
     private boolean doesPrintLog;
+
+    @Option(names = "--dry-run", description = "Dry run without saving response")
+    private boolean isDryRun;
 
     private PostBatches createSubmitParamFromArgs() {
         PostBatches.Options batchParamOptions = new PostBatches.Options()
@@ -177,12 +182,14 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
         assertNotNull(scenario.artifactUri);
 
         MockHttpService recordingProxyService = MockHttpService.createForRecord(
-                SparkBatchJobRemoteProcessScenario.class.getName(), scenario.recordingArgs.getTargetUrl().toString());
+                SparkBatchJobRemoteProcessScenario.class.getName(),
+                scenario.recordingArgs.getTargetUrl().toString(),
+                !scenario.isDryRun);
         SparkBatchJobRemoteProcess sparkJobRemoteProcess = scenario.createSparkJobRemoteProcess(
                 recordingProxyService, scenario.createSubmitParamFromArgs());
         sparkJobRemoteProcess.start();
-        System.out.println("========= stdout =========");
         String stdout = IOUtils.toString(sparkJobRemoteProcess.getInputStream(), StandardCharsets.UTF_8);
+        System.out.println("========= stdout =========");
         System.out.print(stdout);
 
         System.out.println("========= stderr =========");

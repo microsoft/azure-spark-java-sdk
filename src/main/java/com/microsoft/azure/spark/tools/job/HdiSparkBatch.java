@@ -5,31 +5,35 @@ package com.microsoft.azure.spark.tools.job;
 
 import com.microsoft.azure.spark.tools.clusters.HdiCluster;
 import com.microsoft.azure.spark.tools.clusters.YarnCluster;
+import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.utils.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
 import rx.Observer;
+import rx.functions.Action1;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher {
     private final LaterInit<SparkLogFetcher> driverLogFetcherDelegate = new LaterInit<>();
 
     public HdiSparkBatch(final HdiCluster cluster,
                          final PostBatches submissionParameter,
-                         final SparkBatchSubmission sparkBatchSubmission,
+                         final HttpObservable httpObservable,
                          final Observer<Pair<MessageInfoType, String>> ctrlSubject,
                          final @Nullable String destinationRootPath) {
-        super(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, destinationRootPath);
+        super(cluster, submissionParameter, httpObservable, ctrlSubject, destinationRootPath);
     }
 
     public HdiSparkBatch(final HdiCluster cluster,
                          final PostBatches submissionParameter,
-                         final SparkBatchSubmission sparkBatchSubmission,
+                         final HttpObservable httpObservable,
                          final Observer<Pair<MessageInfoType, String>> ctrlSubject) {
-        super(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject);
+        super(cluster, submissionParameter, httpObservable, ctrlSubject);
     }
 
     @Override
@@ -41,19 +45,27 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher {
                 .flatMap(delegate -> delegate.fetch(type, logOffset, size));
     }
 
-    LaterInit<SparkLogFetcher> getDriverLogFetcherDelegate() {
+    private LaterInit<SparkLogFetcher> getDriverLogFetcherDelegate() {
         return driverLogFetcherDelegate;
     }
 
     @Override
     public Observable<String> awaitStarted() {
         return super.awaitStarted()
-                .flatMap(state -> super.getSparkJobApplicationIdObservable()
-                        .doOnNext(appId -> {
-                            YarnContainerLogFetcher driverContainerLogFetcher = new YarnContainerLogFetcher(
-                                    appId, (YarnCluster) getCluster(), getSubmission());
+                .flatMap(state -> super.getSparkJobApplicationId()
+                        .repeatWhen(repeat -> repeat.delay(getDelaySeconds(), TimeUnit.SECONDS))
+                        .takeUntil(Objects::nonNull)
+                        .filter(Objects::nonNull)
+                        .doOnNext(new Action1<String>() { // Anonymous function to avoid Nullness check error
+                            @Override
+                            public void call(final String appId) {
+                                YarnContainerLogFetcher driverContainerLogFetcher = new YarnContainerLogFetcher(
+                                        appId,
+                                        (YarnCluster) HdiSparkBatch.this.getCluster(),
+                                        HdiSparkBatch.this.getHttp());
 
-                            driverLogFetcherDelegate.setIfNull(driverContainerLogFetcher);
+                                driverLogFetcherDelegate.setIfNull(driverContainerLogFetcher);
+                            }
                         })
                 );
     }

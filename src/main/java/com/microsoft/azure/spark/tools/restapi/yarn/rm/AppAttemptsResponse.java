@@ -16,8 +16,4 @@ public class AppAttemptsResponse {
     public AppAttempts getAppAttempts() {
         return appAttempts;
     }
-
-    public void setAppAttempts(AppAttempts appAttempts) {
-        this.appAttempts = appAttempts;
-    }
 }

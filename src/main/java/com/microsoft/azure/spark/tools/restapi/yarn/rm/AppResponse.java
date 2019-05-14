@@ -14,9 +14,5 @@ public class AppResponse implements Convertible {
         return app;
     }
 
-    public void setApp(App app) {
-        this.app = app;
-    }
-
     public static final AppResponse EMPTY = new AppResponse();
 }

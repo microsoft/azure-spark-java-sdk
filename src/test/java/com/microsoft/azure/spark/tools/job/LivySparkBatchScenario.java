@@ -3,8 +3,9 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmissionMock;
+import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
+import com.microsoft.azure.spark.tools.http.HttpObservable;
+import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
@@ -24,7 +25,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class LivySparkBatchScenario {
-    private SparkBatchSubmission submissionMock;
+    private HttpObservable httpMock;
+    private LaterInit<Integer> batchIdMock;
     private Throwable caught;
     private MockHttpService httpServerMock;
     private LivySparkBatch jobMock;
@@ -32,10 +34,12 @@ public class LivySparkBatchScenario {
 
     @Before
     public void setUp() throws Throwable {
-        submissionMock = SparkBatchSubmissionMock.create();
+        httpMock = new AmbariHttpObservable();
+        batchIdMock = new LaterInit<>();
 
         jobMock = mock(LivySparkBatch.class, CALLS_REAL_METHODS);
-        when(jobMock.getSubmission()).thenReturn(submissionMock);
+        when(jobMock.getHttp()).thenReturn(httpMock);
+        when(jobMock.getLaterBatchId()).thenReturn(batchIdMock);
 
         caught = null;
 
@@ -65,7 +69,7 @@ public class LivySparkBatchScenario {
             String expectedApplicationId) throws Throwable {
         caught = null;
         try {
-            assertEquals(expectedApplicationId, jobMock.getSparkJobApplicationIdObservable().toBlocking().first());
+            assertEquals(expectedApplicationId, jobMock.getSparkJobApplicationId().toBlocking().first());
         } catch (Exception e) {
             caught = e;
             assertEquals(expectedApplicationId, "__exception_got__" + e);
@@ -80,15 +84,15 @@ public class LivySparkBatchScenario {
         when(jobMock.getRetriesMax()).thenReturn(3);
 
         try {
-            jobMock.getSparkJobApplicationIdObservable().retry(expectedRetriedCount - 1).toBlocking().first();
+            jobMock.getSparkJobApplicationId().retry(expectedRetriedCount - 1).toBlocking().first();
         } catch (Exception ignore) { }
 
         verify(expectedRetriedCount, getRequestedFor(urlEqualTo(getUrl)));
     }
 
-    @And("^mock method getSparkJobApplicationIdObservable to return '(.+)' Observable$")
+    @And("^mock method getSparkJobApplicationId to return '(.+)' Observable$")
     public void mockMethodGetSparkJobApplicationIdObservable(String appIdMock) {
-        when(jobMock.getSparkJobApplicationIdObservable()).thenReturn(Observable.just(appIdMock));
+        when(jobMock.getSparkJobApplicationId()).thenReturn(Observable.just(appIdMock));
     }
 
     @And("^mock Spark job connect URI to be '(.+)'$")

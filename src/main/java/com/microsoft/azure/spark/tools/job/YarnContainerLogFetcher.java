@@ -4,9 +4,7 @@
 package com.microsoft.azure.spark.tools.job;
 
 import com.microsoft.azure.spark.tools.clusters.YarnCluster;
-import com.microsoft.azure.spark.tools.http.HttpResponse;
-import com.microsoft.azure.spark.tools.legacyhttp.ObjectConvertUtils;
-import com.microsoft.azure.spark.tools.legacyhttp.SparkBatchSubmission;
+import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.App;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttempt;
@@ -14,6 +12,9 @@ import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.spark.tools.restapi.yarn.rm.AppResponse;
 import com.microsoft.azure.spark.tools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.message.BasicNameValuePair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -44,6 +45,8 @@ import static rx.exceptions.Exceptions.propagate;
  * The class is to support fetching Spark Driver log from Yarn application UI.
  */
 public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
+    private final HttpObservable http;
+
     /**
      * A {LogConversionMode} is a type of enum to present Yarn log UI URI combining ways.
      */
@@ -71,19 +74,18 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
     private LogConversionMode logUriConversionMode = LogConversionMode.UNKNOWN;
     private final String applicationId;
     private final YarnCluster cluster;
-    private final SparkBatchSubmission submission;
 
     public YarnContainerLogFetcher(final String applicationId,
                                    final YarnCluster cluster,
-                                   final SparkBatchSubmission submission) {
+                                   final HttpObservable http) {
         this.applicationId = applicationId;
         this.cluster = cluster;
-        this.submission = submission;
+        this.http = http;
         this.yarnNMConnectUri = URI.create(this.cluster.getYarnNMConnectionUrl());
     }
 
-    public Observable<URI> getYarnNMConnectUri() {
-        return Observable.just(this.yarnNMConnectUri);
+    public URI getYarnNMConnectUri() {
+        return this.yarnNMConnectUri;
     }
 
     private @Nullable String getCurrentLogUrl() {
@@ -105,61 +107,15 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
     /**
      * Get the current Spark job Yarn application attempt log URI Observable.
      */
-    Observable<URI> getSparkJobYarnCurrentAppAttemptLogsLink(final String appId) {
-        return this.getYarnNMConnectUri().map(connectUri -> {
-            URI getYarnAppAttemptsURI = URI.create(connectUri.toString() + appId + "/appattempts");
-            try {
-                final HttpResponse httpResponse = YarnContainerLogFetcher.this.submission.getHttpResponseViaGet(
-                        getYarnAppAttemptsURI.toString());
-
-                Objects.requireNonNull(httpResponse, "httpResponse");
-                Optional<AppAttempt> currentAttempt = Optional.empty();
-
-                int httpResponseCode = httpResponse.getCode();
-                if (200 <= httpResponseCode && httpResponseCode <= 299) {
-                    currentAttempt =  ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(),
-                            AppAttemptsResponse.class)
-                            .flatMap(it -> it.getAppAttempts().appAttempt.stream()
-                                    .max((o1, o2) -> Integer.compare(o1.getId(), o2.getId())));
-                }
-
-                String body = httpResponse.getMessage();
-
-                return currentAttempt.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
-                        + getYarnAppAttemptsURI + ", response " + body));
-            } catch (IOException e) {
-                throw propagate(e);
-            }
-        }).map(it -> URI.create(it.getLogsLink()));
+    Observable<URI> getSparkJobYarnCurrentAppAttemptLogsLink() {
+        return this.getYarnApplicationAttemptsRequest()
+                .map(appAttempts -> appAttempts.stream().max((o1, o2) -> Integer.compare(o1.getId(), o2.getId())))
+                .flatMap(attemptOpt -> attemptOpt.map(it -> Observable.just(URI.create(it.getLogsLink())))
+                                                 .orElse(Observable.empty()));
     }
 
-    private Observable<App> getSparkJobYarnApplication() {
-        return this.getYarnNMConnectUri().map(connectUri -> {
-            URI getYarnClusterAppURI = URI.create(connectUri.toString() + this.getApplicationId());
-
-            try {
-                HttpResponse httpResponse = this.submission.getHttpResponseViaGet(getYarnClusterAppURI.toString());
-                Objects.requireNonNull(httpResponse, "httpResponse");
-                Optional<App> appResponse = Optional.empty();
-
-                int httpResponseCode = httpResponse.getCode();
-                if (200 <= httpResponseCode && httpResponseCode <= 299) {
-                    appResponse = ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(), AppResponse.class)
-                            .map(AppResponse::getApp);
-                }
-
-                String body = httpResponse.getMessage();
-
-                return appResponse.orElseThrow(() -> new UnknownServiceException("Bad response when getting from "
-                        + getYarnClusterAppURI + ", response " + body));
-            } catch (IOException e) {
-                throw propagate(e);
-            }
-        });
-    }
-
-    protected Observable<String> getJobLogAggregationDoneObservable() {
-        return this.getSparkJobYarnApplication()
+    protected Observable<String> getJobLogAggregationDone() {
+        return this.getYarnApplicationRequest()
                 .repeatWhen(ob -> ob.delay(2, TimeUnit.SECONDS))
                 .filter(Objects::nonNull)
                 .takeUntil(this::isYarnAppLogAggregationDone)
@@ -185,15 +141,16 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
     /**
      * Get the Spark job log URI observable from the container.
      */
-    Observable<URI> getSparkJobDriverLogUrlObservable() {
-        return this.getSparkJobYarnCurrentAppAttemptLogsLink(this.getApplicationId())
+    Observable<URI> getSparkJobDriverLogUrl() {
+        return this.getSparkJobYarnCurrentAppAttemptLogsLink()
                 .filter(uri -> StringUtils.isNotBlank(uri.getHost()))
                 .flatMap(this::convertToPublicLogUri);
     }
 
     private Observable<Boolean> isUriValid(final URI uriProbe) {
-        return Observable.fromCallable(() ->
-                this.submission.getHttpResponseViaGet(uriProbe.toString()).getCode() < 300);
+        return getHttp()
+                .request(new HttpGet(uriProbe), null, null, null)
+                .map(response -> response.getStatusLine().getStatusCode() < 300);
     }
 
     private Optional<URI> convertToPublicLogUri(final LogConversionMode mode, final URI internalLogUrl) {
@@ -251,7 +208,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
 
     @Override
     public Observable<Pair<String, Long>> fetch(final String type, final long logOffset, final int size) {
-        return this.getSparkJobDriverLogUrlObservable()
+        return this.getSparkJobDriverLogUrl()
                 .map(Object::toString)
                 .flatMap(logUrl -> {
                     long offset = logOffset;
@@ -269,7 +226,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
                     String logGot = this.getInformationFromYarnLogDom(probedLogUrl, type, offset, size);
 
                     if (StringUtils.isEmpty(logGot)) {
-                        return getSparkJobYarnApplication()
+                        return getYarnApplicationRequest()
                                 .flatMap(app -> {
                                     if (isLogFetchable(app.getState())) {
                                         return Observable.empty();
@@ -295,7 +252,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
     }
 
     public Observable<String> getDriverHost() {
-        return this.getSparkJobYarnApplication().map(yarnApp -> {
+        return this.getYarnApplicationRequest().map(yarnApp -> {
             if (yarnApp.isFinished()) {
                 throw propagate(new UnknownServiceException(
                         "The Livy job " + this.getApplicationId() + " on yarn is not running."));
@@ -342,69 +299,80 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
         URI url = URI.create(StringUtils.stripEnd(baseUrl, "/") + "/").resolve(
                 String.format("%s?start=%d", type, start) + (size <= 0 ? "" : String.format("&&end=%d", start + size)));
 
-        try {
-            HttpResponse response = submission.getHttpResponseViaGet(url.toString());
-            log().debug("Fetch log from " + url + ", got " + response.getCode() + " with " + response.getMessage());
-
-            Document doc = Jsoup.parse(response.getMessage());
-
-            Iterator<Element> iterator = Optional.ofNullable(doc.getElementById("navcell"))
-                    .map(Element::nextElementSibling)
-                    .map(Element::children)
-                    .map(ArrayList::iterator)
-                    .orElse(Collections.emptyIterator());
-
-            HashMap<String, String> logTypeMap = new HashMap<>();
-            final AtomicReference<String> logType = new AtomicReference<>();
-            String logs = "";
-
-            while (iterator.hasNext()) {
-                Element node = iterator.next();
-
-                if (StringUtils.equalsIgnoreCase(node.tagName(), "p")) {
-                    // In history server, need to read log type paragraph in page
-                    final Pattern logTypePattern = Pattern.compile("Log Type:\\s+(\\S+)");
-
-                    node.childNodes().stream()
-                            .findFirst()
-                            .map(Node::toString)
-                            .map(StringUtils::trim)
-                            .map(logTypePattern::matcher)
-                            .filter(Matcher::matches)
-                            .map(matcher -> matcher.group(1))
-                            .ifPresent(logType::set);
-                } else if (StringUtils.equalsIgnoreCase(node.tagName(), "pre")) {
-                    // In running, no log type paragraph in page
-                    logs = node.childNodes().stream()
-                            .findFirst()
-                            .map(Node::toString)
-                            .orElse("");
-
-                    if (logType.get() != null) {
-                        // Only get the first <pre>...</pre>
-                        logTypeMap.put(logType.get(), logs);
-
-                        logType.set(null);
-                    }
-                }
-            }
-
-            return logTypeMap.getOrDefault(type, logs);
-        } catch (IOException serviceError) {
-            // If the URL is wrong, will get 200 response with content:
-            //      Unable to locate 'xxx' log for container
-            //  OR
-            //      Logs not available for <user>. Aggregation may not be complete,
-            //      Check back later or try the nodemanager at...
-            //  OR
-            //      Cannot get container logs without ...
-            //
-            // if fetching Yarn log hits the gap between the job running and stop, will get the status 403
-            // the log is moving to job history server, just wait and retry.
-            log().warn("Can't parse information from YarnUI log page " + url, serviceError);
+        List<NameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("start", Long.toString(start)));
+        if (size > 0) {
+            params.add(new BasicNameValuePair("size", Long.toString(size)));
         }
 
-        return "";
+        String typedLogs = getHttp()
+                .requestWithHttpResponse(new HttpGet(url), null, params, null)
+                .doOnNext(response -> {
+                    try {
+                        log().debug("Fetch log from " + url + ", got " + response.getCode()
+                                + " with " + response.getMessage());
+                    } catch (IOException ignored) {
+                        // The upstream requestWithHttpResponse() has already get message buffered.
+                    }
+                })
+                .map(response -> {
+
+                    Document doc = null;
+                    try {
+                        doc = Jsoup.parse(response.getMessage());
+                    } catch (IOException ignored) {
+                        // The upstream requestWithHttpResponse() has already get message buffered.
+                        throw new AssertionError("The upstream has got messages.");
+                    }
+
+                    Iterator<Element> iterator = Optional.ofNullable(doc.getElementById("navcell"))
+                            .map(Element::nextElementSibling)
+                            .map(Element::children)
+                            .map(ArrayList::iterator)
+                            .orElse(Collections.emptyIterator());
+
+                    HashMap<String, String> logTypeMap = new HashMap<>();
+                    final AtomicReference<String> logType = new AtomicReference<>();
+                    String logs = "";
+
+                    while (iterator.hasNext()) {
+                        Element node = iterator.next();
+
+                        if (StringUtils.equalsIgnoreCase(node.tagName(), "p")) {
+                            // In history server, need to read log type paragraph in page
+                            final Pattern logTypePattern = Pattern.compile("Log Type:\\s+(\\S+)");
+
+                            node.childNodes().stream()
+                                    .findFirst()
+                                    .map(Node::toString)
+                                    .map(StringUtils::trim)
+                                    .map(logTypePattern::matcher)
+                                    .filter(Matcher::matches)
+                                    .map(matcher -> matcher.group(1))
+                                    .ifPresent(logType::set);
+                        } else if (StringUtils.equalsIgnoreCase(node.tagName(), "pre")) {
+                            // In running, no log type paragraph in page
+                            logs = node.childNodes().stream()
+                                    .findFirst()
+                                    .map(Node::toString)
+                                    .orElse("");
+
+                            if (logType.get() != null) {
+                                // Only get the first <pre>...</pre>
+                                logTypeMap.put(logType.get(), logs);
+
+                                logType.set(null);
+                            }
+                        }
+                    }
+
+                    return logTypeMap.getOrDefault(type, logs);
+                })
+                .doOnError(err -> log().warn("Can't parse information from YarnUI log page " + url, err))
+                .toBlocking()
+                .firstOrDefault("");
+
+        return typedLogs;
     }
 
     public final String getApplicationId() {
@@ -413,5 +381,31 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
 
     public final YarnCluster getCluster() {
         return this.cluster;
+    }
+
+    public URI getUri() {
+        return URI.create(getYarnNMConnectUri().toString() + this.getApplicationId());
+    }
+
+    private HttpObservable getHttp() {
+        return this.http;
+    }
+
+    private Observable<App> getYarnApplicationRequest() {
+        URI uri = getUri();
+
+        return getHttp()
+//                .withUuidUserAgent()
+                .get(uri.toString(), null, null, AppResponse.class)
+                .map(AppResponse::getApp);
+    }
+
+    private Observable<List<AppAttempt>> getYarnApplicationAttemptsRequest() {
+        URI uri = URI.create(String.format("%s/appattempts", getUri()));
+
+        return getHttp()
+//                .withUuidUserAgent()
+                .get(uri.toString(), null, null, AppAttemptsResponse.class)
+                .map(appAttemptsResponse -> appAttemptsResponse.getAppAttempts().appAttempt);
     }
 }

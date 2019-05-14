@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi.livy.batches.api.batch;
+package com.microsoft.azure.spark.tools.restapi.livy.batches.api.batchid;
 
 import java.util.List;
 

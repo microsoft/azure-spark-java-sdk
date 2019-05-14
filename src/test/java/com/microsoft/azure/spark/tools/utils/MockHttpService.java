@@ -122,7 +122,7 @@ public class MockHttpService {
         return mockHttpService;
     }
 
-    public static MockHttpService createForRecord(String className, String targetUrl) {
+    public static MockHttpService createForRecord(String className, String targetUrl, boolean isPersistent) {
         MockHttpService mockHttpService = new MockHttpService();
         FileSource fileSource = new SingleRootFileSource(RECORDINGS_ROOT + className);
         FileSource filesFileSource = fileSource.child(FILES_ROOT);
@@ -142,7 +142,9 @@ public class MockHttpService {
         );
 
         // Clean up all history recordings
-        mockServer.resetMappings();
+        if (isPersistent) {
+            mockServer.resetMappings();
+        }
 
         mockServer.start();
         mockServer.startRecording(recordSpec()
@@ -150,7 +152,7 @@ public class MockHttpService {
                 .captureHeader("Accept")
                 .captureHeader("Content-Type", true)
                 .captureHeader("X-Requested-By")
-                .makeStubsPersistent(true)
+                .makeStubsPersistent(isPersistent)
                 .build()
         );
 
