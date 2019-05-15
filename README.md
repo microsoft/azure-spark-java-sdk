@@ -1,3 +1,8 @@
+# Azure Spark SDK for Java
+
+[![Build Status](https://travis-ci.org/microsoft/azure-spark-java-sdk.svg?branch=master)](https://travis-ci.org/microsoft/azure-spark-java-sdk)
+
+This repository provides Azure Spark services SDK features for Java.
 
 # Contributing
 
