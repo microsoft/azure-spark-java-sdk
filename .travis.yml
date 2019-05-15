@@ -1,0 +1,20 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+branches:
+  only:
+    - master
+
+addons:
+  apt:
+    packages:
+      - libssl-dev
+      - libffi-dev
+      - python-dev
+      - build-essential
+
+after_success:
+  # test coverage reporting
+  - bash <(curl -s https://codecov.io/bash)
