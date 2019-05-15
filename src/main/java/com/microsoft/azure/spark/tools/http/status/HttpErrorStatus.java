@@ -54,15 +54,15 @@ public class HttpErrorStatus extends HttpException {
 
     public String getErrorDetails() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Status Code: " + getStatusCode() + "\n");
+        sb.append("Status Code: ").append(getStatusCode()).append("\n");
 
         if (getHeaders() != null) {
             String headersString = Arrays.stream(getHeaders())
                     .flatMap(header -> header == null ? empty() : of(header.getName() + ": " + header.getValue()))
                     .collect(Collectors.joining("\n"));
-            sb.append("Headers:\n" + headersString + "\n");
+            sb.append("Headers:\n").append(headersString).append("\n");
         }
-        sb.append("Error message: " + getMessage());
+        sb.append("Error message: ").append(getMessage());
         return sb.toString();
     }
 

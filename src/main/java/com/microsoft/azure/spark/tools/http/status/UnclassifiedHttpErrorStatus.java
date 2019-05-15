@@ -9,10 +9,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class UnclassifiedHttpErrorStatus extends HttpErrorStatus {
     public UnclassifiedHttpErrorStatus(
-            int statusCode,
-            String message,
-            @Nullable Header[] headers,
-            @Nullable HttpEntity entity) {
+            final int statusCode,
+            final String message,
+            final @Nullable Header[] headers,
+            final @Nullable HttpEntity entity) {
         super(statusCode, message, headers, entity);
     }
 }
