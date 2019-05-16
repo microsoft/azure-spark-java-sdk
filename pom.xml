@@ -24,7 +24,7 @@
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
         <semver.version>0.9.0</semver.version>
-        <jackson.version>2.9.7</jackson.version>
+        <jackson.version>2.9.8</jackson.version>
         <!--suppress UnresolvedMavenProperty -->
         <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
     </properties>
@@ -86,11 +86,6 @@
             <version>${codehaus.plexus-utils.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.11.3</version>
@@ -99,7 +94,19 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>${reflections.version}</version>
+            <exclusions>
+                <!-- CVE-2018-10237 -->
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <!-- <dependency>-->
+        <!--     <groupId>com.google.guava</groupId>-->
+        <!--     <artifactId>guava</artifactId>-->
+        <!--     <version>24.1.1-jre</version>-->
+        <!-- </dependency>-->
         <dependency>
             <groupId>com.github.zafarkhaja</groupId>
             <artifactId>java-semver</artifactId>
@@ -125,14 +132,32 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.2</version>
+            <version>4.5.8</version>
         </dependency>
 
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
             <version>2.26</version>
+            <exclusions>
+                <!-- CVE-2012-0881 -->
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesimpl</artifactId>
+                </exclusion>
+                <!-- CVE-2018-12536 -->
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-util</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <!-- <dependency>-->
+        <!--     <groupId>xerces</groupId>-->
+        <!--     <artifactId>xercesImpl</artifactId>-->
+        <!--     <version>2.12.0</version>-->
+        <!-- </dependency>-->
 
         <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
         <dependency>
@@ -146,14 +171,13 @@
             <version>2.8.1</version>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>org.checkerframework</groupId>-->
-        <!--<artifactId>checker</artifactId>-->
-        <!--<version>2.5.8</version>-->
-        <!--</dependency>-->
-
-
         <!-- TEST -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
