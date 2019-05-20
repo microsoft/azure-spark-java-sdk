@@ -46,6 +46,12 @@ public class PostBatchesScenario {
         JSONAssert.assertEquals(expect, actualJson, JSONCompareMode.STRICT);
     }
 
+    @Then("^the convertToJson result should be '(.+)'$")
+    public void verifyConvertToJSON(String expect) throws Throwable {
+        String actualJson = sparkParameterOptions.build().convertToJson();
+
+        JSONAssert.assertEquals(expect, actualJson, JSONCompareMode.STRICT);
+    }
 
     @And("^mock className to (.+)$")
     public void mockClassName(String className) {
