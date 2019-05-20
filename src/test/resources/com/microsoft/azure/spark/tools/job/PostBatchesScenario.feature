@@ -44,3 +44,13 @@ Feature: PostBatches unit test
     And apply spark configs
       | invalid | half close" |
     Then the serialized JSON should be '{"file":"fFilePath","driverMemory":"1200M", "executorMemory": "1.5G", "driverCores": 2, "className":"fakeClassName","conf":{"invalid":"half close\""}}'
+
+  Scenario: Convertible interface convertToJson works well
+    Given create PostBatches with the following job config
+      | driverMemory | 2G |
+    And mock file to fFilePath
+    And mock className to fakeClassName
+    And apply spark configs
+      | spark.driver.extraJavaOptions | -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=6006 |
+      | other                         | Other values                                                       |
+    Then the convertToJson result should be '{"driverMemory":"2G","file":"fFilePath","className":"fakeClassName","conf":{"other":"Other values","spark.driver.extraJavaOptions":"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=6006"}}'

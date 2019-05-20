@@ -3,8 +3,6 @@
 
 package com.microsoft.azure.spark.tools.clusters;
 
-
-import com.microsoft.azure.spark.tools.errors.HDIException;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
@@ -55,12 +53,12 @@ public interface ClusterDetail {
     }
 
 
-    default @Nullable String getHttpUserName() throws HDIException {
+    default @Nullable String getHttpUserName() throws IOException {
         return null;
     }
 
 
-    default @Nullable String getHttpPassword() throws HDIException {
+    default @Nullable String getHttpPassword() throws IOException {
         return null;
     }
 
@@ -83,7 +81,7 @@ public interface ClusterDetail {
     //     return null;
     // }
 
-    default void getConfigurationInfo() throws IOException, HDIException {
+    default void getConfigurationInfo() throws IOException {
     }
 
 
