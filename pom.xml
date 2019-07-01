@@ -37,6 +37,21 @@
         </license>
     </licenses>
 
+    <scm>
+        <connection>scm:git:https://github.com/microsoft/azure-spark-java-sdk.git</connection>
+        <developerConnection>scm:git:git@github.com:microsoft/azure-spark-java-sdk.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/microsoft/azure-spark-java-sdk</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>wezhang</id>
+            <name>Wei Zhang</name>
+            <email>zhwe@microsoft.com</email>
+        </developer>
+    </developers>
+
     <profiles>
         <profile>
             <id>doclint-java8-disable</id>
