@@ -14,7 +14,7 @@ import java.util.List;
  * Based on Hadoop 3.0.0, refer to https://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRest.html#Cluster_Application_API
  *
  * Use the following URI to obtain an apps list,
- *   http://$rmHttpAddress:port>/ws/v1/cluster/$apps
+ *   http://$rmHttpAddress:port/ws/v1/cluster/$apps
  *
  * HTTP Operations Supported
  *   GET

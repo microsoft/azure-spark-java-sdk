@@ -15,9 +15,9 @@ public interface SparkBatchJob {
     String getName();
 
     /**
-     * Getter of the base connection URI for HDInsight Spark Job service.
+     * Getter of the base connection URI for Spark Job service.
      *
-     * @return the base connection URI for HDInsight Spark Job service
+     * @return the base connection URI for Spark Job service
      */
     URI getConnectUri();
 
@@ -59,7 +59,7 @@ public interface SparkBatchJob {
     /**
      * Kill the batch job specified by ID.
      *
-     * @return the current instance observable for chain calling,
+     * @return Observable of the current instance for chain calling,
      *         Observable Error: IOException exceptions for networking connection issues related
      */
     Observable<? extends SparkBatchJob> killBatchJob();
@@ -75,34 +75,34 @@ public interface SparkBatchJob {
     /**
      * Get Spark job submission log observable.
      *
-     * @return the log type and content pair observable
+     * @return Observable of the log type and content pair
      */
     Observable<Pair<MessageInfoType, String>> getSubmissionLog();
 
     /**
      * Await the job started observable.
      *
-     * @return the job state string
+     * @return Observable of the job state string
      */
     Observable<String> awaitStarted();
 
     /**
      * Await the job done observable.
      *
-     * @return the job state string and its diagnostics message
+     * @return Observable of the job state string and its diagnostics message
      */
     Observable<Pair<String, String>> awaitDone();
 
     /**
      * Await the job post actions done, such as the log aggregation.
-     * @return the job post action status string
+     * @return Observable of job post action status string
      */
     Observable<String> awaitPostDone();
 
     /**
      * Get the job control messages observable.
      *
-     * @return the job control message type and content pair observable
+     * @return Observable of the job control message type and content pair
      */
     Observer<Pair<MessageInfoType, String>> getCtrlSubject();
 
@@ -110,7 +110,7 @@ public interface SparkBatchJob {
      * Deploy the job artifact into cluster.
      *
      * @param artifactPath the artifact to deploy
-     * @return ISparkBatchJob observable
+     * @return Observable of the current instance for chain calling,
      *         Observable Error: IOException;
      */
     Observable<? extends SparkBatchJob> deploy(final File artifactPath);
@@ -118,7 +118,7 @@ public interface SparkBatchJob {
     /**
      * Create a batch Spark job and submit the job into cluster.
      *
-     * @return ISparkBatchJob observable
+     * @return Observable of the current instance for chain calling,
      *         Observable Error: IOException;
      */
     Observable<? extends SparkBatchJob> submit();
@@ -126,13 +126,15 @@ public interface SparkBatchJob {
     /**
      * Is the job done, success or failure.
      *
-     * @return true for success or failure
+     * @param state to check if the job is done or not
+     * @return true for the job is done (success or failure)
      */
     boolean isDone(String state);
 
     /**
      * Is the job running.
      *
+     * @param state to check if the job is running or not
      * @return true for running
      */
     boolean isRunning(String state);
@@ -140,6 +142,7 @@ public interface SparkBatchJob {
     /**
      * Is the job finished with success.
      *
+     * @param state to check if the job is finished with success or not
      * @return true for success
      */
     boolean isSuccess(String state);
