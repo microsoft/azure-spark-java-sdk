@@ -5,6 +5,8 @@ package com.microsoft.azure.spark.tools.http;
 
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.utils.JsonConverter;
+import com.microsoft.azure.spark.tools.utils.Lazy;
+import com.microsoft.azure.spark.tools.utils.Versions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -53,12 +55,9 @@ import static rx.exceptions.Exceptions.propagate;
 public class HttpObservable implements Logger {
     private RequestConfig defaultRequestConfig;
 
-    private String userAgentPrefix;
+    private final List<String> userAgents = new ArrayList<>();
 
-
-    private @Nullable String userAgent;
-
-    private HeaderGroup defaultHeaders;
+    private Lazy<HeaderGroup> defaultHeaders = new Lazy<>();
 
     private CookieStore cookieStore;
 
@@ -68,6 +67,7 @@ public class HttpObservable implements Logger {
 
     private final List<NameValuePair> defaultParameters = new ArrayList<>();
 
+    private final byte[] encodedAuth;
 
     /*
      * Constructors
@@ -84,7 +84,6 @@ public class HttpObservable implements Logger {
      * @param password Basic authentication password
      */
     public HttpObservable(final @Nullable String username, final @Nullable String password) {
-        HeaderGroup headerGroup = new HeaderGroup();
 
 //        String loadingClass = this.getClass().getClassLoader().getClass().getName().toLowerCase();
 //        this.userAgentPrefix = loadingClass.contains("intellij")
@@ -92,14 +91,6 @@ public class HttpObservable implements Logger {
 //                : (loadingClass.contains("eclipse")
 //                        ? "Azure Toolkit for Eclipse"
 //                        : "Azure HDInsight SDK HTTP RxJava client");
-        this.userAgentPrefix = "";
-        this.userAgent = userAgentPrefix;
-
-        // set default headers
-        headerGroup.setHeaders(new Header[] {
-                new BasicHeader("Content-Type", "application/json"),
-                new BasicHeader("User-Agent", userAgent),
-        });
 
         this.cookieStore = new BasicCookieStore();
         this.httpContext = new BasicHttpContext();
@@ -121,22 +112,19 @@ public class HttpObservable implements Logger {
 
         if (StringUtils.isNotBlank(username) && password != null) {
             String auth = username + ":" + password;
-            byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
-            headerGroup.addHeader(
-                    new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuth)));
+            encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+        } else {
+            encodedAuth = new byte[0];
         }
 
+        this.userAgents.add(Versions.DEFAULT_USER_AGENT.get().toString());
+
         this.httpClient = clientBuilder.build();
-        this.defaultHeaders = headerGroup;
     }
 
     /*
      * Getter / Setter
      */
-
-    public String getUserAgentPrefix() {
-        return userAgentPrefix;
-    }
 
     public RequestConfig getDefaultRequestConfig() {
         return defaultRequestConfig;
@@ -173,20 +161,27 @@ public class HttpObservable implements Logger {
         return getDefaultHeaderGroup().getAllHeaders();
     }
 
-//    public HttpObservable setDefaultHeader(final @Nullable Header defaultHeader) {
-//        this.getDefaultHeaderGroup().updateHeader(defaultHeader);
-//        return this;
-//    }
-
     public HeaderGroup getDefaultHeaderGroup()  {
-        return defaultHeaders;
-    }
+        return defaultHeaders.getOrEvaluate(() -> {
+            HeaderGroup headerGroup = new HeaderGroup();
 
-//  public HttpObservable setDefaultHeaderGroup(final @Nullable HeaderGroup defaultHeaderGroup) {
-//      this.getDefaultHeaderGroup().setHeaders(defaultHeaderGroup == null ? null : defaultHeaderGroup.getAllHeaders());
-//
-//      return this;
-//  }
+            // set default headers
+            headerGroup.setHeaders(new Header[] {
+                    new BasicHeader("Content-Type", "application/json"),
+            });
+
+            if (StringUtils.isNotBlank(getUserAgent())) {
+                headerGroup.addHeader(new BasicHeader("User-Agent", getUserAgent()));
+            }
+
+            if (encodedAuth.length > 0) {
+                headerGroup.addHeader(
+                        new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuth)));
+            }
+
+            return headerGroup;
+        });
+    }
 
     public HttpObservable setContentType(final String type) {
         this.getDefaultHeaderGroup().updateHeader(new BasicHeader("Content-Type", type));
@@ -197,9 +192,14 @@ public class HttpObservable implements Logger {
         return httpContext;
     }
 
+    public String getUserAgent() {
+        return String.join(" ", userAgents);
+    }
 
-    public @Nullable String getUserAgent() {
-        return userAgent;
+    public HttpObservable addUserAgentEntity(UserAgentEntity uaEntity) {
+        this.userAgents.add(uaEntity.toString());
+
+        return this;
     }
 
 //    public HttpObservable setUserAgent(final @Nullable String ua) {
