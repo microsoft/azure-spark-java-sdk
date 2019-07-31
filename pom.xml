@@ -133,6 +133,16 @@
             <version>1.0.0-beta-2</version>
         </dependency>
         <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-client-authentication</artifactId>
+            <version>1.6.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-storage</artifactId>
+            <version>8.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${jackson.version}</version>
@@ -399,7 +409,7 @@
                             <compilerArgs>
                                 <!-- location of the annotated JDK, which comes from a Maven dependency -->
                                 <!--                        <arg>-Xbootclasspath/p:${annotatedJdk}</arg>-->
-                                <arg>-AskipUses=^org\.apache\.|^rx\.|ObjectConvertUtils|^java\.</arg>
+                                <arg>-AskipUses=^org\.apache\.|^rx\.|ObjectConvertUtils|^java\.|^com\.microsoft\.azure\.storage\.</arg>
 <!--                                <arg>-AsuppressWarnings=incompatible</arg>-->
 <!--                                <arg>-AsuppressWarnings=type.anno.before.modifier</arg>-->
                                 <!-- -Awarns turns type-checking warnings into errors. -->

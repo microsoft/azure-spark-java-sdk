@@ -3,12 +3,9 @@
 
 package com.microsoft.azure.spark.tools.http;
 
-import com.microsoft.azure.spark.tools.log.Logger;
-import com.microsoft.azure.spark.tools.utils.JsonConverter;
-import com.microsoft.azure.spark.tools.utils.Lazy;
-import com.microsoft.azure.spark.tools.utils.Versions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -29,6 +26,10 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -37,19 +38,31 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
 import rx.exceptions.Exceptions;
 
+import com.microsoft.azure.spark.tools.log.Logger;
+import com.microsoft.azure.spark.tools.utils.JsonConverter;
+import com.microsoft.azure.spark.tools.utils.Lazy;
+import com.microsoft.azure.spark.tools.utils.Versions;
+
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.UnknownServiceException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static com.microsoft.azure.spark.tools.http.status.HttpErrorStatus.classifyHttpError;
+import static com.microsoft.azure.spark.tools.utils.Configurations.BYPASS_LIVY_SSL_CERTIFICATE_VALIDATION_PROPERTY;
+import static com.microsoft.azure.spark.tools.utils.Configurations.TRUST_LIVY_SSL_ALL_HOST_STRATEGY_PROPERTY;
 import static rx.exceptions.Exceptions.propagate;
 
 public class HttpObservable implements Logger {
@@ -63,11 +76,19 @@ public class HttpObservable implements Logger {
 
     private HttpContext httpContext;
 
-    private final CloseableHttpClient httpClient;
+    /**
+     * Lazy initialized Http client.
+     */
+    private final Lazy<CloseableHttpClient> httpClient = new Lazy<>();
 
     private final List<NameValuePair> defaultParameters = new ArrayList<>();
 
     private final byte[] encodedAuth;
+
+    /**
+     * The SSL trust strategy for HTTPS connection, which can refer to platform implementations.
+     */
+    private @Nullable TrustStrategy trustStrategy = null;
 
     /*
      * Constructors
@@ -104,12 +125,6 @@ public class HttpObservable implements Logger {
                 .setProxyPreferredAuthSchemes(Collections.singletonList(AuthSchemes.BASIC))
                 .build();
 
-        HttpClientBuilder clientBuilder = HttpClients.custom()
-                .useSystemProperties()
-                .setDefaultCookieStore(this.cookieStore)
-//                .setSSLSocketFactory(createSSLSocketFactory())
-                .setDefaultRequestConfig(this.defaultRequestConfig);
-
         if (StringUtils.isNotBlank(username) && password != null) {
             String auth = username + ":" + password;
             encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
@@ -118,13 +133,24 @@ public class HttpObservable implements Logger {
         }
 
         this.userAgents.add(Versions.DEFAULT_USER_AGENT.get().toString());
-
-        this.httpClient = clientBuilder.build();
     }
 
     /*
      * Getter / Setter
      */
+
+    /**
+     * The Http Client builder getter.
+     *
+     * @return instance of {@link HttpClientBuilder}
+     */
+    protected HttpClientBuilder getClientBuilder() {
+        return HttpClients.custom()
+                .useSystemProperties()
+                .setDefaultCookieStore(getCookieStore())
+                .setSSLSocketFactory(createSSLSocketFactory())
+                .setDefaultRequestConfig(getDefaultRequestConfig());
+    }
 
     public RequestConfig getDefaultRequestConfig() {
         return defaultRequestConfig;
@@ -147,17 +173,10 @@ public class HttpObservable implements Logger {
     }
 
     public CloseableHttpClient getHttpClient() {
-        return httpClient;
+        return httpClient.getOrEvaluate(() -> getClientBuilder().build());
     }
 
-//    public HttpObservable setHttpClient(final CloseableHttpClient client) {
-//        this.httpClient = client;
-//
-//        return this;
-//    }
-
-
-    public @Nullable Header[] getDefaultHeaders() throws IOException {
+    public Header[] getDefaultHeaders() throws IOException {
         return getDefaultHeaderGroup().getAllHeaders();
     }
 
@@ -202,14 +221,6 @@ public class HttpObservable implements Logger {
         return this;
     }
 
-//    public HttpObservable setUserAgent(final @Nullable String ua) {
-//        this.userAgent = ua;
-//
-//        // Update the default headers
-//        return setDefaultHeader(new BasicHeader("User-Agent", ua));
-//    }
-
-
     public List<NameValuePair> getDefaultParameters() {
         return defaultParameters;
     }
@@ -218,40 +229,73 @@ public class HttpObservable implements Logger {
      * Helper functions
      */
 
+    /**
+     * Check if SSL Certificated validation is forced bypassed in System properties or not.
+     * @see com.microsoft.azure.spark.tools.utils.Configurations#BYPASS_LIVY_SSL_CERTIFICATE_VALIDATION_PROPERTY
+     *
+     * @return is forced bypassed or not
+     */
     public static boolean isSSLCertificateValidationDisabled() {
-        return false;
+        String bypassSetting = System.getProperty(BYPASS_LIVY_SSL_CERTIFICATE_VALIDATION_PROPERTY);
 
-        // try {
-        //     return DefaultLoader.getIdeHelper()
-        //                         .isApplicationPropertySet(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION)
-        //             && Boolean.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(
-        //                     CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION));
-        // } catch (Exception ex) {
-        //     // To fix exception in unit test
-        //     return false;
-        // }
+        return Boolean.parseBoolean(bypassSetting);
     }
 
-//    private SSLConnectionSocketFactory createSSLSocketFactory() {
-//        TrustStrategy ts = ServiceManager.getServiceProvider(TrustStrategy.class);
-//        SSLConnectionSocketFactory sslSocketFactory = null;
-//
-//        if (ts != null) {
-//            try {
-//                SSLContext sslContext = new SSLContextBuilder()
-//                        .loadTrustMaterial(ts)
-//                        .build();
-//
-//                sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
-//                        HttpObservable.isSSLCertificateValidationDisabled()
-//                                ? NoopHostnameVerifier.INSTANCE
-//                                : new DefaultHostnameVerifier());
-//            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-//                log().error("Prepare SSL Context for HTTPS failure. " + ExceptionUtils.getStackTrace(e));
-//            }
-//        }
-//        return sslSocketFactory;
-//    }
+    /**
+     * Check if SSL Trust All Strategy is forced enabled in System properties or not.
+     * @see com.microsoft.azure.spark.tools.utils.Configurations#TRUST_LIVY_SSL_ALL_HOST_STRATEGY_PROPERTY
+     *
+     * @return is forced enabled or not
+     */
+    public static boolean isSSLTrustAllStrategyEnabled() {
+        String bypassSetting = System.getProperty(TRUST_LIVY_SSL_ALL_HOST_STRATEGY_PROPERTY);
+
+        return Boolean.parseBoolean(bypassSetting);
+    }
+
+    /**
+     * Set external SSL trust strategy instance.
+     *
+     * @param externalTrustStrategy platform implemented strategy instance
+     * @return {@link HttpObservable} instance for fluent chain calling
+     */
+    public HttpObservable setTrustStrategy(final TrustStrategy externalTrustStrategy) {
+        this.trustStrategy = externalTrustStrategy;
+
+        return this;
+    }
+
+    /**
+     * Create a SSL socket factory for HTTPS connection.
+     *
+     * @return instance of {@link SSLConnectionSocketFactory}
+     */
+    @Nullable
+    private SSLConnectionSocketFactory createSSLSocketFactory() {
+        TrustStrategy ts = isSSLTrustAllStrategyEnabled()
+                ? (chain, authType) -> true
+                : this.trustStrategy;
+
+        SSLConnectionSocketFactory sslSocketFactory = null;
+
+        if (ts != null) {
+            try {
+                SSLContext sslContext = new SSLContextBuilder()
+                        .loadTrustMaterial(ts)
+                        .build();
+
+                sslSocketFactory = new SSLConnectionSocketFactory(
+                        sslContext,
+                        HttpObservable.isSSLCertificateValidationDisabled()
+                                ? NoopHostnameVerifier.INSTANCE
+                                : new DefaultHostnameVerifier());
+            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+                log().error("Prepare SSL Context for HTTPS failure. " + ExceptionUtils.getStackTrace(e));
+            }
+        }
+
+        return sslSocketFactory;
+    }
 
     /**
      * Helper to convert the closeable stream good Http response (2xx) to String result.
