@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.FileSource;
 import com.github.tomakehurst.wiremock.common.SingleRootFileSource;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.http.HttpHeader;
 import com.github.tomakehurst.wiremock.http.HttpHeaders;
 import com.github.tomakehurst.wiremock.recording.RecordingStatus;
@@ -30,6 +31,17 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 public class MockHttpService {
+    public static String WIREMOCK_SSL_CERT_PUBLIC_KEY = "Sun RSA public key, 2048 bits\n" +
+            "  modulus: 1616281159999743767002432523209340041847821214339609530132554918980559030678322788" +
+            "308328436445345761589385826429423868823943077166929543729099618462943663813097850123395545232" +
+            "985007928565879330303595925625352897604590688698640633331749303053422625328525772608635706869" +
+            "720914691104497628607206687350939381619516420478302307873582835075271858922244224099641302297" +
+            "236218479236997148862688517102979382188787197512248169095378456233047400728614720679541664549" +
+            "045050751317489220182994070036742676715775907381776530891158250830220384186038820816709179936" +
+            "9665611086691071592657494061212129654521104283864301320982025481461669\n" +
+            "  public exponent: 65537";
+    public static String WIREMOCK_SSL_CERT_TYPE = "ECDHE_RSA";
+
     private WireMockServer httpServerMock;
 
     private MockHttpService() {
@@ -41,6 +53,10 @@ public class MockHttpService {
 
     public int getPort() {
         return this.httpServerMock.port();
+    }
+
+    public int getHttpsPort() {
+        return this.httpServerMock.httpsPort();
     }
 
     private Map<String, String> getTemplateProperties() {
@@ -55,6 +71,14 @@ public class MockHttpService {
                                 action, WireMock.urlEqualTo(uri))
                         .willReturn(WireMock.aResponse()
                                 .withStatus(statusCode).withBody(normalizeResponse(response))));
+    }
+
+    public void stubHttps(String action, String path, int statusCode, String response) {
+        WireMock.configureFor("https", "localhost", getHttpsPort());
+        WireMock.stubFor(WireMock.request(
+                action, WireMock.urlPathEqualTo(path))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(statusCode).withBody(normalizeResponse(response))));
     }
 
     public void stubWithHeader(String action, String uri, int statusCode, String response, Map<String, String> header) {
@@ -94,9 +118,24 @@ public class MockHttpService {
         return "http://localhost:" + getPort() + "/" + StringUtils.stripStart(absoluteUri, "/");
     }
 
+    public String completeHttpsUrl(String absoluteUri) {
+        return "https://localhost:" + getHttpsPort() + "/" + StringUtils.stripStart(absoluteUri, "/");
+    }
+
     public static MockHttpService create() {
         MockHttpService mockHttpService = new MockHttpService();
         mockHttpService.httpServerMock = new WireMockServer(wireMockConfig().dynamicPort());
+
+        mockHttpService.httpServerMock.start();
+
+        return mockHttpService;
+    }
+
+    public static MockHttpService createHttps() {
+        MockHttpService mockHttpService = new MockHttpService();
+
+        WireMockConfiguration option = wireMockConfig().dynamicPort().dynamicHttpsPort();
+        mockHttpService.httpServerMock = new WireMockServer(option);
 
         mockHttpService.httpServerMock.start();
 

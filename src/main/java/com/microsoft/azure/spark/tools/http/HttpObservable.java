@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.CookieStore;
@@ -24,7 +23,6 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -115,7 +113,6 @@ public class HttpObservable implements Logger {
 
         this.cookieStore = new BasicCookieStore();
         this.httpContext = new BasicHttpContext();
-        this.httpContext.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 
         // Create global request configuration
         this.defaultRequestConfig = RequestConfig.custom()
@@ -194,8 +191,7 @@ public class HttpObservable implements Logger {
             }
 
             if (encodedAuth.length > 0) {
-                headerGroup.addHeader(
-                        new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(encodedAuth)));
+                headerGroup.addHeader(new AuthorizationHeader.BasicAuthHeader(encodedAuth));
             }
 
             return headerGroup;
@@ -270,8 +266,7 @@ public class HttpObservable implements Logger {
      *
      * @return instance of {@link SSLConnectionSocketFactory}
      */
-    @Nullable
-    private SSLConnectionSocketFactory createSSLSocketFactory() {
+    private @Nullable SSLConnectionSocketFactory createSSLSocketFactory() {
         TrustStrategy ts = isSSLTrustAllStrategyEnabled()
                 ? (chain, authType) -> true
                 : this.trustStrategy;
