@@ -104,7 +104,9 @@ public class HttpObservableScenario {
     public void checkRequestHeaderAndParameters(String method,
                                                 String path,
                                                 Map<String, String> expectHeaders) {
-        this.httpMock.request(this.httpRequest, null, null, null ).subscribe();
+        this.httpMock.request(this.httpRequest, null, null, null )
+                .toBlocking()
+                .subscribe();
 
         RequestPatternBuilder builder = RequestPatternBuilder.newRequestPattern(RequestMethod.fromString(method), urlPathEqualTo(path));
 
@@ -117,7 +119,9 @@ public class HttpObservableScenario {
     public void checkHttpsRequestHeaderAndParameters(String method,
                                                 String path,
                                                 Map<String, String> expectHeaders) {
-        this.httpMock.request(this.httpRequest, null, null, null ).subscribe();
+        this.httpMock.request(this.httpRequest, null, null, null )
+                .toBlocking()
+                .subscribe();
 
         RequestPatternBuilder builder = RequestPatternBuilder.newRequestPattern(RequestMethod.fromString(method), urlPathEqualTo(path));
 
