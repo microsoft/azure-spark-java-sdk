@@ -55,7 +55,9 @@ public class OAuthTokenHttpObservableScenario {
 
     @Then("^send and check OAuthTokenHttp '(.+)' request to '(.*)' should contains header '(.*):\\s*(.*)'$")
     public void checkRequestHeader(String method, String path, String expectHeaderKey, String expectHeaderValue) {
-        this.httpMock.request(this.httpRequest, null, null, null).subscribe();
+        this.httpMock.request(this.httpRequest, null, null, null)
+                .toBlocking()
+                .subscribe();
 
         verify(RequestPatternBuilder.newRequestPattern(RequestMethod.fromString(method), urlPathEqualTo(path))
             .withHeader(expectHeaderKey, equalTo(expectHeaderValue)));

@@ -61,7 +61,9 @@ public class AzureHttpObservableScenario {
                                                 String expectHeaderKey,
                                                 String expectHeaderValue,
                                                 Map<String, String> expectParameters) {
-        this.httpMock.request(this.httpRequest, null, null, null ).subscribe();
+        this.httpMock.request(this.httpRequest, null, null, null )
+                .toBlocking()
+                .subscribe();
 
         RequestPatternBuilder builder = RequestPatternBuilder.newRequestPattern(RequestMethod.fromString(method), urlPathEqualTo(path))
                 .withHeader(expectHeaderKey, equalTo(expectHeaderValue));
