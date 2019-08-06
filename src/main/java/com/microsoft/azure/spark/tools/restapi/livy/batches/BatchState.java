@@ -17,7 +17,7 @@ public enum BatchState {
 
     private final String state;
 
-    BatchState(String state) {
+    BatchState(final String state) {
         this.state = state;
     }
 
