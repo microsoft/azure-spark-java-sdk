@@ -397,6 +397,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
         return getHttp()
 //                .withUuidUserAgent()
                 .get(uri.toString(), null, null, AppResponse.class)
+                .map(Pair::getFirst)
                 .map(AppResponse::getApp);
     }
 
@@ -406,6 +407,7 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
         return getHttp()
 //                .withUuidUserAgent()
                 .get(uri.toString(), null, null, AppAttemptsResponse.class)
+                .map(Pair::getFirst)
                 .map(appAttemptsResponse -> appAttemptsResponse.getAppAttempts().appAttempt);
     }
 }

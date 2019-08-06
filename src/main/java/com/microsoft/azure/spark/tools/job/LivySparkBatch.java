@@ -3,6 +3,15 @@
 
 package com.microsoft.azure.spark.tools.job;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.entity.StringEntity;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import rx.Emitter;
+import rx.Observable;
+import rx.Observer;
+
 import com.microsoft.azure.spark.tools.clusters.LivyCluster;
 import com.microsoft.azure.spark.tools.errors.SparkJobException;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
@@ -17,18 +26,11 @@ import com.microsoft.azure.spark.tools.restapi.livy.batches.api.batchid.GetLogRe
 import com.microsoft.azure.spark.tools.utils.JsonConverter;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.entity.StringEntity;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import rx.Emitter;
-import rx.Observable;
-import rx.Observer;
 
-import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
+import static com.microsoft.azure.spark.tools.events.MessageInfoType.Debug;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Log;
 
@@ -75,7 +78,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     private @Nullable String appId;
     private @Nullable Map<String, String> appInfo;
 
-    private @Nullable List<String> submissionLogs;
+    private List<String> submissionLogs = Collections.emptyList();
 
     public LivySparkBatch(
             final LivyCluster cluster,
@@ -84,7 +87,6 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
             final Observer<Pair<MessageInfoType, String>> ctrlSubject) {
         this(cluster, submissionParameter, http, ctrlSubject, null);
     }
-
 
     public LivySparkBatch(
             final LivyCluster cluster,
@@ -101,9 +103,9 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     @Override
     public String getName() {
-        String name = submissionParameter.getName();
+        String name = getSubmissionParameter().getName();
 
-        return name != null ? name : submissionParameter.getClassName();
+        return name != null ? name : getSubmissionParameter().getClassName();
     }
 
     /**
@@ -231,8 +233,10 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
             Predicate<Pair<String, GetLogResponse>> noMoreLogs = appIdWithLog ->
                     appIdWithLog.getRight().getLog().size() == 0
-                            && !StringUtils.equalsIgnoreCase(getState(), "starting")
-                            && appIdWithLog.getLeft() != null;
+                            && ((!StringUtils.equalsIgnoreCase(getState(), "starting")
+                                    && appIdWithLog.getLeft() != null)
+                                || (StringUtils.equalsIgnoreCase(getState(), "dead")
+                                    && appIdWithLog.getLeft() == null));
 
             getSparkJobApplicationId()
                     .flatMap(applicationId -> getSparkBatchLogRequest(start.get(), maxLinesPerGet), Pair::of)
@@ -253,17 +257,6 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     @Override
     public Observer<Pair<MessageInfoType, String>> getCtrlSubject() {
         return ctrlSubject;
-    }
-
-    /**
-     * The method is to deploy artifact to cluster (Not supported for Livy Spark Batch job).
-     *
-     * @param artifactPath the artifact to deploy
-     * @return the observable error since not support deploy yet
-     */
-    @Override
-    public Observable<? extends SparkBatchJob> deploy(final File artifactPath) {
-        return Observable.error(new UnsupportedOperationException());
     }
 
     /**
@@ -349,6 +342,10 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         return Observable.empty();
     }
 
+    protected List<Header> getHeadersToAddOrReplace() {
+        return Collections.emptyList();
+    }
+
     protected HttpObservable getHttp() {
         return this.http;
     }
@@ -373,25 +370,27 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
         entity.setContentType("application/json");
 
+        getCtrlSubject().onNext(Pair.of(
+                Debug, String.format("Spark Batch request to %s, body: %s", uri, body.convertToJson())));
+
         return getHttp()
-//                .withUuidUserAgent()
-                .post(uri.toString(), entity, null, null, Batch.class);
+                .post(uri.toString(), entity, null, getHeadersToAddOrReplace(), Batch.class)
+                .map(Pair::getFirst);
     }
 
     private Observable<HttpResponse> deleteSparkBatchRequest() {
         URI uri = getUri();
 
         return getHttp()
-//                .withUuidUserAgent()
-                .delete(uri.toString(), null, null);
+                .delete(uri.toString(), null, getHeadersToAddOrReplace());
     }
 
     private Observable<Batch> getSparkBatchRequest() {
         URI uri = getUri();
 
         return getHttp()
-//                .withUuidUserAgent()
-                .get(uri.toString(), null, null, Batch.class);
+                .get(uri.toString(), null, getHeadersToAddOrReplace(), Batch.class)
+                .map(Pair::getFirst);
     }
 
     private Observable<GetLogResponse> getSparkBatchLogRequest(final int from, final int size) {
@@ -400,8 +399,8 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         List<NameValuePair> params = Arrays.asList(new GetLog.FromParameter(from), new GetLog.SizeParameter(size));
 
         return getHttp()
-//                .withUuidUserAgent()
-                .get(uri.toString(), params, null, GetLogResponse.class);
+                .get(uri.toString(), params, getHeadersToAddOrReplace(), GetLogResponse.class)
+                .map(Pair::getFirst);
     }
 
     private LivySparkBatch updateWithBatchResponse(final Batch batch) {
@@ -409,7 +408,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         this.state = batch.getState();
         this.appId = batch.getAppId();
         this.appInfo = batch.getAppInfo();
-        this.submissionLogs = batch.getLog();
+        this.submissionLogs = (batch.getLog() == null) ? Collections.emptyList() : batch.getLog();
 
         return this;
     }

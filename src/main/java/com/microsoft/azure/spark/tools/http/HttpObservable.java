@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.CookieStore;
@@ -44,6 +45,7 @@ import rx.exceptions.Exceptions;
 import com.microsoft.azure.spark.tools.log.Logger;
 import com.microsoft.azure.spark.tools.utils.JsonConverter;
 import com.microsoft.azure.spark.tools.utils.Lazy;
+import com.microsoft.azure.spark.tools.utils.Pair;
 import com.microsoft.azure.spark.tools.utils.Versions;
 
 import javax.net.ssl.SSLContext;
@@ -184,6 +186,7 @@ public class HttpObservable implements Logger {
             // set default headers
             headerGroup.setHeaders(new Header[] {
                     new BasicHeader("Content-Type", "application/json"),
+                    new BasicHeader(HttpHeaders.ACCEPT_ENCODING, "*/*"),
             });
 
             if (StringUtils.isNotBlank(getUserAgent())) {
@@ -335,12 +338,12 @@ public class HttpObservable implements Logger {
     /**
      * Helper to convert the http response to a specified type.
      *
+     * @param <T> the target type
      * @param resp HTTP response, consumed as String content
      * @param clazz the target type to convert
-     * @param <T> the target type
      * @return the specified type class instance
      */
-    public <T> T convertJsonResponseToObject(final HttpResponse resp, final Class<T> clazz) {
+    public <T> Pair<T, HttpResponse> convertJsonResponseToObject(final HttpResponse resp, final Class<T> clazz) {
         try {
             String body = resp.getMessage();
             T obj = JsonConverter.of(clazz).parseFrom(body);
@@ -348,7 +351,7 @@ public class HttpObservable implements Logger {
                 throw new UnknownServiceException("Unknown HTTP server response: " + body);
             }
 
-            return obj;
+            return Pair.of(obj, resp);
         } catch (IOException e) {
             throw propagate(e);
         }
@@ -408,7 +411,7 @@ public class HttpObservable implements Logger {
         return requestWithHttpResponse(new HttpHead(uri), null, parameters, addOrReplaceHeaders);
     }
 
-    public <T> Observable<T> get(final String uri,
+    public <T> Observable<Pair<T, HttpResponse>> get(final String uri,
                                  final @Nullable List<NameValuePair> parameters,
                                  final @Nullable List<Header> addOrReplaceHeaders,
                                  final Class<T> clazz) {
@@ -416,7 +419,7 @@ public class HttpObservable implements Logger {
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
-    public <T> Observable<T> put(final String uri,
+    public <T> Observable<Pair<T, HttpResponse>> put(final String uri,
                                  final @Nullable HttpEntity entity,
                                  final @Nullable List<NameValuePair> parameters,
                                  final @Nullable List<Header> addOrReplaceHeaders,
@@ -425,7 +428,7 @@ public class HttpObservable implements Logger {
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
-    public <T> Observable<T> post(final String uri,
+    public <T> Observable<Pair<T, HttpResponse>> post(final String uri,
                                   final @Nullable HttpEntity entity,
                                   final @Nullable List<NameValuePair> parameters,
                                   final @Nullable List<Header> addOrReplaceHeaders,
@@ -440,7 +443,7 @@ public class HttpObservable implements Logger {
         return requestWithHttpResponse(new HttpDelete(uri), null, parameters, addOrReplaceHeaders);
     }
 
-    public <T> Observable<T> patch(final String uri,
+    public <T> Observable<Pair<T, HttpResponse>> patch(final String uri,
                                    final @Nullable HttpEntity entity,
                                    final @Nullable List<NameValuePair> parameters,
                                    final @Nullable List<Header> addOrReplaceHeaders,
