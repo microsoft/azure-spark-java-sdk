@@ -36,10 +36,4 @@ public class Batch implements Convertible {
     public String getState() {
         return state;
     }
-
-    public boolean isAlive() {
-        return !this.getState().equals("error")
-                && !this.getState().equals("success")
-                && !this.getState().equals("dead");
-    }
 }

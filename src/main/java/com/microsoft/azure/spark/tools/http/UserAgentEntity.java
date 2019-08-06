@@ -9,12 +9,28 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A User Agent Entity class to help generate a formatted UA string in HTTP request header.
+ * The format would be like: product/version (comment)
+ * such as: spark-java-sdk/0.1.0 (os:Linux; jdk:1.8)
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent">Mozilla User-Agent Syntax</a>
+ */
 public class UserAgentEntity {
     private final String product;
     private final @Nullable String version;
     private final @Nullable String comment;
 
-    public UserAgentEntity(String product, @Nullable String version, @Nullable String comment) {
+    /**
+     * Constructor of User Agent Entity.
+     *
+     * @param product the product name in User Agent
+     * @param version the product version
+     * @param comment the comment for the product
+     */
+    public UserAgentEntity(final String product,
+                           final @Nullable String version,
+                           final @Nullable String comment) {
         if (StringUtils.isBlank(product)) {
             throw new IllegalArgumentException("Product can't be blank.");
         }
@@ -58,23 +74,42 @@ public class UserAgentEntity {
         private String version = "";
         private List<String> comments = new ArrayList<>();
 
-        public Builder(String product) {
+        public Builder(final String product) {
             this.product = product;
         }
 
-        public Builder version(String ver) {
+        /**
+         * Set version option.
+         *
+         * @param ver the version string to set
+         * @return the {@link Builder} instance for fluent invoking
+         */
+        public Builder version(final String ver) {
             this.version = ver;
 
             return this;
         }
 
-        public Builder comment(String comment) {
+        /**
+         * Set comment option.
+         *
+         * @param comment the comment string to set
+         * @return the {@link Builder} instance for fluent invoking
+         */
+        public Builder comment(final String comment) {
             comments.add(comment);
 
             return this;
         }
 
-        public Builder comment(String key, String value) {
+        /**
+         * Set comment option with key and value.
+         *
+         * @param key the key
+         * @param value the value
+         * @return the {@link Builder} instance for fluent invoking
+         */
+        public Builder comment(final String key, final String value) {
             if (StringUtils.isBlank(key) || StringUtils.isBlank(value)) {
                 throw new IllegalArgumentException("key and value are not allowed to be blank.");
             }
