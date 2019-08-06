@@ -16,26 +16,34 @@ import org.slf4j.LoggerFactory;
 import rx.Observer;
 
 public class HdiSparkBatchFactory extends LivySparkBatchFactory {
+    private final Deployable deployable;
+
     public HdiSparkBatchFactory(final HdiCluster cluster,
                                 final PostBatches submissionParameter,
-                                final @Nullable HttpObservable http) {
+                                final @Nullable HttpObservable http,
+                                final Deployable deployable) {
         super(cluster, submissionParameter, http);
+        this.deployable = deployable;
     }
 
     public HdiSparkBatchFactory(final HdiCluster cluster,
-                                final PostBatches submissionParameter) {
-        super(cluster, submissionParameter);
+                                final PostBatches submissionParameter,
+                                final Deployable deployable) {
+        this(cluster, submissionParameter, null, deployable);
     }
 
     public HdiSparkBatchFactory(final HdiCluster cluster,
                                 final PostBatches.Options options,
-                                final @Nullable HttpObservable http) {
+                                final @Nullable HttpObservable http,
+                                final Deployable deployable) {
         super(cluster, options, http);
+        this.deployable = deployable;
     }
 
     public HdiSparkBatchFactory(final HdiCluster cluster,
-                                final PostBatches.Options options) {
-        super(cluster, options);
+                                final PostBatches.Options options,
+                                final Deployable deployable) {
+        this(cluster, options, null, deployable);
     }
 
     @Override
@@ -53,6 +61,6 @@ public class HdiSparkBatchFactory extends LivySparkBatchFactory {
                                          final PostBatches postBatches,
                                          final HttpObservable httpObservable,
                                          final Observer<Pair<MessageInfoType, String>> observer) {
-        return new HdiSparkBatch((HdiCluster) livyCluster, postBatches, httpObservable, observer);
+        return new HdiSparkBatch((HdiCluster) livyCluster, postBatches, httpObservable, observer, deployable);
     }
 }

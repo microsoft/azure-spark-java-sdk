@@ -8,7 +8,6 @@ import com.microsoft.azure.spark.tools.utils.Pair;
 import rx.Observable;
 import rx.Observer;
 
-import java.io.File;
 import java.net.URI;
 
 public interface SparkBatchJob {
@@ -105,15 +104,6 @@ public interface SparkBatchJob {
      * @return Observable of the job control message type and content pair
      */
     Observer<Pair<MessageInfoType, String>> getCtrlSubject();
-
-    /**
-     * Deploy the job artifact into cluster.
-     *
-     * @param artifactPath the artifact to deploy
-     * @return Observable of the current instance for chain calling,
-     *         Observable Error: IOException;
-     */
-    Observable<? extends SparkBatchJob> deploy(final File artifactPath);
 
     /**
      * Create a batch Spark job and submit the job into cluster.

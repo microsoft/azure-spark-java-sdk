@@ -5,6 +5,7 @@ package com.microsoft.azure.spark.tools.processes;
 
 import com.microsoft.azure.spark.tools.clusters.HdiCluster;
 import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
+import com.microsoft.azure.spark.tools.job.Deployable;
 import com.microsoft.azure.spark.tools.job.HdiSparkBatchFactory;
 import com.microsoft.azure.spark.tools.job.PostBatchesHelper;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
@@ -18,6 +19,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.mockito.Mockito;
 import picocli.CommandLine;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
@@ -95,7 +97,9 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
                 ? new AmbariHttpObservable(recordingArgs.getUsername(), recordingArgs.getPassword())
                 : new AmbariHttpObservable();
 
-        return SparkBatchJobRemoteProcess.create(new HdiSparkBatchFactory(cluster, batchParam, http));
+        Deployable deployable = Mockito.mock(Deployable.class);
+
+        return SparkBatchJobRemoteProcess.create(new HdiSparkBatchFactory(cluster, batchParam, http, deployable));
     }
 
     // Main function for recording mode

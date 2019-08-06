@@ -8,6 +8,7 @@ import com.microsoft.azure.spark.tools.errors.SparkJobUploadArtifactException;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmissionEvent;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmittedEvent;
+import com.microsoft.azure.spark.tools.job.DeployableBatch;
 import com.microsoft.azure.spark.tools.job.SparkBatchJob;
 import com.microsoft.azure.spark.tools.job.SparkBatchJobFactory;
 import com.microsoft.azure.spark.tools.job.SparkLogFetcher;
@@ -203,15 +204,17 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     // Build and deploy artifact
     protected Observable<? extends SparkBatchJob> prepareArtifact() {
         File artifactToUpload = this.artifactPath;
+        SparkBatchJob batchJob = getSparkJob();
 
-        if (artifactToUpload != null) {
-            return getSparkJob()
-                    .deploy(artifactToUpload)
+        if (artifactToUpload != null && batchJob instanceof DeployableBatch) {
+            return ((DeployableBatch) batchJob)
+                    .deployAndUpdateOptions(artifactToUpload)
                     .onErrorResumeNext(err -> {
                         Throwable rootCause = err.getCause() != null ? err.getCause() : err;
                         return Observable.error(new SparkJobUploadArtifactException(
                                 "Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
                     })
+                    .map(deployedBatch -> (SparkBatchJob) deployedBatch)
                     .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
         }
 
