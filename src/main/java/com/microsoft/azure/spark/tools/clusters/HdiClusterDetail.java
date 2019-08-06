@@ -10,6 +10,9 @@ import com.microsoft.azure.management.hdinsight.v2018_06_01_preview.ClusterIdent
 import com.microsoft.azure.management.hdinsight.v2018_06_01_preview.ConnectivityEndpoint;
 import com.microsoft.azure.management.hdinsight.v2018_06_01_preview.implementation.ClusterInner;
 import com.microsoft.azure.management.hdinsight.v2018_06_01_preview.implementation.HDInsightManager;
+import com.microsoft.azure.spark.tools.job.AzureBlobStorageDeploy;
+import com.microsoft.azure.spark.tools.job.Deployable;
+import com.microsoft.azure.spark.tools.utils.WasbUri;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
@@ -19,7 +22,7 @@ import java.util.Map;
 /**
  * The HDInsight Cluster class.
  */
-public final class HdiClusterDetail implements ClusterDetail, HdiCluster, Cluster {
+public final class HdiClusterDetail implements ClusterDetail, HdiCluster, Cluster, DefaultStorage {
     private final boolean isGatewayRestAuthCredentialEnabled;
     private final Map<String, String> coreSiteConfig;
     private final Map<String, String> gatewayConf;
@@ -149,6 +152,25 @@ public final class HdiClusterDetail implements ClusterDetail, HdiCluster, Cluste
 
     public Update update() {
         return this.cluster.update();
+    }
+
+    public Map<String, String> getCoreSiteConfig() {
+        return coreSiteConfig;
+    }
+
+    @Override
+    public Deployable createDefaultDeployable() {
+        final String defaultFS = getCoreSiteConfig().get("fs.defaultFS");
+
+        if (defaultFS == null) {
+            throw new IllegalArgumentException("No `fs.defaultFS` found from HDInsight core site config");
+        }
+
+        final WasbUri defaultBlobUri = WasbUri.parse(defaultFS);
+        final String storageKey = getCoreSiteConfig().get(AzureBlobStorageDeploy.getHadoopBlobFsPropertyKey(
+                defaultBlobUri.getStorageAccount(), defaultBlobUri.getEndpointSuffix()));
+
+        return new AzureBlobStorageDeploy(storageKey, defaultBlobUri);
     }
 
     private enum GatewayRestAuthCredentialConfigKey {
