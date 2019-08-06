@@ -235,8 +235,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                     appIdWithLog.getRight().getLog().size() == 0
                             && ((!StringUtils.equalsIgnoreCase(getState(), "starting")
                                     && appIdWithLog.getLeft() != null)
-                                || (StringUtils.equalsIgnoreCase(getState(), "dead")
-                                    && appIdWithLog.getLeft() == null));
+                                || StringUtils.equalsIgnoreCase(getState(), "dead"));
 
             getSparkJobApplicationId()
                     .flatMap(applicationId -> getSparkBatchLogRequest(start.get(), maxLinesPerGet), Pair::of)

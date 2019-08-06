@@ -66,6 +66,10 @@ public final class WasbUri {
         return this.absolutePath.get();
     }
 
+    public String getHadoopBlobFsPropertyKey() {
+        return String.format("fs.azure.account.key.%s.blob.%s", getStorageAccount(), getEndpointSuffix());
+    }
+
     @Override
     public String toString() {
         return rawUri.toString();

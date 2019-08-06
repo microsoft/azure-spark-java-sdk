@@ -167,8 +167,7 @@ public final class HdiClusterDetail implements ClusterDetail, HdiCluster, Cluste
         }
 
         final WasbUri defaultBlobUri = WasbUri.parse(defaultFS);
-        final String storageKey = getCoreSiteConfig().get(AzureBlobStorageDeploy.getHadoopBlobFsPropertyKey(
-                defaultBlobUri.getStorageAccount(), defaultBlobUri.getEndpointSuffix()));
+        final String storageKey = getCoreSiteConfig().get(defaultBlobUri.getHadoopBlobFsPropertyKey());
 
         return new AzureBlobStorageDeploy(storageKey, defaultBlobUri);
     }

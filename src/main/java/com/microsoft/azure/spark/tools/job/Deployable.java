@@ -21,13 +21,13 @@ public interface Deployable {
     Observable<String> deploy(final File src);
 
     /**
-     * Get a related path to destination parent folder path based for uploading artifacts.
+     * Get a relative path to destination parent folder path based for uploading artifacts.
      * such as: `SparkSubmission/2019/01/20/_random_uuid_/`
      *
      * @return a related path for artifacts uploading. The default method return a path
      *         with destination folder, date and random UUID
      */
-    default String getRelatedDestParentPath() {
+    default String getDestRelativePath() {
         int year = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR);
         int month = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.MONTH) + 1;
         int day = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.DAY_OF_MONTH);

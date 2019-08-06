@@ -3,19 +3,19 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import com.microsoft.azure.spark.tools.clusters.LivyCluster;
-import com.microsoft.azure.spark.tools.events.MessageInfoType;
-import com.microsoft.azure.spark.tools.http.HttpObservable;
-import com.microsoft.azure.spark.tools.log.Logger;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches.Options;
-import com.microsoft.azure.spark.tools.utils.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 import rx.Observer;
 import rx.subjects.PublishSubject;
 
-public class LivySparkBatchFactory implements SparkBatchJobFactory, Logger {
+import com.microsoft.azure.spark.tools.clusters.LivyCluster;
+import com.microsoft.azure.spark.tools.events.MessageInfoType;
+import com.microsoft.azure.spark.tools.http.HttpObservable;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches.Options;
+import com.microsoft.azure.spark.tools.utils.Pair;
+
+public class LivySparkBatchFactory implements SparkBatchJobFactory {
     private final LivyCluster cluster;
     private final PostBatches submissionParameter;
     private @Nullable HttpObservable http;
