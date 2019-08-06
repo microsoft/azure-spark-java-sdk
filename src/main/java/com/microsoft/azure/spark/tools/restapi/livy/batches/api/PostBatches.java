@@ -146,6 +146,18 @@ public class PostBatches implements Convertible {
         }
 
         /**
+         * Set Spark application proxy user.
+         *
+         * @param user proxy user name to set
+         * @return current {@link Options} instance for fluent calling
+         */
+        public Options proxyUser(final String user) {
+            this.proxyUser = user;
+
+            return this;
+        }
+
+        /**
          * Set Spark application artifact URI to find main class.
          *
          * @param uri application artifact URI to set into option
@@ -326,6 +338,50 @@ public class PostBatches implements Convertible {
          */
         public Options setYarnNumExecutors(final int number) {
             this.yarnNumExecutors = number;
+
+            return this;
+        }
+
+//        public Options withDefaultExecutorCountMemoryAndCoreSettings() {
+//            this.
+//            this.executorMemory = EXECUTOR_MEMORY_DEFAULT_VALUE;
+//            return this;
+//        }
+
+        /**
+         * Apply from a PostBatches instance.
+         * @param postBatches a PostBatches instance to apply
+         * @return current {@link Options} instance for fluent calling
+         */
+        public Options apply(final PostBatches postBatches) {
+            this.name = postBatches.name;
+            this.yarnQueue = postBatches.yarnQueue;
+            this.className = postBatches.className;
+            this.artifactUri = postBatches.file;
+            this.proxyUser = postBatches.proxyUser;
+            this.driverMemory = postBatches.driverMemory;
+            this.driverCores = postBatches.driverCores;
+            this.executorMemory = postBatches.executorMemory;
+            this.executorCores = postBatches.executorCores;
+            this.yarnNumExecutors = postBatches.yarnNumExecutors;
+
+            this.referenceFiles.clear();
+            this.referenceFiles.addAll(postBatches.files);
+
+            this.referencedJars.clear();
+            this.referencedJars.addAll(postBatches.jars);
+
+            this.yarnArchives.clear();
+            this.yarnArchives.addAll(postBatches.archives);
+
+            this.pyFiles.clear();
+            this.pyFiles.addAll(postBatches.pyFiles);
+
+            this.args.clear();
+            this.args.addAll(postBatches.args);
+
+            this.jobConfig.clear();
+            this.jobConfig.putAll(postBatches.jobConfig);
 
             return this;
         }
