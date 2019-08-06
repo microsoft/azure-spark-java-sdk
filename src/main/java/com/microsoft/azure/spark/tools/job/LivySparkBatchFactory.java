@@ -62,6 +62,9 @@ public class LivySparkBatchFactory implements SparkBatchJobFactory, Logger {
         logAsCtrlSubject.subscribe(
                 typedMessage -> {
                     switch (typedMessage.getFirst()) {
+                        case Debug:
+                            log.debug(typedMessage.getRight());
+                            break;
                         case Error:
                             log.error(typedMessage.getRight());
                             break;
@@ -70,15 +73,13 @@ public class LivySparkBatchFactory implements SparkBatchJobFactory, Logger {
                             break;
                         case Log:
                         case Hyperlink:
-                        case HyperlinkWithText:
                             log.trace(typedMessage.getRight());
                             break;
                         case Warning:
                             log.warn(typedMessage.getRight());
                             break;
                         default:
-                            throw new AssertionError("Unknown types "
-                                    + typedMessage.getFirst() == null ? "<null>" : typedMessage.getFirst());
+                            throw new AssertionError(typedMessage.getFirst());
                     }
                 },
                 err -> {
