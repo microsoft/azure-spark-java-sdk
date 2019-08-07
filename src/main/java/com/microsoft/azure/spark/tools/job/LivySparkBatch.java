@@ -378,28 +378,25 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     private Observable<HttpResponse> deleteSparkBatchRequest() {
-        URI uri = getUri();
-
-        return getHttp()
-                .delete(uri.toString(), null, getHeadersToAddOrReplace());
+        return Observable.fromCallable(this::getUri)
+                .flatMap(uri -> getHttp()
+                        .delete(uri.toString(), null, getHeadersToAddOrReplace()));
     }
 
     private Observable<Batch> getSparkBatchRequest() {
-        URI uri = getUri();
-
-        return getHttp()
+        return Observable.fromCallable(this::getUri)
+                .flatMap(uri -> getHttp()
                 .get(uri.toString(), null, getHeadersToAddOrReplace(), Batch.class)
-                .map(Pair::getFirst);
+                .map(Pair::getFirst));
     }
 
     private Observable<GetLogResponse> getSparkBatchLogRequest(final int from, final int size) {
-        URI uri = URI.create(getUri() + "/log");
-
         List<NameValuePair> params = Arrays.asList(new GetLog.FromParameter(from), new GetLog.SizeParameter(size));
 
-        return getHttp()
+        return Observable.fromCallable(() -> URI.create(getUri() + "/log"))
+                .flatMap(uri -> getHttp()
                 .get(uri.toString(), params, getHeadersToAddOrReplace(), GetLogResponse.class)
-                .map(Pair::getFirst);
+                .map(Pair::getFirst));
     }
 
     private LivySparkBatch updateWithBatchResponse(final Batch batch) {

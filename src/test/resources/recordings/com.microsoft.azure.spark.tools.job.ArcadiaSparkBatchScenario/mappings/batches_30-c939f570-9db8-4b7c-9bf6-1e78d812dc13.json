@@ -1,0 +1,48 @@
+{
+  "id" : "c939f570-9db8-4b7c-9bf6-1e78d812dc13",
+  "name" : "batches_30",
+  "request" : {
+    "url" : "/batches/30",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "Authorization" : {
+        "equalTo" : "Bearer bWFza2VkX29hdXRoX3Rva2Vu"
+      },
+      "x-ms-workspace-name" : {
+        "equalTo" : "zhwe-0801"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":30,\"appId\":null,\"appInfo\":null,\"state\":\"not_started\",\"log\":null}",
+    "headers" : {
+      "Date" : "Wed, 07 Aug 2019 08:02:48 GMT",
+      "Content-Type" : "application/json; charset=utf-8",
+      "Server" : "Kestrel",
+      "Request-Context" : "appId=cid-v1:6ae7891a-d0d0-48c2-930a-d025c78cd691",
+      "x-ms-job-submitted-by-name" : "zhwe@microsoft.com",
+      "x-ms-job-submitted-on" : "8/7/2019 8:02:48 AM +00:00",
+      "x-ms-job-scheduled-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-job-ended-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-job-scheduler-state" : "Queued",
+      "x-ms-job-internal-id" : "30",
+      "x-ms-job-result" : "Uncertain",
+      "x-ms-job-type" : "SparkServiceBatch",
+      "x-ms-job-error" : "null",
+      "x-ms-job-queued-on" : "8/7/2019 8:02:49 AM +00:00",
+      "x-ms-job-clusterrequested-on" : "8/7/2019 8:02:49 AM +00:00",
+      "x-ms-job-livysubmission-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-job-cluster" : "http://171.4.177.5:8998/",
+      "x-ms-response-time-ms" : "214",
+      "x-ms-activity-id" : "547fdabe-782f-4875-aa1e-e1a13397f3d7"
+    }
+  },
+  "uuid" : "c939f570-9db8-4b7c-9bf6-1e78d812dc13",
+  "persistent" : true,
+  "insertionIndex" : 2
+}

@@ -1,0 +1,64 @@
+{
+  "id" : "7656de9e-8668-4667-bf45-5e9d8c35492b",
+  "name" : "batches",
+  "request" : {
+    "url" : "/batches",
+    "method" : "POST",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "Authorization" : {
+        "equalTo" : "Bearer bWFza2VkX29hdXRoX3Rva2Vu"
+      },
+      "x-ms-workspace-name" : {
+        "equalTo" : "zhwe-0801"
+      }
+    },
+    "bodyPatterns" : [ {
+      "equalToJson" : {
+        "name" : "sample.JavaSparkPi",
+        "file" : "wasbs://rufancontainer@rufanblob072301.blob.core.windows.net/SparkSubmission/2019/08/07/0d826013-e06f-47b4-bcd0-5f11c715e82c/sample-1.0-SNAPSHOT.jar",
+        "className" : "sample.JavaSparkPi",
+        "driverMemory" : "4G",
+        "driverCores" : 1,
+        "executorMemory" : "4G",
+        "executorCores" : 1,
+        "numExecutors" : 5,
+        "conf" : {
+          "spark.hadoop.fs.azure.account.key.rufanblob072301.blob.core.windows.net" : "masked_blob_access_token"
+        }
+      },
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":30,\"appId\":null,\"appInfo\":null,\"state\":\"not_started\",\"log\":null}",
+    "headers" : {
+      "Date" : "Wed, 07 Aug 2019 08:02:48 GMT",
+      "Content-Type" : "application/json; charset=utf-8",
+      "Server" : "Kestrel",
+      "Request-Context" : "appId=cid-v1:6ae7891a-d0d0-48c2-930a-d025c78cd691",
+      "x-ms-job-submitted-by-name" : "zhwe@microsoft.com",
+      "x-ms-job-submitted-on" : "8/7/2019 8:02:48 AM +00:00",
+      "x-ms-job-scheduled-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-job-ended-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-job-scheduler-state" : "Submitted",
+      "x-ms-job-internal-id" : "30",
+      "x-ms-job-result" : "Uncertain",
+      "x-ms-job-type" : "SparkServiceBatch",
+      "x-ms-job-error" : "null",
+      "x-ms-job-queued-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-job-clusterrequested-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-job-livysubmission-on" : "1/1/0001 12:00:00 AM +00:00",
+      "x-ms-response-time-ms" : "335",
+      "x-ms-activity-id" : "63d857e3-de87-4719-96eb-73b4152e8cdf"
+    }
+  },
+  "uuid" : "7656de9e-8668-4667-bf45-5e9d8c35492b",
+  "persistent" : true,
+  "insertionIndex" : 1
+}

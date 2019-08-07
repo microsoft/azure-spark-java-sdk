@@ -19,8 +19,7 @@ public class SparkJobLogInputStream extends InputStream {
     private String logType;
     private LaterInit<SparkLogFetcher> sparkLogFetcher = new LaterInit<>();
 
-
-    private @Nullable String logUrl;
+    private boolean isClosed = false;
 
     private long offset = 0;
     private byte[] buffer = new byte[0];
@@ -38,7 +37,7 @@ public class SparkJobLogInputStream extends InputStream {
 
     private synchronized @Nullable Pair<String, Long> fetchLog(final long logOffset, final int fetchSize) {
         try {
-            if (sparkLogFetcher.isInitialized()) {
+            if (!isClosed && sparkLogFetcher.isInitialized()) {
                 return getAttachedLogFetcher()
                         .fetch(getLogType(), logOffset, fetchSize)
                         .toBlocking()
@@ -56,6 +55,10 @@ public class SparkJobLogInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
+        if (isClosed) {
+            return -1;
+        }
+
         if (bufferPos >= buffer.length) {
             // throw new IOException("Beyond the buffer end, needs a new log fetch");
             int avail;
@@ -81,6 +84,10 @@ public class SparkJobLogInputStream extends InputStream {
 
     @Override
     public int available() throws IOException {
+        if (isClosed) {
+            return -1;
+        }
+
         if (bufferPos >= buffer.length) {
             Pair<String, Long> sliceOffsetPair = fetchLog(offset, -1);
 
@@ -104,5 +111,12 @@ public class SparkJobLogInputStream extends InputStream {
 
     public String getLogType() {
         return logType;
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+
+        this.isClosed = true;
     }
 }
