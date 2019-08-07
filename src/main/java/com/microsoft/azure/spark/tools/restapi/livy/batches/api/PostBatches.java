@@ -445,6 +445,7 @@ public class PostBatches implements Convertible {
     private final List<String> pyFiles = new ArrayList<>();
     private final List<String> archives = new ArrayList<>();
 
+    @JsonProperty("queue")
     private @Nullable String yarnQueue;
 
     private @Nullable MemorySize driverMemory;
@@ -455,6 +456,7 @@ public class PostBatches implements Convertible {
 
     private @Nullable Integer executorCores;
 
+    @JsonProperty("numExecutors")
     private @Nullable Integer yarnNumExecutors;
 
     private static final String DRIVER_MEMORY = "driverMemory";
@@ -584,7 +586,6 @@ public class PostBatches implements Convertible {
         return executorCores;
     }
 
-    @JsonProperty("numExecutors")
     public @Nullable Integer getNumExecutors() {
         return yarnNumExecutors;
     }
@@ -604,7 +605,6 @@ public class PostBatches implements Convertible {
         return pyFiles;
     }
 
-    @JsonProperty("queue")
     public @Nullable String getYarnQueue() {
         return yarnQueue;
     }

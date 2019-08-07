@@ -13,11 +13,15 @@ import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.http.HttpHeader;
 import com.github.tomakehurst.wiremock.http.HttpHeaders;
+import com.github.tomakehurst.wiremock.recording.RecordSpec;
 import com.github.tomakehurst.wiremock.recording.RecordingStatus;
 import com.github.tomakehurst.wiremock.standalone.JsonFileMappingsSource;
 import com.github.tomakehurst.wiremock.standalone.MappingsSource;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.lang3.StringUtils;
+
+import com.microsoft.azure.spark.tools.http.AuthorizationHeaderTransformer;
+import com.microsoft.azure.spark.tools.http.SparkConfBodyTransformer;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -161,7 +165,7 @@ public class MockHttpService {
         return mockHttpService;
     }
 
-    public static MockHttpService createForRecord(String className, String targetUrl, boolean isPersistent) {
+    public static MockHttpService createForRecord(String className, RecordSpec spec) {
         MockHttpService mockHttpService = new MockHttpService();
         FileSource fileSource = new SingleRootFileSource(RECORDINGS_ROOT + className);
         FileSource filesFileSource = fileSource.child(FILES_ROOT);
@@ -172,6 +176,8 @@ public class MockHttpService {
         WireMockServer mockServer = new WireMockServer(options()
                 .fileSource(fileSource)
                 .mappingSource(new JsonFileMappingsSource(mappingsFileSource))
+                .extensions(new AuthorizationHeaderTransformer(),
+                            new SparkConfBodyTransformer())
 
                 // uncomment for debugging with console output
                 // .notifier(new ConsoleNotifier(true))
@@ -181,19 +187,12 @@ public class MockHttpService {
         );
 
         // Clean up all history recordings
-        if (isPersistent) {
+        if (spec.shouldPersist()) {
             mockServer.resetMappings();
         }
 
         mockServer.start();
-        mockServer.startRecording(recordSpec()
-                .forTarget(targetUrl)
-                .captureHeader("Accept")
-                .captureHeader("Content-Type", true)
-                .captureHeader("X-Requested-By")
-                .makeStubsPersistent(isPersistent)
-                .build()
-        );
+        mockServer.startRecording(spec);
 
         try {
             while (mockServer.getRecordingStatus().getStatus() != RecordingStatus.Recording) {
@@ -206,5 +205,15 @@ public class MockHttpService {
         mockHttpService.httpServerMock = mockServer;
 
         return mockHttpService;
+    }
+
+    public static MockHttpService createForRecord(String className, String targetUrl, boolean isPersistent) {
+        return createForRecord(className, recordSpec()
+                .forTarget(targetUrl)
+                .captureHeader("Accept")
+                .captureHeader("Content-Type", true)
+                .captureHeader("X-Requested-By")
+                .makeStubsPersistent(isPersistent)
+                .build());
     }
 }

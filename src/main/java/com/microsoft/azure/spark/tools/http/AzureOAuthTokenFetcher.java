@@ -43,4 +43,22 @@ public class AzureOAuthTokenFetcher implements OAuthTokenFetcher {
 
         return new AzureOAuthTokenFetcher(cliCredentials);
     }
+
+    /**
+     * Factory method to build Azure OAuth Token Fetcher from Azure CLI default credentials.
+     *
+     * @param resource the Azure resource to get tokens
+     * @return the instance of {@link AzureOAuthTokenFetcher} based on Azure CLI
+     */
+    public static AzureOAuthTokenFetcher buildFromAzureCli(String resource) {
+        AzureCliCredentials cliCredentials;
+
+        try {
+            cliCredentials = AzureCliCredentials.create();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
+
+        return new AzureOAuthTokenFetcher(cliCredentials, resource);
+    }
 }
