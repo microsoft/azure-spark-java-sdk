@@ -25,7 +25,6 @@ import rx.Subscription;
 import rx.subjects.PublishSubject;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -172,11 +171,12 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     public void disconnect() {
         this.isDisconnected = true;
 
-        try {
-            this.jobStdoutLogInputSteam.close();
-            this.jobStderrLogInputSteam.close();
-        } catch (IOException ignored) {
-        }
+        // FIXME!!! Enable SparkBatch awaitPostDone() method to wait for log fetching completed.
+//        try {
+//            this.jobStdoutLogInputSteam.close();
+//            this.jobStderrLogInputSteam.close();
+//        } catch (IOException ignored) {
+//        }
 
         this.ctrlSubject.onCompleted();
         this.eventSubject.onCompleted();
