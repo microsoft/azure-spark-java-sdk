@@ -32,7 +32,7 @@ public class LivySparkBatchScenario {
     private LivySparkBatch jobMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(LivySparkBatchScenario.class);
 
-    @Before
+    @Before("@LivySparkBatchScenario")
     public void setUp() throws Throwable {
         httpMock = new AmbariHttpObservable();
         batchIdMock = new LaterInit<>();
@@ -44,6 +44,12 @@ public class LivySparkBatchScenario {
         caught = null;
 
         this.httpServerMock = MockHttpService.create();
+    }
+
+    @After("@LivySparkBatchScenario")
+    public void cleanUp(){
+        this.httpServerMock.shutdown();
+        TestLoggerFactory.clear();
     }
 
     @Given("^setup a mock Livy service for (.+) request '(.+)' to return '(.+)' with status code (\\d+)$")
@@ -109,12 +115,6 @@ public class LivySparkBatchScenario {
         } catch (Exception e) {
             caught = e;
         }
-    }
-
-    @After
-    public void cleanUp(){
-        this.httpServerMock.getServer().stop();
-        TestLoggerFactory.clear();
     }
 
     @And("mock Spark job batch id to {int}")

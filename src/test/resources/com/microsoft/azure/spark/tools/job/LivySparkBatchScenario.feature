@@ -1,3 +1,4 @@
+@LivySparkBatchScenario
 Feature: LivySparkBatch unit tests
 
   Scenario: getSparkJobApplicationId integration test with mocked Livy server

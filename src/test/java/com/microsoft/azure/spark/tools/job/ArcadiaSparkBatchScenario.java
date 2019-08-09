@@ -26,6 +26,7 @@ import com.microsoft.azure.spark.tools.http.SparkConfBodyTransformer;
 import com.microsoft.azure.spark.tools.log.Slf4jTestLogApacheAdapter;
 import com.microsoft.azure.spark.tools.processes.SparkBatchJobRemoteProcess;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
+import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches.Options;
 import com.microsoft.azure.spark.tools.utils.LogMonitor;
 import com.microsoft.azure.spark.tools.utils.MockHttpRecordingArgs;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
@@ -50,17 +51,17 @@ import static org.junit.Assert.fail;
 public class ArcadiaSparkBatchScenario implements Callable<Void> {
     private MockHttpService arcadiaServiceMock;
     private SparkBatchJobRemoteProcess sparkJobRemoteProcess;
-    private PostBatches.Options sparkParameterOptions = new PostBatches.Options();
+    private Options sparkParameterOptions = new Options();
     private OAuthTokenHttpObservable oauthHttp;
 
-    @Before
+    @Before("@ArcadiaSparkBatchScenario")
     public void setUp() {
         arcadiaServiceMock = MockHttpService.createFromSaving(this.getClass().getName());
     }
 
-    @After
+    @After("@ArcadiaSparkBatchScenario")
     public void cleanUp() {
-        arcadiaServiceMock.getServer().shutdown();
+        arcadiaServiceMock.shutdown();
     }
 
     @Given("create PostBatches with the following job config for ArcadiaBatch")
@@ -94,7 +95,7 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
     @And("submit Arcadia Spark job")
     public void submitArcadiaSparkJob() {
-        sparkJobRemoteProcess = createSparkJobRemoteProcess(arcadiaServiceMock, sparkParameterOptions.build());
+        sparkJobRemoteProcess = createSparkJobRemoteProcess(arcadiaServiceMock, sparkParameterOptions);
         sparkJobRemoteProcess.start();
         assertEquals(0, sparkJobRemoteProcess.exitValue());
     }
@@ -136,7 +137,7 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
     @CommandLine.Option(names = "--dry-run", description = "Dry run without saving response")
     private boolean isDryRun;
 
-    private SparkBatchJobRemoteProcess createSparkJobRemoteProcess(MockHttpService recordingProxyService, PostBatches batchParam) {
+    private SparkBatchJobRemoteProcess createSparkJobRemoteProcess(MockHttpService recordingProxyService, Options options) {
         ArcadiaCompute cluster = new ArcadiaCompute() {
             @Override
             public String getWorkspace() {
@@ -155,13 +156,13 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
         Deployable deployable = Mockito.mock(Deployable.class);
 
-        return SparkBatchJobRemoteProcess.create(new ArcadiaSparkBatchFactory(cluster, batchParam, http, deployable));
+        return SparkBatchJobRemoteProcess.create(new ArcadiaSparkBatchFactory(cluster, options, http, deployable));
     }
 
-    private PostBatches createSubmitParamFromArgs() {
+    private Options createSubmitParamFromArgs() {
         WasbUri wasbUri = WasbUri.parse(artifactUri.toString());
 
-        PostBatches.Options batchParamOptions = new PostBatches.Options()
+        Options batchParamOptions = new Options()
                 .name(mainClassName)
                 .setYarnNumExecutors(PostBatches.NUM_EXECUTORS_DEFAULT_VALUE)
                 .setExecutorCores(PostBatches.EXECUTOR_CORES_DEFAULT_VALUE)
@@ -173,7 +174,7 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
                       storageKey)
                 .artifactUri(artifactUri.toString());
 
-        return batchParamOptions.build();
+        return batchParamOptions;
     }
 
     // Main function for recording mode
