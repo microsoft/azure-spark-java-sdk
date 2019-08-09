@@ -126,8 +126,8 @@ public class MockHttpService {
         return "https://localhost:" + getHttpsPort() + "/" + StringUtils.stripStart(absoluteUri, "/");
     }
 
-    public void shutdown() {
-        this.getServer().shutdown();
+    public void stop() {
+        this.getServer().stop();
     }
 
     public static MockHttpService create() {

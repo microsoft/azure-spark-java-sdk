@@ -51,7 +51,7 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
 
     @After("@SparkBatchJobRemoteProcessScenario")
     public void cleanUp() {
-        hdiServiceMock.shutdown();
+        hdiServiceMock.stop();
     }
 
     @Given("^create PostBatches with the following job config for SparkBatchJobRemoteProcess$")

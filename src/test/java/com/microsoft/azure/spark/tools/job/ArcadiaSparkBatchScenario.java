@@ -61,7 +61,7 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
     @After("@ArcadiaSparkBatchScenario")
     public void cleanUp() {
-        arcadiaServiceMock.shutdown();
+        arcadiaServiceMock.stop();
     }
 
     @Given("create PostBatches with the following job config for ArcadiaBatch")

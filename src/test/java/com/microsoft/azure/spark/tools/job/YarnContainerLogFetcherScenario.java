@@ -38,7 +38,7 @@ public class YarnContainerLogFetcherScenario {
 
     @After("@YarnContainerLogFetcherScenario")
     public void cleanUp(){
-        this.httpServerMock.shutdown();
+        this.httpServerMock.stop();
         TestLoggerFactory.clear();
     }
 
