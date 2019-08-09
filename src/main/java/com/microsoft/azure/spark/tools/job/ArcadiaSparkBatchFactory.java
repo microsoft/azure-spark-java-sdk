@@ -19,21 +19,6 @@ import com.microsoft.azure.spark.tools.utils.Pair;
 
 public class ArcadiaSparkBatchFactory extends LivySparkBatchFactory {
     private final Deployable deployable;
-
-    public ArcadiaSparkBatchFactory(final ArcadiaCompute cluster,
-                                    final PostBatches submissionParameter,
-                                    final @Nullable HttpObservable http,
-                                    final Deployable deployable) {
-        super(cluster, submissionParameter, http);
-        this.deployable = deployable;
-    }
-
-    public ArcadiaSparkBatchFactory(final ArcadiaCompute cluster,
-                                    final PostBatches submissionParameter,
-                                    final Deployable deployable) {
-        this(cluster, submissionParameter, null, deployable);
-    }
-
     public ArcadiaSparkBatchFactory(final ArcadiaCompute cluster,
                                     final PostBatches.Options options,
                                     final @Nullable HttpObservable http,
