@@ -58,10 +58,14 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
     private Options sparkParameterOptions = new Options();
     private OAuthTokenHttpObservable oauthHttp;
 
+    @Before
+    public void setUpGlobal() {
+        System.setProperty("org.apache.commons.logging.Log", Slf4jTestLogApacheAdapter.class.getCanonicalName());
+    }
+
     @Before("@ArcadiaSparkBatchScenario")
     public void setUp() {
         arcadiaServiceMock = MockHttpService.createFromSaving(this.getClass().getName());
-        System.setProperty("org.apache.commons.logging.Log", Slf4jTestLogApacheAdapter.class.getCanonicalName());
     }
 
     @After("@ArcadiaSparkBatchScenario")
