@@ -9,9 +9,16 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                "http/UserAgentEntityScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + UserAgentEntityTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + UserAgentEntityTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class UserAgentEntityTest {
+    static final String SCENARIO_ID = "http/UserAgentEntityScenario";
 }

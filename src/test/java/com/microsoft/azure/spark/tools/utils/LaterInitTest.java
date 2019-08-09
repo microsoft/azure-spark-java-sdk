@@ -9,9 +9,16 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                        "utils/LaterInitScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + LaterInitTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + LaterInitTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class LaterInitTest {
+    static final String SCENARIO_ID = "utils/LaterInitScenario";
 }

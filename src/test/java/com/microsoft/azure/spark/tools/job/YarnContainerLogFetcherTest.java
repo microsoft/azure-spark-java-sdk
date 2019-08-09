@@ -9,9 +9,16 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                        "job/YarnContainerLogFetcherScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + YarnContainerLogFetcherTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + YarnContainerLogFetcherTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class YarnContainerLogFetcherTest {
+    static final String SCENARIO_ID = "job/YarnContainerLogFetcherScenario";
 }

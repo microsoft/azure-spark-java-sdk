@@ -9,10 +9,17 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                        "job/PostBatchesScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + PostBatchesTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + PostBatchesTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 
 public class PostBatchesTest {
+    static final String SCENARIO_ID = "job/PostBatchesScenario";
 }
