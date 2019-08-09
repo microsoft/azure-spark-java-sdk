@@ -126,6 +126,10 @@ public class MockHttpService {
         return "https://localhost:" + getHttpsPort() + "/" + StringUtils.stripStart(absoluteUri, "/");
     }
 
+    public void shutdown() {
+        this.getServer().shutdown();
+    }
+
     public static MockHttpService create() {
         MockHttpService mockHttpService = new MockHttpService();
         mockHttpService.httpServerMock = new WireMockServer(wireMockConfig().dynamicPort());

@@ -1,3 +1,4 @@
+@OAuthTokenHttpObservable
 Feature: OAuthTokenHttpObservable unit test
 
   Scenario: OAuth token in request header

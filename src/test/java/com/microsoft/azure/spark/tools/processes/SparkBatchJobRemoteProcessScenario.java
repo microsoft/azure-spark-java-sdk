@@ -44,14 +44,14 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
     private MockHttpService hdiServiceMock;
     private SparkBatchJobRemoteProcess sparkJobRemoteProcess;
 
-    @Before
+    @Before("@SparkBatchJobRemoteProcessScenario")
     public void setUp() {
         hdiServiceMock = MockHttpService.createFromSaving(this.getClass().getName());
     }
 
-    @After
+    @After("@SparkBatchJobRemoteProcessScenario")
     public void cleanUp() {
-        hdiServiceMock.getServer().shutdown();
+        hdiServiceMock.shutdown();
     }
 
     @Given("^create PostBatches with the following job config for SparkBatchJobRemoteProcess$")

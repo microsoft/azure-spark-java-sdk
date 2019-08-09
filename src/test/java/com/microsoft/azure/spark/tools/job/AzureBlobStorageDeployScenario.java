@@ -3,7 +3,6 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -53,11 +52,6 @@ public class AzureBlobStorageDeployScenario {
         public Observable<String> deploy(File src) {
             return Observable.empty();
         }
-    }
-
-    @Before
-    public void Setup() {
-
     }
 
     @Given("create an AzureBlobStorageDeploy with access key {string} and fs root {string}")

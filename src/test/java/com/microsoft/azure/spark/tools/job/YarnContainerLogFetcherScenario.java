@@ -29,11 +29,17 @@ public class YarnContainerLogFetcherScenario {
     private YarnContainerLogFetcher yarnDriverLogFetcherMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(YarnContainerLogFetcher.class);
 
-    @Before
+    @Before("@YarnContainerLogFetcherScenario")
     public void setUp() throws Throwable {
         httpMock = new AmbariHttpObservable();
         caught = null;
         this.httpServerMock = MockHttpService.create();
+    }
+
+    @After("@YarnContainerLogFetcherScenario")
+    public void cleanUp(){
+        this.httpServerMock.shutdown();
+        TestLoggerFactory.clear();
     }
 
     @Given("^setup a mock Yarn service for (.+) request '(.+)' to return '(.+)' with status code (\\d+)$")
@@ -95,11 +101,5 @@ public class YarnContainerLogFetcherScenario {
     @Then("^getting Spark Job driver log URL Observable should be empty$")
     public void gettingSparkJobDriverLogURLObservableShouldBeEmpty() throws Throwable {
         assertTrue(yarnDriverLogFetcherMock.getSparkJobDriverLogUrl().isEmpty().toBlocking().last());
-    }
-
-    @After
-    public void cleanUp(){
-        this.httpServerMock.getServer().stop();
-        TestLoggerFactory.clear();
     }
 }

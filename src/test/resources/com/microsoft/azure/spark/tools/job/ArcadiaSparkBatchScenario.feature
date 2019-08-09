@@ -1,3 +1,4 @@
+@ArcadiaSparkBatchScenario
 Feature: ArcadiaSparkBatch integration test
 
   Scenario: Submit a Arcadia Spark job with artifact in shared storage

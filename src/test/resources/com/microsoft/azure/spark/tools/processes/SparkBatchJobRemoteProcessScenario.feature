@@ -1,3 +1,4 @@
+@SparkBatchJobRemoteProcessScenario
 Feature: SparkBatchJobRemoteProcess integration test
 
   Scenario: Submit a HDInsight Spark job with artifact in shared storage

@@ -5,6 +5,7 @@ package com.microsoft.azure.spark.tools.http;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -27,9 +28,14 @@ public class AzureHttpObservableScenario {
     private HttpRequestBase httpRequest;
     private String apiVersion;
 
-    @Before
+    @Before("@AzureHttpObservableScenario")
     public void setUp() {
         this.httpServerMock = MockHttpService.create();
+    }
+
+    @After("@AzureHttpObservableScenario")
+    public void cleanUp() {
+        this.httpServerMock.shutdown();;
     }
 
     @Given("^setup a mock service with Azure OAuth auth for '(.+)' request '(.*)' to return '(.*)'")

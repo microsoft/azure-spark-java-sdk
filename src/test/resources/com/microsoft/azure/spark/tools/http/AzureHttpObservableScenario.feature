@@ -1,3 +1,4 @@
+@AzureHttpObservableScenario
 Feature: AzureHttpObservable unit test
 
   Scenario: API Version parameter in request

@@ -1,3 +1,4 @@
+@HttpObservableScenario
 Feature: HttpObservable unit tests
 
   Scenario: Default cookie store setter validation
