@@ -5,6 +5,7 @@ package com.microsoft.azure.spark.tools.job;
 
 import com.github.tomakehurst.wiremock.extension.Parameters;
 import com.nimbusds.jose.util.Base64;
+import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -15,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.mockito.Mockito;
 import picocli.CommandLine;
+import uk.org.lidalia.slf4jtest.LoggingEvent;
+import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 import wiremock.com.google.common.collect.ImmutableMap;
 
 import com.microsoft.azure.spark.tools.clusters.ArcadiaCompute;
@@ -35,6 +38,7 @@ import com.microsoft.azure.spark.tools.utils.WasbUri;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -57,10 +61,26 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
     @Before("@ArcadiaSparkBatchScenario")
     public void setUp() {
         arcadiaServiceMock = MockHttpService.createFromSaving(this.getClass().getName());
+        System.setProperty("org.apache.commons.logging.Log", Slf4jTestLogApacheAdapter.class.getCanonicalName());
     }
 
     @After("@ArcadiaSparkBatchScenario")
-    public void cleanUp() {
+    public void cleanUp(Scenario scenario) {
+        if (scenario.isFailed()) {
+            scenario.write("Failure Apache common logs:");
+            // Print out Apache logs for failure
+            TestLoggerFactory.getInstance().getAllLoggingEventsFromLoggers().stream()
+                    .filter(event -> event.getCreatingLogger().getName().startsWith("org.apache"))
+                    .sorted(Comparator.comparing(LoggingEvent::getTimestamp))
+                    .map(event -> String.format("%s %s %-10s (%s) -- %s\n",
+                            event.getTimestamp().toString(),
+                            event.getLevel(),
+                            event.getCreatingLogger().getName(),
+                            event.getThreadName(),
+                            event.getMessage()))
+                    .forEach(scenario::write);
+        }
+
         arcadiaServiceMock.stop();
     }
 
