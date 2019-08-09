@@ -37,7 +37,7 @@ public class OAuthTokenHttpObservableScenario {
 
     @After("@OAuthTokenHttpObservable")
     public void cleanUp() {
-        this.httpServerMock.shutdown();
+        this.httpServerMock.stop();
     }
 
     @Given("^setup a mock service with OAuth auth for '(.+)' request '(.*)' to return '(.*)'")

@@ -48,7 +48,7 @@ public class LivySparkBatchScenario {
 
     @After("@LivySparkBatchScenario")
     public void cleanUp(){
-        this.httpServerMock.shutdown();
+        this.httpServerMock.stop();
         TestLoggerFactory.clear();
     }
 

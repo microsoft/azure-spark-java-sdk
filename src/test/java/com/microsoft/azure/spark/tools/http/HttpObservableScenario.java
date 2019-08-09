@@ -55,8 +55,8 @@ public class HttpObservableScenario {
 
     @After("@HttpObservableScenario")
     public void cleanUp() {
-        this.httpServerMock.shutdown();
-        this.httpsServerMock.shutdown();
+        this.httpServerMock.stop();
+        this.httpsServerMock.stop();
     }
 
     @Given("^setup a basic Http mock service for '(.+)' request '(.*)' to return '(.*)'")
