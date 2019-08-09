@@ -12,6 +12,7 @@ import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.utils.LogMonitor;
 import com.microsoft.azure.spark.tools.utils.MockHttpRecordingArgs;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
+
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -71,7 +72,7 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
         String actual = IOUtils.toString(sparkJobRemoteProcess.getInputStream(), StandardCharsets.UTF_8);
 
         assertEquals("Stdout is unmatched, the captured logs:\n"
-                        + StringUtils.join(LogMonitor.getAllPackagesLogs(), "\n") + "\n",
+                        + StringUtils.join(LogMonitor.getSparkToolsLogs(), "\n") + "\n",
                 StringUtils.join(expect, "\n") + "\n", actual);
     }
 
@@ -154,7 +155,7 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
 
         if (scenario.doesPrintLog) {
             System.out.println("========= log4j =========");
-            System.out.println(StringUtils.join(LogMonitor.getAllPackagesLogs(), "\n"));
+            System.out.println(StringUtils.join(LogMonitor.getSparkToolsLogs(), "\n"));
         }
     }
 
