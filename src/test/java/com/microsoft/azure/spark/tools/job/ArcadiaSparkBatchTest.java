@@ -9,7 +9,9 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
+        plugin = {
+                "pretty",
+                "html:target/cucumber/job/ArcadiaSparkBatchScenario"},
         features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
                 "job/ArcadiaSparkBatchScenario.feature"}
 )
