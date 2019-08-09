@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.recordSpec;
+import static com.microsoft.azure.spark.tools.utils.LogMonitor.cleanUpSparkToolsLogs;
+import static com.microsoft.azure.spark.tools.utils.LogMonitor.getSparkToolsLogsStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -76,7 +78,7 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
             TestLoggerFactory.getInstance().getAllLoggingEventsFromLoggers().stream()
                     .filter(event -> event.getCreatingLogger().getName().startsWith("org.apache"))
                     .sorted(Comparator.comparing(LoggingEvent::getTimestamp))
-                    .map(event -> String.format("%s %s %-10s (%s) -- %s\n",
+                    .map(event -> String.format("%s %s %-10s (%s) -- %s",
                             event.getTimestamp().toString(),
                             event.getLevel(),
                             event.getCreatingLogger().getName(),
@@ -119,6 +121,8 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
     @And("submit Arcadia Spark job")
     public void submitArcadiaSparkJob() {
+        cleanUpSparkToolsLogs();
+
         sparkJobRemoteProcess = createSparkJobRemoteProcess(arcadiaServiceMock, sparkParameterOptions);
         sparkJobRemoteProcess.start();
         assertEquals(0, sparkJobRemoteProcess.exitValue());
@@ -126,7 +130,7 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
     @Then("no any error after submitting Arcadia Spark job")
     public void noAnyErrorAfterSubmittingArcadiaSparkJob() {
-        LogMonitor.getAllPackagesLogs().forEach(logEntry -> {
+        getSparkToolsLogsStream().map(LoggingEvent::getMessage).forEach(logEntry -> {
             if (StringUtils.containsIgnoreCase(logEntry, "ERR")
                     || StringUtils.containsIgnoreCase(logEntry, "Exception")) {
                 fail(logEntry);
@@ -247,11 +251,11 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
         if (scenario.doesPrintLog) {
             System.out.println("========= log4j =========");
-            System.out.println(StringUtils.join(LogMonitor.getAllPackagesLogs(), "\n"));
+            System.out.println(StringUtils.join(LogMonitor.getSparkToolsLogs(), "\n"));
         }
 
         // Print out error logs
-        LogMonitor.getAllPackagesLogs().forEach(logEntry -> {
+        LogMonitor.getSparkToolsLogs().forEach(logEntry -> {
             if (StringUtils.containsIgnoreCase(logEntry, "ERR")
                     || StringUtils.containsIgnoreCase(logEntry, "Exception")) {
                 System.err.println(logEntry);
