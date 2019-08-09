@@ -6,9 +6,16 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                "utils/VersionsScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + VersionsTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + VersionsTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class VersionsTest {
+    static final String SCENARIO_ID = "utils/VersionsScenario";
 }

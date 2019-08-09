@@ -9,9 +9,16 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                "job/AzureBlobStorageDeployScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + AzureBlobStorageDeployTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + AzureBlobStorageDeployTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class AzureBlobStorageDeployTest {
+    static final String SCENARIO_ID = "job/AzureBlobStorageDeployScenario";
 }

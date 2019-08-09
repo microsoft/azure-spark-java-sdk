@@ -9,9 +9,16 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                        "job/LivySparkBatchScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + LivySparkBatchTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + LivySparkBatchTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class LivySparkBatchTest {
+    static final String SCENARIO_ID = "job/LivySparkBatchScenario";
 }

@@ -9,9 +9,16 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        plugin = {"html:target/cucumber"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                "http/HttpObservableScenario.feature"}
+        plugin = {
+                "html:target/cucumber/"
+                        + HttpObservableTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + HttpObservableTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class HttpObservableTest {
+    static final String SCENARIO_ID = "http/HttpObservableScenario";
 }

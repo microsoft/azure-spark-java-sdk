@@ -10,10 +10,15 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
         plugin = {
-                "pretty",
-                "html:target/cucumber/job/ArcadiaSparkBatchScenario"},
-        features = { "src/test/resources/com/microsoft/azure/spark/tools/" +
-                "job/ArcadiaSparkBatchScenario.feature"}
+                "html:target/cucumber/"
+                        + ArcadiaSparkBatchTest.SCENARIO_ID
+        },
+        features = {
+                "src/test/resources/com/microsoft/azure/spark/tools/"
+                        + ArcadiaSparkBatchTest.SCENARIO_ID
+                        + ".feature"
+        }
 )
 public class ArcadiaSparkBatchTest {
+    static final String SCENARIO_ID = "job/ArcadiaSparkBatchScenario";
 }
