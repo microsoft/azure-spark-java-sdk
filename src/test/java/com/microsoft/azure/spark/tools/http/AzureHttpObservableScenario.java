@@ -35,7 +35,7 @@ public class AzureHttpObservableScenario {
 
     @After("@AzureHttpObservableScenario")
     public void cleanUp() {
-        this.httpServerMock.stop();;
+        this.httpServerMock.stop();
     }
 
     @Given("^setup a mock service with Azure OAuth auth for '(.+)' request '(.*)' to return '(.*)'")

@@ -17,7 +17,6 @@ import org.apache.http.HttpHeaders;
 import org.mockito.Mockito;
 import picocli.CommandLine;
 import uk.org.lidalia.slf4jtest.LoggingEvent;
-import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 import wiremock.com.google.common.collect.ImmutableMap;
 
 import com.microsoft.azure.spark.tools.clusters.ArcadiaCompute;
@@ -38,12 +37,12 @@ import com.microsoft.azure.spark.tools.utils.WasbUri;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.recordSpec;
 import static com.microsoft.azure.spark.tools.utils.LogMonitor.cleanUpSparkToolsLogs;
+import static com.microsoft.azure.spark.tools.utils.LogMonitor.getPackageLogsStream;
 import static com.microsoft.azure.spark.tools.utils.LogMonitor.getSparkToolsLogsStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -74,16 +73,10 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
     public void cleanUp(Scenario scenario) {
         if (scenario.isFailed()) {
             scenario.write("Failure Apache common logs:");
+
             // Print out Apache logs for failure
-            TestLoggerFactory.getInstance().getAllLoggingEventsFromLoggers().stream()
-                    .filter(event -> event.getCreatingLogger().getName().startsWith("org.apache"))
-                    .sorted(Comparator.comparing(LoggingEvent::getTimestamp))
-                    .map(event -> String.format("%s %s %-10s (%s) -- %s",
-                            event.getTimestamp().toString(),
-                            event.getLevel(),
-                            event.getCreatingLogger().getName(),
-                            event.getThreadName(),
-                            event.getMessage()))
+            getPackageLogsStream("org.apache")
+                    .map(LogMonitor::formatLog)
                     .forEach(scenario::write);
         }
 

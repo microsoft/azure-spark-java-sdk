@@ -1,7 +1,7 @@
 @ArcadiaSparkBatchScenario
 Feature: ArcadiaSparkBatch integration test
 
-  Scenario: Submit a Arcadia Spark job with artifact in shared storage
+  Scenario: Submit an Arcadia Spark job with artifact in shared storage
     Given create PostBatches with the following job config for ArcadiaBatch
       | className | sample.JavaSparkPi |
       | name      | sample.JavaSparkPi |
