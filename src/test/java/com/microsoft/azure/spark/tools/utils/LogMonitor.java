@@ -15,12 +15,7 @@ public class LogMonitor {
     public static List<String> getSparkToolsLogs() {
         return getSparkToolsLogsStream()
                 .sorted(Comparator.comparing(LoggingEvent::getTimestamp))
-                .map(event -> String.format("LOG: %s %s %-10s (%s) -- %s",
-                        event.getTimestamp().toString(),
-                        event.getLevel(),
-                        event.getCreatingLogger().getName(),
-                        event.getThreadName(),
-                        event.getMessage()))
+                .map(LogMonitor::formatLog)
                 .collect(Collectors.toList());
     }
 
@@ -42,5 +37,14 @@ public class LogMonitor {
 
     public static void cleanUpSparkToolsLogs() {
         cleanUpPackageLogs("com.microsoft.azure.spark.tools");
+    }
+
+    public static String formatLog(LoggingEvent event) {
+        return String.format("LOG: %s %s %-10s (%s) -- %s",
+                event.getTimestamp().toString(),
+                event.getLevel(),
+                event.getCreatingLogger().getName(),
+                event.getThreadName(),
+                event.getMessage());
     }
 }
