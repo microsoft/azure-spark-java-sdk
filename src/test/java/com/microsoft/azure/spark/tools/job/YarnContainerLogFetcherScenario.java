@@ -12,11 +12,17 @@ import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
+import org.apache.commons.io.IOUtils;
 import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
+import java.util.Collections;
+import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -28,6 +34,7 @@ public class YarnContainerLogFetcherScenario {
     private YarnCluster yarnClusterMock;
     private YarnContainerLogFetcher yarnDriverLogFetcherMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(YarnContainerLogFetcher.class);
+    private Map<String, String> logsByType = Collections.emptyMap();
 
     @Before("@YarnContainerLogFetcherScenario")
     public void setUp() throws Throwable {
@@ -101,5 +108,29 @@ public class YarnContainerLogFetcherScenario {
     @Then("^getting Spark Job driver log URL Observable should be empty$")
     public void gettingSparkJobDriverLogURLObservableShouldBeEmpty() throws Throwable {
         assertTrue(yarnDriverLogFetcherMock.getSparkJobDriverLogUrl().isEmpty().toBlocking().last());
+    }
+
+    @Given("parse Yarn container log fetched from HTML page {string}")
+    public void parseYarnContainerLogFetchedFromHTMLPage(String webPageFileName) throws Throwable {
+        InputStream pageFileInput = getClass().getClassLoader().getResourceAsStream(
+                getClass().getPackage().getName().replace('.', File.separatorChar)
+                        + File.separator + webPageFileName);
+
+        String html = IOUtils.toString(pageFileInput, UTF_8);
+
+        logsByType = yarnDriverLogFetcherMock.parseLogsFromHtml(html);
+    }
+
+    @Then("check the type log {string} should start with {string}")
+    public void checkTheTypeLogDirectoryInfoShouldStartWithTemplate(String type, String expectStart) {
+        assertTrue("No such type log: " + type, logsByType.containsKey(type));
+        assertTrue("The type " + type + " log [" + logsByType.get(type).substring(0, 10)
+                + "] didn't start with " + expectStart, logsByType.get(type).startsWith(expectStart));
+
+    }
+
+    @Then("parse Yarn container log fetched from HTML {string}")
+    public void parseYarnContainerLogFetchedFromHTML(String html) {
+        logsByType = yarnDriverLogFetcherMock.parseLogsFromHtml(html);
     }
 }

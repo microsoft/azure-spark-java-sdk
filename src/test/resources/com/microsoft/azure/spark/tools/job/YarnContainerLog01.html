@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <title>
+    
+  </title>
+  <link rel="stylesheet" href="/yarnui/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/yarnui/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/yarnui/static/dt-1.9.4/css/jui-dt.css">
+  <script type="text/javascript" src="/yarnui/static/jquery/jquery-1.8.2.min.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/jquery/jquery-ui-1.9.1.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/dt-1.9.4/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    });
+  </script>
+  <div id="jsnotice" class="ui-state-error">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/yarnui/static/hadoop-st.png">
+            </div>
+            <h1>
+              
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav">
+            <h3>
+              Application
+            </h3>
+            <ul>
+              <li>
+                <a href="/yarnui/jobhistory/about">About</a>
+              <li>
+                <a href="/yarnui/jobhistory/app">Jobs</a>
+            </ul>
+            <h3>
+              Tools
+            </h3>
+            <ul>
+              <li>
+                <a href="/yarnui/conf">Configuration</a>
+              <li>
+                <a href="/yarnui/logs">Local logs</a>
+              <li>
+                <a href="/yarnui/stacks">Server stacks</a>
+              <li>
+                <a href="/yarnui/jmx?qry=Hadoop:*">Server metrics</a>
+            </ul>
+          </div>
+        </td>
+        <td class="content">
+          <pre>
+
+</pre>
+          <p>
+            Log Type: directory.info
+          <p>
+            Log Upload Time: Thu May 09 03:16:31 +0000 2019
+          <p>
+            Log Length: 6529
+          <p>
+            Showing 4096 bytes of 6529 total. Click 
+            <a href="/yarnui/jobhistory/logs/wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30050/container_e01_1555654226340_0115_01_000001/container_e01_1555654226340_0115_01_000001/livy/directory.info/?start=0">here</a>
+             for the full log.
+          <pre>.template
+  8652041      4 -r-x------   1 yarn     hadoop       2316 May  9 03:16 ./__spark_conf__/__hadoop_conf__/ssl-client.xml.example
+  8652018      4 -r-x------   1 yarn     hadoop          1 May  9 03:16 ./__spark_conf__/__hadoop_conf__/dfs.exclude
+  8652039      4 -r-x------   1 yarn     hadoop       1602 May  9 03:16 ./__spark_conf__/__hadoop_conf__/health_check
+  8652033     12 -r-x------   1 yarn     hadoop       9083 May  9 03:16 ./__spark_conf__/__hadoop_conf__/hdfs-site.xml
+  8652022      4 -r-x------   1 yarn     hadoop        744 May  9 03:16 ./__spark_conf__/__hadoop_conf__/ssl-client.xml
+  8652017      4 -r-x------   1 yarn     hadoop        259 May  9 03:16 ./__spark_conf__/__hadoop_conf__/hadoop-metrics2-azure-file-system.properties
+  8652015      4 -r-x------   1 yarn     hadoop        241 May  9 03:16 ./__spark_conf__/__hadoop_conf__/hadoop-metrics2-adl-file-system.properties
+  8652034      4 -r-x------   1 yarn     hadoop       1020 May  9 03:16 ./__spark_conf__/__hadoop_conf__/commons-logging.properties
+  8652194      4 -r-x------   1 yarn     hadoop        945 May  9 03:16 ./__spark_conf__/__hadoop_conf__/taskcontroller.cfg
+  8652037      8 -r-x------   1 yarn     hadoop       4221 May  9 03:16 ./__spark_conf__/__hadoop_conf__/task-log4j.properties
+  8652193      8 -r-x------   1 yarn     hadoop       4113 May  9 03:16 ./__spark_conf__/__hadoop_conf__/mapred-queues.xml.template
+  8652040      4 -r-x------   1 yarn     hadoop       1195 May  9 03:16 ./__spark_conf__/__hadoop_conf__/hive-site.xml
+  8652020      4 -r-x------   1 yarn     hadoop        244 May  9 03:16 ./__spark_conf__/__hadoop_conf__/spark-thrift-fairscheduler.xml
+  8652011      8 -r-x------   1 yarn     hadoop       5730 May  9 03:16 ./__spark_conf__/__hadoop_conf__/hadoop-env.sh
+  8652031      4 -r-x------   1 yarn     hadoop       1335 May  9 03:16 ./__spark_conf__/__hadoop_conf__/configuration.xsl
+  8652014      4 -r-x------   1 yarn     hadoop       2830 May  9 03:16 ./__spark_conf__/__hadoop_conf__/hadoop-metrics2.properties
+  8652032      8 -r-x------   1 yarn     hadoop       4302 May  9 03:16 ./__spark_conf__/__hadoop_conf__/yarn-env.sh
+  8652012      8 -r-x------   1 yarn     hadoop       8070 May  9 03:16 ./__spark_conf__/__hadoop_conf__/mapred-site.xml
+  8652044      4 -r-x------   1 yarn     hadoop        219 May  9 03:16 ./__spark_conf__/__hadoop_conf__/topology_mappings.data
+  8652088      4 -r-x------   1 yarn     hadoop       2697 May  9 03:16 ./__spark_conf__/__hadoop_conf__/ssl-server.xml.example
+  8652045      4 -r-x------   1 yarn     hadoop       1000 May  9 03:16 ./__spark_conf__/__hadoop_conf__/ssl-server.xml
+  8652013     12 -r-x------   1 yarn     hadoop      10754 May  9 03:16 ./__spark_conf__/__hadoop_conf__/log4j.properties
+  8652028      4 -r-x------   1 yarn     hadoop       2444 May  9 03:16 ./__spark_conf__/__hadoop_conf__/capacity-scheduler.xml
+  8652016     28 -r-x------   1 yarn     hadoop      24964 May  9 03:16 ./__spark_conf__/__hadoop_conf__/yarn-site.xml
+  8652196      4 -r-x------   1 yarn     hadoop       3461 May  9 03:16 ./__spark_conf__/__spark_conf__.properties
+  8652008      4 -r-x------   1 yarn     hadoop       3635 May  9 03:16 ./__spark_conf__/log4j.properties
+  8652195    136 -r-x------   1 yarn     hadoop     135194 May  9 03:16 ./__spark_conf__/__spark_hadoop_conf__.xml
+  8652206      4 -rwx------   1 yarn     hadoop        759 May  9 03:16 ./default_container_executor.sh
+  8652203      4 -rw-r--r--   1 yarn     hadoop         60 May  9 03:16 ./.launch_container.sh.crc
+  8652199      4 drwx--x---   2 yarn     hadoop       4096 May  9 03:16 ./tmp
+  8652207      4 -rw-r--r--   1 yarn     hadoop         16 May  9 03:16 ./.default_container_executor.sh.crc
+  8652202      8 -rwx------   1 yarn     hadoop       6592 May  9 03:16 ./launch_container.sh
+  8652200      4 -rw-r--r--   1 yarn     hadoop         69 May  9 03:16 ./container_tokens
+  8652201      4 -rw-r--r--   1 yarn     hadoop         12 May  9 03:16 ./.container_tokens.crc
+broken symlinks(find -L . -maxdepth 5 -type l -ls):
+</pre>
+          <pre>
+
+</pre>
+          <p>
+            Log Type: prelaunch.err
+          <p>
+            Log Upload Time: Thu May 09 03:16:31 +0000 2019
+          <p>
+            Log Length: 0
+          <pre></pre>
+          <pre>
+
+</pre>
+          <p>
+            Log Type: stdout
+          <p>
+            Log Upload Time: Thu May 09 03:16:41 +0000 2019
+          <p>
+            Log Length: 83
+          <pre>(10.10.10.10,&quot;FRED&quot;,GET http://images.com/2013/Generic.jpg HTTP/1.1)	bytes=621	n=2
+</pre>
+          <pre>
+
+</pre>
+          <p>
+            Log Type: stderr
+          <p>
+            Log Upload Time: Thu May 09 03:16:42 +0000 2019
+          <p>
+            Log Length: 42950
+          <p>
+            Showing 4096 bytes of 42950 total. Click 
+            <a href="/yarnui/jobhistory/logs/wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30050/container_e01_1555654226340_0115_01_000001/container_e01_1555654226340_0115_01_000001/livy/stderr/?start=0">here</a>
+             for the full log.
+          <pre>.0E-4, max=1.713311, mean=0.03784145849472171, stddev=0.24547936947579752, median=0.0015999999999999999, p75=0.002, p95=0.0050999999999999995, p98=1.713311, p99=1.713311, p999=1.713311, mean_rate=7.117206991134792, m1=1.4, m5=1.4, m15=1.4, rate_unit=events/second, duration_unit=milliseconds
+19/05/09 03:16:41 INFO metrics: type=TIMER, name=application_1555654226340_0115.driver.LiveListenerBus.listenerProcessingTime.org.apache.spark.status.AppStatusListener, count=44, min=0.0024, max=31.023896999999998, mean=2.4547524526277567, stddev=5.876043399731473, median=0.204202, p75=1.60211, p95=14.707092999999999, p98=31.023896999999998, p99=31.023896999999998, p999=31.023896999999998, mean_rate=5.921080739448543, m1=1.0, m5=1.0, m15=1.0, rate_unit=events/second, duration_unit=milliseconds
+19/05/09 03:16:41 INFO metrics: type=TIMER, name=application_1555654226340_0115.driver.LiveListenerBus.queue.appStatus.listenerProcessingTime, count=44, min=0.0235, max=31.059396999999997, mean=2.4949896756423464, stddev=5.875936370492155, median=0.232602, p75=1.6312099999999998, p95=14.777693999999999, p98=31.059396999999997, p99=31.059396999999997, p999=31.059396999999997, mean_rate=5.919504362289072, m1=1.0, m5=1.0, m15=1.0, rate_unit=events/second, duration_unit=milliseconds
+19/05/09 03:16:41 INFO metrics: type=TIMER, name=application_1555654226340_0115.driver.LiveListenerBus.queue.eventLog.listenerProcessingTime, count=44, min=0.015, max=68.757137, mean=8.468596610427415, stddev=13.398995984218377, median=1.301309, p75=20.724231, p95=31.845902, p98=68.757137, p99=68.757137, p999=68.757137, mean_rate=7.096692322900792, m1=1.4, m5=1.4, m15=1.4, rate_unit=events/second, duration_unit=milliseconds
+19/05/09 03:16:41 INFO metrics: type=TIMER, name=application_1555654226340_0115.driver.LiveListenerBus.queue.executorManagement.listenerProcessingTime, count=44, min=0.015201, max=4.030926, mean=0.2928407880846266, stddev=0.8303335717416928, median=0.0339, p75=0.061001, p95=1.59211, p98=4.030926, p99=4.030926, p999=4.030926, mean_rate=6.589188634560831, m1=1.0, m5=1.0, m15=1.0, rate_unit=events/second, duration_unit=milliseconds
+19/05/09 03:16:41 INFO metrics: type=TIMER, name=application_1555654226340_0115.driver.LiveListenerBus.queue.shared.listenerProcessingTime, count=44, min=0.030601, max=95.799408, mean=3.1430500529808088, stddev=14.354981642887365, median=0.355602, p75=0.899106, p95=5.006031, p98=95.799408, p99=95.799408, p999=95.799408, mean_rate=7.112904958727032, m1=1.4, m5=1.4, m15=1.4, rate_unit=events/second, duration_unit=milliseconds
+19/05/09 03:16:41 INFO YarnAllocator: Driver requested a total number of 0 executor(s).
+19/05/09 03:16:41 INFO YarnClusterSchedulerBackend: Shutting down all executors
+19/05/09 03:16:41 INFO YarnSchedulerBackend$YarnDriverEndpoint: Asking each executor to shut down
+19/05/09 03:16:41 INFO SchedulerExtensionServices: Stopping SchedulerExtensionServices
+(serviceOption=None,
+ services=List(),
+ started=false)
+19/05/09 03:16:41 INFO MapOutputTrackerMasterEndpoint: MapOutputTrackerMasterEndpoint stopped!
+19/05/09 03:16:42 INFO MemoryStore: MemoryStore cleared
+19/05/09 03:16:42 INFO BlockManager: BlockManager stopped
+19/05/09 03:16:42 INFO BlockManagerMaster: BlockManagerMaster stopped
+19/05/09 03:16:42 INFO OutputCommitCoordinator$OutputCommitCoordinatorEndpoint: OutputCommitCoordinator stopped!
+19/05/09 03:16:42 INFO SparkContext: Successfully stopped SparkContext
+19/05/09 03:16:42 INFO ApplicationMaster: Final app status: SUCCEEDED, exitCode: 0
+19/05/09 03:16:42 INFO ApplicationMaster: Unregistering ApplicationMaster with SUCCEEDED
+19/05/09 03:16:42 INFO AMRMClientImpl: Waiting for application to be successfully unregistered.
+19/05/09 03:16:42 INFO ApplicationMaster: Deleting staging directory adl://home/user/livy/.sparkStaging/application_1555654226340_0115
+19/05/09 03:16:42 INFO ShutdownHookManager: Shutdown hook called
+19/05/09 03:16:42 INFO ShutdownHookManager: Deleting directory /mnt/resource/hadoop/yarn/local/usercache/livy/appcache/application_1555654226340_0115/spark-ddcde63e-131e-4470-a79a-4f9c43f7df53
+</pre>
+          <pre>
+
+</pre>
+          <p>
+            Log Type: launch_container.sh
+          <p>
+            Log Upload Time: Thu May 09 03:16:31 +0000 2019
+          <p>
+            Log Length: 6592
+          <p>
+            Showing 4096 bytes of 6592 total. Click 
+            <a href="/yarnui/jobhistory/logs/wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30050/container_e01_1555654226340_0115_01_000001/container_e01_1555654226340_0115_01_000001/livy/launch_container.sh/?start=0">here</a>
+             for the full log.
+          <pre>ework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:$PWD/mr-framework/hadoop/share/hadoop/tools/lib/*:/usr/hdp/2.6.5.3006-29/hadoop/lib/hadoop-lzo-0.6.0.2.6.5.3006-29.jar:/etc/hadoop/conf/secure:/usr/lib/hdinsight-datalake/*::/usr/hdp/current/spark2-client/jars/*:/usr/lib/hdinsight-datalake/*:/usr/hdp/current/spark_llap/*:/usr/hdp/current/spark2-client/conf::$PWD/__spark_conf__/__hadoop_conf__&quot;
+export HADOOP_TOKEN_FILE_LOCATION=&quot;/mnt/resource/hadoop/yarn/local/usercache/livy/appcache/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/container_tokens&quot;
+export NM_AUX_SERVICE_spark_shuffle=&quot;&quot;
+export SPARK_USER=&quot;livy&quot;
+export LOCAL_USER_DIRS=&quot;/mnt/resource/hadoop/yarn/local/usercache/livy/&quot;
+export HADOOP_HOME=&quot;/usr/hdp/2.6.5.3006-29/hadoop&quot;
+export HOME=&quot;/home/&quot;
+export NM_AUX_SERVICE_spark2_shuffle=&quot;&quot;
+export CONTAINER_ID=&quot;container_e01_1555654226340_0115_01_000001&quot;
+export MALLOC_ARENA_MAX=&quot;4&quot;
+echo &quot;Setting up job resources&quot;
+ln -sf &quot;/mnt/resource/hadoop/yarn/local/usercache/livy/filecache/306/__spark_conf__.zip&quot; &quot;__spark_conf__&quot;
+ln -sf &quot;/mnt/resource/hadoop/yarn/local/usercache/livy/filecache/307/default_artifact.jar&quot; &quot;__app__.jar&quot;
+echo &quot;Copying debugging information&quot;
+# Creating copy of launch script
+cp &quot;launch_container.sh&quot; &quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/launch_container.sh&quot;
+chmod 640 &quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/launch_container.sh&quot;
+# Determining directory contents
+echo &quot;ls -l:&quot; 1&gt;&quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/directory.info&quot;
+ls -l 1&gt;&gt;&quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/directory.info&quot;
+echo &quot;find -L . -maxdepth 5 -ls:&quot; 1&gt;&gt;&quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/directory.info&quot;
+find -L . -maxdepth 5 -ls 1&gt;&gt;&quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/directory.info&quot;
+echo &quot;broken symlinks(find -L . -maxdepth 5 -type l -ls):&quot; 1&gt;&gt;&quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/directory.info&quot;
+find -L . -maxdepth 5 -type l -ls 1&gt;&gt;&quot;/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/directory.info&quot;
+echo &quot;Launching container&quot;
+exec /bin/bash -c &quot;LD_LIBRARY_PATH=&quot;/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64:$LD_LIBRARY_PATH&quot; $JAVA_HOME/bin/java -server -Xmx1024m -Djava.io.tmpdir=$PWD/tmp -Dhdp.version=2.6.5.3006-29 '-Detwlogger.component=sparkdriver' '-DlogFilter.filename=SparkLogFilters.xml' '-DpatternGroup.filename=SparkPatternGroups.xml' '-Dlog4jspark.root.logger=INFO,console,RFA,ETW,Anonymizer' '-Dlog4jspark.log.dir=/var/log/sparkapp/\${user.name}' '-Dlog4jspark.log.file=sparkdriver.log' '-Dlog4j.configuration=file:/usr/hdp/current/spark2-client/conf/log4j.properties' '-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl' '-XX:+UseParallelGC' '-XX:+UseParallelOldGC' -Dspark.yarn.app.container.log.dir=/mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001 org.apache.spark.deploy.yarn.ApplicationMaster --class 'sample.LogQuery' --jar adl://zhwespkwesteu.azuredatalakestore.net/clusters/zhwe-spk23-adlsgen1/SparkSubmission/2019/04/28/4c017893-dd57-4a01-8bf9-593f002cd391/default_artifact.jar --properties-file $PWD/__spark_conf__/__spark_conf__.properties 1&gt; /mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/stdout 2&gt; /mnt/resource/hadoop/yarn/log/application_1555654226340_0115/container_e01_1555654226340_0115_01_000001/stderr&quot;
+</pre>
+          <pre>
+
+</pre>
+          <p>
+            Log Type: prelaunch.out
+          <p>
+            Log Upload Time: Thu May 09 03:16:31 +0000 2019
+          <p>
+            Log Length: 100
+          <pre>Setting up env variables
+Setting up job resources
+Copying debugging information
+Launching container
+</pre>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</html>

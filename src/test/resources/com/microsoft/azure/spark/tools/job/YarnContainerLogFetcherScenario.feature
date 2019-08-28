@@ -36,3 +36,16 @@ Feature: YarnContainerLogFetcher unit tests
     And create a yarn application driver with id application_1513565654634_0011
     And setup a mock Yarn service for GET request '/yarnui/ws/v1/cluster/apps/application_1513565654634_0011/appattempts' to return '{"appAttempts":{"appAttempt":[{"id":1,"startTime":1513673984219,"finishedTime":0,"containerId":"container_1513565654634_0011_01_000001","nodeHttpAddress":"10.0.0.6:30060","nodeId":"10.0.0.6:30050","logsLink":"http://10.0.0.6:30060/node/containerlogs/container_1513565654634_0011_01_000001/livy","blacklistedNodes":"","appAttemptId":"appattempt_1513565654634_0011_000001"},{"id":2,"startTime":1513673985219,"finishedTime":0,"containerId":"container_1513565654634_0011_01_000002","nodeHttpAddress":"10.0.0.7:30060","nodeId":"10.0.0.7:30050","logsLink":"","blacklistedNodes":"","appAttemptId":"appattempt_1513565654634_0011_000002"}]}}' with status code 200
     Then getting Spark Job driver log URL Observable should be empty
+
+  Scenario: parse logs from HTML page
+    Given prepare a Yarn cluster with Node Manager base URL http://127.0.0.1:$port/yarnui/ws/v1/cluster/apps/ and UI base URL http://127.0.0.1:$port/yarnui/
+    And create a yarn application driver with id mockId
+    And parse Yarn container log fetched from HTML page 'YarnContainerLog01.html'
+    Then check the type log 'directory.info' should start with '.template'
+    Then check the type log 'stdout' should start with '(10.10.10.10'
+    Then check the type log 'stderr' should start with '.0E-4, max=1.7133'
+
+  Scenario: parse logs from an empty HTML page
+    Given prepare a Yarn cluster with Node Manager base URL http://127.0.0.1:$port/yarnui/ws/v1/cluster/apps/ and UI base URL http://127.0.0.1:$port/yarnui/
+    And create a yarn application driver with id mockId
+    Then parse Yarn container log fetched from HTML ''
