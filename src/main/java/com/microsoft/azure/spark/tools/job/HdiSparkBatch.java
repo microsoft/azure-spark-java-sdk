@@ -46,7 +46,7 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher, De
     }
 
     @Override
-    public Observable<Pair<String, Long>> fetch(final String type,
+    public Observable<String> fetch(final String type,
                                                 final long logOffset,
                                                 final int size) {
         return getDriverLogFetcherDelegate()
