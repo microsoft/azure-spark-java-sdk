@@ -35,6 +35,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.microsoft.azure.spark.tools.utils.MockHttpService.WIREMOCK_SSL_CERT_PUBLIC_KEY;
 import static com.microsoft.azure.spark.tools.utils.MockHttpService.WIREMOCK_SSL_CERT_TYPE;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -111,7 +112,7 @@ public class HttpObservableScenario {
     public void checkRequestHeaderAndParameters(String method,
                                                 String path,
                                                 Map<String, String> expectHeaders) {
-        this.httpMock.request(this.httpRequest, null, null, null )
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe();
 
@@ -126,7 +127,7 @@ public class HttpObservableScenario {
     public void checkHttpsRequestHeaderAndParameters(String method,
                                                 String path,
                                                 Map<String, String> expectHeaders) {
-        this.httpMock.request(this.httpRequest, null, null, null )
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe();
 
@@ -143,7 +144,7 @@ public class HttpObservableScenario {
                                                     String expectErrorMessage) {
         AtomicReference<Throwable> caught = new AtomicReference<>();
 
-        this.httpMock.request(this.httpRequest, null, null, null)
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe(
                         data -> {},
@@ -163,7 +164,7 @@ public class HttpObservableScenario {
                                                     String expectErrorMessage) {
         AtomicReference<Throwable> caught = new AtomicReference<>();
 
-        this.httpMock.request(this.httpRequest, null, null, null)
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe(
                         data -> {},

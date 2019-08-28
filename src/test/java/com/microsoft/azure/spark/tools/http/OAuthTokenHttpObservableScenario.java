@@ -22,6 +22,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -61,7 +62,7 @@ public class OAuthTokenHttpObservableScenario {
 
     @Then("^send and check OAuthTokenHttp '(.+)' request to '(.*)' should contains header '(.*):\\s*(.*)'$")
     public void checkRequestHeader(String method, String path, String expectHeaderKey, String expectHeaderValue) {
-        this.httpMock.request(this.httpRequest, null, null, null)
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe();
 
@@ -105,7 +106,7 @@ public class OAuthTokenHttpObservableScenario {
     public void sendRequestAndCheckError(String method, String path, String expectedErrorMessage) {
         AtomicReference<Throwable> caught = new AtomicReference<>();
 
-        this.httpMock.request(this.httpRequest, null, null, null)
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe(
                         data -> {},
@@ -123,7 +124,7 @@ public class OAuthTokenHttpObservableScenario {
     public void sendRequestAndCheckRuntimeError(String method, String path, String expectedErrorMessage) {
         AtomicReference<Throwable> caught = new AtomicReference<>();
 
-        this.httpMock.request(this.httpRequest, null, null, null)
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe(
                         data -> {},

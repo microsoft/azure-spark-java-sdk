@@ -30,7 +30,6 @@ import com.microsoft.azure.spark.tools.utils.Pair;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +41,7 @@ import java.util.function.Predicate;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Debug;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Log;
+import static java.util.Collections.emptyList;
 
 public class LivySparkBatch implements SparkBatchJob, Logger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
@@ -78,7 +78,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     private @Nullable String appId;
     private @Nullable Map<String, String> appInfo;
 
-    private List<String> submissionLogs = Collections.emptyList();
+    private List<String> submissionLogs = emptyList();
 
     public LivySparkBatch(
             final LivyCluster cluster,
@@ -342,7 +342,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     protected List<Header> getHeadersToAddOrReplace() {
-        return Collections.emptyList();
+        return emptyList();
     }
 
     protected HttpObservable getHttp() {
@@ -373,20 +373,20 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                 Debug, String.format("Spark Batch request to %s, body: %s", uri, body.convertToJson())));
 
         return getHttp()
-                .post(uri.toString(), entity, null, getHeadersToAddOrReplace(), Batch.class)
+                .post(uri.toString(), entity, emptyList(), getHeadersToAddOrReplace(), Batch.class)
                 .map(Pair::getFirst);
     }
 
     private Observable<HttpResponse> deleteSparkBatchRequest() {
         return Observable.fromCallable(this::getUri)
                 .flatMap(uri -> getHttp()
-                        .delete(uri.toString(), null, getHeadersToAddOrReplace()));
+                        .delete(uri.toString(), emptyList(), getHeadersToAddOrReplace()));
     }
 
     private Observable<Batch> getSparkBatchRequest() {
         return Observable.fromCallable(this::getUri)
                 .flatMap(uri -> getHttp()
-                .get(uri.toString(), null, getHeadersToAddOrReplace(), Batch.class)
+                .get(uri.toString(), emptyList(), getHeadersToAddOrReplace(), Batch.class)
                 .map(Pair::getFirst));
     }
 
@@ -404,7 +404,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         this.state = batch.getState();
         this.appId = batch.getAppId();
         this.appInfo = batch.getAppInfo();
-        this.submissionLogs = (batch.getLog() == null) ? Collections.emptyList() : batch.getLog();
+        this.submissionLogs = (batch.getLog() == null) ? emptyList() : batch.getLog();
 
         return this;
     }

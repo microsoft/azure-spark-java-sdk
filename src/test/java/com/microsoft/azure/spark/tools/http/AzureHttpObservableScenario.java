@@ -20,6 +20,7 @@ import java.util.Map;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.when;
 
 public class AzureHttpObservableScenario {
@@ -67,7 +68,7 @@ public class AzureHttpObservableScenario {
                                                 String expectHeaderKey,
                                                 String expectHeaderValue,
                                                 Map<String, String> expectParameters) {
-        this.httpMock.request(this.httpRequest, null, null, null )
+        this.httpMock.request(this.httpRequest, null, emptyList(), emptyList())
                 .toBlocking()
                 .subscribe();
 

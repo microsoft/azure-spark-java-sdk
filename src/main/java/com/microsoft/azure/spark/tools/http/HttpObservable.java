@@ -362,8 +362,8 @@ public class HttpObservable implements Logger {
      */
     public Observable<CloseableHttpResponse> request(final HttpRequestBase httpRequest,
                                                      final @Nullable HttpEntity entity,
-                                                     final @Nullable List<NameValuePair> parameters,
-                                                     final @Nullable List<Header> addOrReplaceHeaders) {
+                                                     final List<NameValuePair> parameters,
+                                                     final List<Header> addOrReplaceHeaders) {
         return Observable.fromCallable(() -> {
             URIBuilder builder = new URIBuilder(httpRequest.getURI());
 
@@ -399,8 +399,8 @@ public class HttpObservable implements Logger {
      */
     public Observable<HttpResponse> requestWithHttpResponse(final HttpRequestBase httpRequest,
                                                             final @Nullable HttpEntity entity,
-                                                            final @Nullable List<NameValuePair> parameters,
-                                                            final @Nullable List<Header> addOrReplaceHeaders) {
+                                                            final List<NameValuePair> parameters,
+                                                            final List<Header> addOrReplaceHeaders) {
         return request(httpRequest, entity, parameters, addOrReplaceHeaders)
                 .flatMap(HttpObservable::toStringOnlyOkResponse);
     }
@@ -412,8 +412,8 @@ public class HttpObservable implements Logger {
     }
 
     public <T> Observable<Pair<T, HttpResponse>> get(final String uri,
-                                 final @Nullable List<NameValuePair> parameters,
-                                 final @Nullable List<Header> addOrReplaceHeaders,
+                                 final List<NameValuePair> parameters,
+                                 final List<Header> addOrReplaceHeaders,
                                  final Class<T> clazz) {
         return requestWithHttpResponse(new HttpGet(uri), null, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
@@ -421,8 +421,8 @@ public class HttpObservable implements Logger {
 
     public <T> Observable<Pair<T, HttpResponse>> put(final String uri,
                                  final @Nullable HttpEntity entity,
-                                 final @Nullable List<NameValuePair> parameters,
-                                 final @Nullable List<Header> addOrReplaceHeaders,
+                                 final List<NameValuePair> parameters,
+                                 final List<Header> addOrReplaceHeaders,
                                  final Class<T> clazz) {
         return requestWithHttpResponse(new HttpPut(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
@@ -430,23 +430,23 @@ public class HttpObservable implements Logger {
 
     public <T> Observable<Pair<T, HttpResponse>> post(final String uri,
                                   final @Nullable HttpEntity entity,
-                                  final @Nullable List<NameValuePair> parameters,
-                                  final @Nullable List<Header> addOrReplaceHeaders,
+                                  final List<NameValuePair> parameters,
+                                  final List<Header> addOrReplaceHeaders,
                                   final Class<T> clazz) {
         return requestWithHttpResponse(new HttpPost(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
     public Observable<HttpResponse> delete(final String uri,
-                                           final @Nullable List<NameValuePair> parameters,
-                                           final @Nullable List<Header> addOrReplaceHeaders) {
+                                           final List<NameValuePair> parameters,
+                                           final List<Header> addOrReplaceHeaders) {
         return requestWithHttpResponse(new HttpDelete(uri), null, parameters, addOrReplaceHeaders);
     }
 
     public <T> Observable<Pair<T, HttpResponse>> patch(final String uri,
                                    final @Nullable HttpEntity entity,
-                                   final @Nullable List<NameValuePair> parameters,
-                                   final @Nullable List<Header> addOrReplaceHeaders,
+                                   final List<NameValuePair> parameters,
+                                   final List<Header> addOrReplaceHeaders,
                                    final Class<T> clazz) {
         return requestWithHttpResponse(new HttpPatch(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
