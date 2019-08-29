@@ -251,14 +251,13 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                 (job1, job2) -> job);
     }
 
-    Observable<Pair<String, String>> awaitForJobDone(final SparkBatchJob runningJob) {
+    private Observable<Pair<String, String>> awaitForJobDone(final SparkBatchJob runningJob) {
         return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
-                .flatMap(jobStateDiagnosticsPair -> runningJob
+                .delaySubscription(runningJob
                         .awaitPostDone()
                         .subscribeOn(schedulers.processBarVisibleAsync(
-                                "Waiting for " + getTitle() + " log aggregation is done"))
-                        .map(any -> jobStateDiagnosticsPair));
+                                "Waiting for " + getTitle() + " log aggregation is done")));
     }
 
     public Observer<Pair<MessageInfoType, String>> getCtrlSubject() {
