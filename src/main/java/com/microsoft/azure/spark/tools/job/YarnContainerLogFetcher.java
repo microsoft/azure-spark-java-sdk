@@ -314,18 +314,19 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
                                 .ifPresent(logTypeWindowOpenings::onNext);
                     }
                 })
+                .filter(node -> StringUtils.equalsIgnoreCase(node.tagName(), "pre"))
+                // Classify elements as window by log types
+                .window(logTypeWindowOpenings)
+                // Only take the first `<pre>` element as log
+                .flatMap(Observable::first)
+                // Pair elements window with log type
                 .withLatestFrom(logTypeWindowOpenings, Pair::of)
-                .filter(nodeWithType ->
-                        // The log content starts from `pre`
-                        StringUtils.equalsIgnoreCase(nodeWithType.getFirst().tagName(), "pre")
-                                && !nodeWithType.getFirst().childNodes().isEmpty())
-                // Only take the first `<pre>` element
-                .doOnNext(nodeWithType -> logTypeWindowOpenings.onNext(nodeWithType.getRight() + "-ending"))
-                .toMap(Pair::getSecond, nodeWithType ->
-                        // Get the content as log
-                        String.valueOf(nodeWithType.getFirst().childNodes().get(0)))
+                // Only take non-empty logs
+                .filter(nodesWithType -> !nodesWithType.getFirst().childNodes().isEmpty())
+                // Take log type as key, the element content as log value
+                .toMap(Pair::getSecond, nodeWithType -> String.valueOf(nodeWithType.getFirst().childNodes().get(0)))
                 .toBlocking()
-                .firstOrDefault(emptyMap());
+                .singleOrDefault(emptyMap());
     }
 
     private @Nullable String findLogTypeDomNode(Node node) {
