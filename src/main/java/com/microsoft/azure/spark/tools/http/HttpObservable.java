@@ -186,7 +186,6 @@ public class HttpObservable implements Logger {
             // set default headers
             headerGroup.setHeaders(new Header[] {
                     new BasicHeader("Content-Type", "application/json"),
-                    new BasicHeader(HttpHeaders.ACCEPT_ENCODING, "*/*"),
             });
 
             if (StringUtils.isNotBlank(getUserAgent())) {
