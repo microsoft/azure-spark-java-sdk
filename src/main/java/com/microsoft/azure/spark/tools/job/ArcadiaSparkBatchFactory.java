@@ -20,8 +20,9 @@ public class ArcadiaSparkBatchFactory extends LivySparkBatchFactory {
     private final Deployable deployable;
 
     public ArcadiaSparkBatchFactory(final ArcadiaCompute cluster,
+                                    final PostBatches parameter,
                                     final Deployable deployable) {
-        super(cluster);
+        super(cluster, parameter);
 
         this.deployable = deployable;
     }

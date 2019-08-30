@@ -11,28 +11,18 @@ import com.microsoft.azure.spark.tools.clusters.LivyCluster;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
-import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches.Options;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
 
 public class LivySparkBatchFactory implements SparkBatchJobFactory {
     private final LivyCluster cluster;
-    private final LaterInit<PostBatches> submissionParameter = new LaterInit<>();
+    private final PostBatches submissionParameter;
     private final LaterInit<HttpObservable> http = new LaterInit<>();
     private final LaterInit<Observer<Pair<MessageInfoType, String>>> ctrlSubject = new LaterInit<>();
 
-    public LivySparkBatchFactory(final LivyCluster cluster) {
+    public LivySparkBatchFactory(final LivyCluster cluster, final PostBatches parameter) {
         this.cluster = cluster;
-    }
-
-    public LivySparkBatchFactory submissionParameter(final PostBatches parameter) {
-        this.submissionParameter.set(parameter);
-
-        return this;
-    }
-
-    public LivySparkBatchFactory options(final Options options) {
-        return submissionParameter(options.build());
+        this.submissionParameter = parameter;
     }
 
     public LivySparkBatchFactory http(final HttpObservable httpObservable) {
@@ -101,6 +91,6 @@ public class LivySparkBatchFactory implements SparkBatchJobFactory {
         this.ctrlSubject.setIfNull(createLogAsControlSubject(getLoggerForControlSubject()));
         this.http.setIfNull(createDefaultHttpObservable());
 
-        return createBatch(cluster, submissionParameter.get(), this.http.get(), this.ctrlSubject.get());
+        return createBatch(cluster, submissionParameter, this.http.get(), this.ctrlSubject.get());
     }
 }

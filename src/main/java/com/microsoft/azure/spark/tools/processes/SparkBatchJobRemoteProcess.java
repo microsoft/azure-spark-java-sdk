@@ -270,13 +270,11 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
 
     public static class Builder {
         private @Nullable File artifact = null;
-        private final LaterInit<SparkBatchJobFactory> batchJobFactory = new LaterInit<>();
+        private final SparkBatchJobFactory batchJobFactory;
         private final LaterInit<Observer<Pair<MessageInfoType, String>>> ctrlSubject = new LaterInit<>();
 
-        public Builder jobFactory(final SparkBatchJobFactory jobFactory) {
-            this.batchJobFactory.set(jobFactory);
-
-            return this;
+        public Builder(final SparkBatchJobFactory jobFactory) {
+            this.batchJobFactory = jobFactory;
         }
 
         public Builder artifact(final File artifactToUpload) {
@@ -292,7 +290,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         }
 
         public SparkBatchJobRemoteProcess build() {
-            SparkBatchJob sparkBatch = batchJobFactory.get().factory();
+            SparkBatchJob sparkBatch = batchJobFactory.factory();
             String title = "Spark remote batch process: " + sparkBatch.getName();
 
             ctrlSubject.setIfNull(sparkBatch.getCtrlSubject());
