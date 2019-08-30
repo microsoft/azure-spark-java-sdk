@@ -42,6 +42,7 @@ import static com.microsoft.azure.spark.tools.events.MessageInfoType.Debug;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Log;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
 public class LivySparkBatch implements SparkBatchJob, Logger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
@@ -76,7 +77,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     private String state = "__new_instance";
 
     private @Nullable String appId;
-    private @Nullable Map<String, String> appInfo;
+    private Map<String, String> appInfo = emptyMap();
 
     private List<String> submissionLogs = emptyList();
 
@@ -403,7 +404,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
         getLaterBatchId().setIfNull(batch.getId());
         this.state = batch.getState();
         this.appId = batch.getAppId();
-        this.appInfo = batch.getAppInfo();
+        this.appInfo = batch.getAppInfo() != null ? batch.getAppInfo() : emptyMap();
         this.submissionLogs = (batch.getLog() == null) ? emptyList() : batch.getLog();
 
         return this;

@@ -100,7 +100,9 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
 
         Deployable deployable = Mockito.mock(Deployable.class);
 
-        return SparkBatchJobRemoteProcess.create(new HdiSparkBatchFactory(cluster, batchParam, http, deployable));
+        return new SparkBatchJobRemoteProcess.Builder()
+                .jobFactory(new HdiSparkBatchFactory(cluster, deployable).submissionParameter(batchParam).http(http))
+                .build();
     }
 
     // Main function for recording mode
