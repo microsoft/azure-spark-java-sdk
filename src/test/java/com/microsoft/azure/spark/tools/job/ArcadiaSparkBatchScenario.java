@@ -177,9 +177,8 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
         Deployable deployable = Mockito.mock(Deployable.class);
 
-        return new SparkBatchJobRemoteProcess.Builder()
-                .jobFactory(new ArcadiaSparkBatchFactory(cluster, deployable).options(options).http(http))
-                .build();
+        return new SparkBatchJobRemoteProcess.Builder(
+                new ArcadiaSparkBatchFactory(cluster, options.build(), deployable).http(http)).build();
     }
 
     private Options createSubmitParamFromArgs() {

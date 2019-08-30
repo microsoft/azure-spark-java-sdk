@@ -17,8 +17,8 @@ import rx.Observer;
 public class HdiSparkBatchFactory extends LivySparkBatchFactory {
     private final Deployable deployable;
 
-    public HdiSparkBatchFactory(final HdiCluster cluster, final Deployable deployable) {
-        super(cluster);
+    public HdiSparkBatchFactory(final HdiCluster cluster, final PostBatches parameter, final Deployable deployable) {
+        super(cluster, parameter);
 
         this.deployable = deployable;
     }
