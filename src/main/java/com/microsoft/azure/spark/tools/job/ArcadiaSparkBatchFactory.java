@@ -3,7 +3,6 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observer;
@@ -19,18 +18,12 @@ import com.microsoft.azure.spark.tools.utils.Pair;
 
 public class ArcadiaSparkBatchFactory extends LivySparkBatchFactory {
     private final Deployable deployable;
-    public ArcadiaSparkBatchFactory(final ArcadiaCompute cluster,
-                                    final PostBatches.Options options,
-                                    final @Nullable HttpObservable http,
-                                    final Deployable deployable) {
-        super(cluster, options, http);
-        this.deployable = deployable;
-    }
 
     public ArcadiaSparkBatchFactory(final ArcadiaCompute cluster,
-                                    final PostBatches.Options options,
                                     final Deployable deployable) {
-        this(cluster, options, null, deployable);
+        super(cluster);
+
+        this.deployable = deployable;
     }
 
     @Override

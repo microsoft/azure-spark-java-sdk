@@ -3,7 +3,6 @@
 
 package com.microsoft.azure.spark.tools.job;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.LoggerFactory;
 import rx.Observer;
 import rx.subjects.PublishSubject;
@@ -13,46 +12,37 @@ import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches.Options;
+import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
 
 public class LivySparkBatchFactory implements SparkBatchJobFactory {
     private final LivyCluster cluster;
-    private final PostBatches submissionParameter;
-    private @Nullable HttpObservable http;
-    private @Nullable Observer<Pair<MessageInfoType, String>> ctrlSubject;
+    private final LaterInit<PostBatches> submissionParameter = new LaterInit<>();
+    private final LaterInit<HttpObservable> http = new LaterInit<>();
+    private final LaterInit<Observer<Pair<MessageInfoType, String>>> ctrlSubject = new LaterInit<>();
 
-    public LivySparkBatchFactory(
-            final LivyCluster cluster,
-            final PostBatches submissionParameter,
-            final @Nullable HttpObservable http) {
+    public LivySparkBatchFactory(final LivyCluster cluster) {
         this.cluster = cluster;
-        this.submissionParameter = submissionParameter;
-        this.http = http;
     }
 
-    public LivySparkBatchFactory(
-            final LivyCluster cluster,
-            final PostBatches submissionParameter) {
-        this(cluster, submissionParameter, null);
+    public LivySparkBatchFactory submissionParameter(final PostBatches parameter) {
+        this.submissionParameter.set(parameter);
+
+        return this;
     }
 
-    public LivySparkBatchFactory(
-            final LivyCluster cluster,
-            final Options options,
-            final @Nullable HttpObservable http) {
-        this.cluster = cluster;
-        this.submissionParameter = options.build();
-        this.http = http;
+    public LivySparkBatchFactory options(final Options options) {
+        return submissionParameter(options.build());
     }
 
-    public LivySparkBatchFactory(
-            final LivyCluster cluster,
-            final Options options) {
-        this(cluster, options, null);
+    public LivySparkBatchFactory http(final HttpObservable httpObservable) {
+        this.http.set(httpObservable);
+
+        return this;
     }
 
     public LivySparkBatchFactory controlSubject(final Observer<Pair<MessageInfoType, String>> subject) {
-        this.ctrlSubject = subject;
+        this.ctrlSubject.set(subject);
 
         return this;
     }
@@ -108,14 +98,9 @@ public class LivySparkBatchFactory implements SparkBatchJobFactory {
 
     @Override
     public SparkBatchJob factory() {
-        Observer<Pair<MessageInfoType, String>> subject = this.ctrlSubject != null
-                ? this.ctrlSubject
-                : createLogAsControlSubject(getLoggerForControlSubject());
+        this.ctrlSubject.setIfNull(createLogAsControlSubject(getLoggerForControlSubject()));
+        this.http.setIfNull(createDefaultHttpObservable());
 
-        HttpObservable httpObservable = this.http != null
-                ? this.http
-                : createDefaultHttpObservable();
-
-        return createBatch(cluster, submissionParameter, httpObservable, subject);
+        return createBatch(cluster, submissionParameter.get(), this.http.get(), this.ctrlSubject.get());
     }
 }

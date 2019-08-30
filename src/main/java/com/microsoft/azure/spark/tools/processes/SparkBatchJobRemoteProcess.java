@@ -268,34 +268,37 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         return isDestroyed;
     }
 
-    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory) {
-        return create(sparkBatchJobFactory, (File) null);
-    }
+    public static class Builder {
+        private @Nullable File artifact = null;
+        private final LaterInit<SparkBatchJobFactory> batchJobFactory = new LaterInit<>();
+        private final LaterInit<Observer<Pair<MessageInfoType, String>>> ctrlSubject = new LaterInit<>();
 
-    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory,
-                                                    final @Nullable File artifactToUpload) {
-        return create(sparkBatchJobFactory, artifactToUpload, null);
-    }
+        public Builder jobFactory(final SparkBatchJobFactory jobFactory) {
+            this.batchJobFactory.set(jobFactory);
 
-    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory,
-                                      final @Nullable Observer<Pair<MessageInfoType, String>> ctrlSubject) {
-        return create(sparkBatchJobFactory, null, ctrlSubject);
-    }
+            return this;
+        }
 
-    public static SparkBatchJobRemoteProcess create(final SparkBatchJobFactory sparkBatchJobFactory,
-                                      final @Nullable File artifactToUpload,
-                                      final @Nullable Observer<Pair<MessageInfoType, String>> ctrlSubject) {
-        SparkBatchJob sparkBatch = sparkBatchJobFactory.factory();
-        String title = "Spark remote batch process: " + sparkBatch.getName();
-        Observer<Pair<MessageInfoType, String>> subject = ctrlSubject != null
-                ? ctrlSubject
-                : sparkBatch.getCtrlSubject();
+        public Builder artifact(final File artifactToUpload) {
+            this.artifact = artifactToUpload;
 
-        return new SparkBatchJobRemoteProcess(
-                new ConsoleScheduler(),
-                sparkBatch,
-                artifactToUpload,
-                title,
-                subject);
+            return this;
+        }
+
+        public Builder controlSubject(final Observer<Pair<MessageInfoType, String>> subject) {
+            this.ctrlSubject.set(subject);
+
+            return this;
+        }
+
+        public SparkBatchJobRemoteProcess build() {
+            SparkBatchJob sparkBatch = batchJobFactory.get().factory();
+            String title = "Spark remote batch process: " + sparkBatch.getName();
+
+            ctrlSubject.setIfNull(sparkBatch.getCtrlSubject());
+
+            return new SparkBatchJobRemoteProcess(
+                    new ConsoleScheduler(), sparkBatch, artifact, title, ctrlSubject.get());
+        }
     }
 }
