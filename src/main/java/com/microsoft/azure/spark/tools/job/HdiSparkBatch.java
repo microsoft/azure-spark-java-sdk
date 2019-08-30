@@ -54,6 +54,19 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher, De
                 .flatMap(delegate -> delegate.fetch(type, logOffset, size));
     }
 
+    @Override
+    public Observable<String> awaitLogAggregationDone() {
+        return getDriverLogFetcherDelegate()
+                .observable()
+                .flatMap(SparkLogFetcher::awaitLogAggregationDone);
+    }
+
+    @Override
+    public Observable<String> awaitPostDone() {
+        return awaitLogAggregationDone()
+                .delaySubscription(super.awaitPostDone());
+    }
+
     private LaterInit<SparkLogFetcher> getDriverLogFetcherDelegate() {
         return driverLogFetcherDelegate;
     }

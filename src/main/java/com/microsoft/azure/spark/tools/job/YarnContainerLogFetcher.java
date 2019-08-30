@@ -130,7 +130,8 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
                                                  .orElse(Observable.empty()));
     }
 
-    protected Observable<String> getJobLogAggregationDone() {
+    @Override
+    public Observable<String> awaitLogAggregationDone() {
         return this.getYarnApplicationRequest()
                 .repeatWhen(ob -> ob.delay(2, TimeUnit.SECONDS))
                 .filter(Objects::nonNull)

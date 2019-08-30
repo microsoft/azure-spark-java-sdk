@@ -7,4 +7,6 @@ import rx.Observable;
 
 public interface SparkLogFetcher {
     Observable<String> fetch(String type, long logOffset, int size);
+
+    Observable<String> awaitLogAggregationDone();
 }
