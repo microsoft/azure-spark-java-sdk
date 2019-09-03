@@ -1,0 +1,33 @@
+{
+  "id" : "10ea1f2a-f193-41d4-b0cb-b56ca27c0d27",
+  "name" : "livy_batches_244_log",
+  "request" : {
+    "url" : "/livy/batches/244/log?from=42&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":244,\"from\":42,\"total\":42,\"log\":[]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "5fedd7a19cf04c8f8cf589dc807c45e0",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Tue, 03 Sep 2019 02:56:42 GMT"
+    }
+  },
+  "uuid" : "10ea1f2a-f193-41d4-b0cb-b56ca27c0d27",
+  "persistent" : true,
+  "scenarioName" : "scenario-livy-batches-244-log",
+  "requiredScenarioState" : "scenario-livy-batches-244-log-8",
+  "insertionIndex" : 120
+}

@@ -23,6 +23,7 @@ Feature: LaterInit unit tests
     Then check LaterInit's value "hello" should be got
     Then check LaterInit's value just got should be "hello"
     Then check LaterInit's observable onNext "hello" should be got
+    Then check LaterInit's later subscriber onNext "hello" should be got
 
   Scenario: Set normal value firstly after preparing observable should be success
     When init a String type LaterInit

@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 public class LaterInitScenario {
     private final static Pattern stringRegex = Pattern.compile("^\"(.*)\"$");
 
-    private LaterInit laterInitValue;
+    private LaterInit<String> laterInitValue;
     private Exception caught;
     private AtomicBoolean isComplete = new AtomicBoolean(false);
     private AtomicReference<Object> actureValue = new AtomicReference<>();
@@ -102,6 +102,15 @@ public class LaterInitScenario {
         assertEquals(parseString(expect), actureValue.get());
     }
 
+    @Then("^check LaterInit's later subscriber onNext (.*) should be got$")
+    public void checkLaterInitLaterSubscriberOnNext(String expect) {
+        String actual = laterInitValue.observable()
+                .toBlocking()
+                .single();
+
+        assertEquals(parseString(expect), actual);
+    }
+
     @Then("^check LaterInit initialized exception thrown$")
     public void checkLaterInitInitilizedExceptionThrown() {
         assertEquals(InitializedException.class, caught.getClass());
@@ -113,7 +122,7 @@ public class LaterInitScenario {
         assertNull(valueGot);
     }
 
-    private Object parseString(String input) {
+    private String parseString(String input) {
         Matcher stringMatcher = stringRegex.matcher(input.trim());
 
         if (input.equalsIgnoreCase("null")) {

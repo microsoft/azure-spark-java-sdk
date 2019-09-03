@@ -28,6 +28,7 @@ import picocli.CommandLine.Option;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -80,7 +81,7 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
         HdiCluster cluster = new HdiCluster() {
             @Override
             public String getYarnNMConnectionUrl() {
-                return "http://localhost:" + recordingProxyService.getPort() + "yarnui/ws/v1/cluster/apps/";
+                return "http://localhost:" + recordingProxyService.getPort() + "/yarnui/ws/v1/cluster/apps/";
             }
 
             @Override
@@ -163,5 +164,20 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         return null;
+    }
+
+    @Then("check the HDInsight Spark job stderr should match the following line and log")
+    public void checkTheHDInsightSparkJobStderrShouldStartWith(Map<Integer, String> expectLineLogs) throws IOException {
+        List<String> actualLogs = Arrays.asList(
+                IOUtils.toString(sparkJobRemoteProcess.getErrorStream(), StandardCharsets.UTF_8).split("\n"));
+
+        for (Map.Entry<Integer, String> expectLineAndLog : expectLineLogs.entrySet()) {
+            int line = expectLineAndLog.getKey() < 0
+                    ? actualLogs.size() + expectLineAndLog.getKey()
+                    : expectLineAndLog.getKey();
+
+            assertEquals(expectLineAndLog.getValue(), actualLogs.get(line));
+        }
+
     }
 }

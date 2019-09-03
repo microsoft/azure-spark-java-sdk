@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.common.FileSource;
 import com.github.tomakehurst.wiremock.extension.Parameters;
 import com.github.tomakehurst.wiremock.extension.StubMappingTransformer;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.matching.MultiValuePattern.of;
@@ -15,9 +16,9 @@ public class AuthorizationHeaderTransformer extends StubMappingTransformer {
     public static final String NAME = "mask-authorization-header";
 
     @Override
-    public StubMapping transform(StubMapping stubMapping, FileSource files, Parameters parameters) {
+    public StubMapping transform(StubMapping stubMapping, FileSource files, @Nullable Parameters parameters) {
         stubMapping.getRequest().getHeaders().entrySet().stream()
-                .filter(header -> parameters.containsKey(param(header.getKey())))
+                .filter(header -> parameters != null && parameters.containsKey(param(header.getKey())))
                 .forEach(header -> header.setValue(of(
                         equalTo(String.valueOf(parameters.get(param(header.getKey())))))));
 

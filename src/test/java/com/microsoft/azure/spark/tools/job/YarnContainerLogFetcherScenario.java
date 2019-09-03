@@ -110,15 +110,15 @@ public class YarnContainerLogFetcherScenario {
         assertTrue(yarnDriverLogFetcherMock.getSparkJobDriverLogUrl().isEmpty().toBlocking().last());
     }
 
-    @Given("parse Yarn container log fetched from HTML page {string}")
-    public void parseYarnContainerLogFetchedFromHTMLPage(String webPageFileName) throws Throwable {
+    @Given("parse {string} from Yarn container log fetched HTML page {string}")
+    public void parseYarnContainerLogFetchedFromHTMLPage(String defaultType, String webPageFileName) throws Throwable {
         InputStream pageFileInput = getClass().getClassLoader().getResourceAsStream(
                 getClass().getPackage().getName().replace('.', File.separatorChar)
                         + File.separator + webPageFileName);
 
         String html = IOUtils.toString(pageFileInput, UTF_8);
 
-        logsByType = yarnDriverLogFetcherMock.parseLogsFromHtml(html);
+        logsByType = yarnDriverLogFetcherMock.parseLogsFromHtml(defaultType, html);
     }
 
     @Then("check the type log {string} should start with {string}")
@@ -129,8 +129,13 @@ public class YarnContainerLogFetcherScenario {
 
     }
 
-    @Then("parse Yarn container log fetched from HTML {string}")
-    public void parseYarnContainerLogFetchedFromHTML(String html) {
-        logsByType = yarnDriverLogFetcherMock.parseLogsFromHtml(html);
+    @Then("parse {string} from Yarn container log fetched HTML {string}")
+    public void parseYarnContainerLogFetchedFromHTML(String defaultType, String html) {
+        logsByType = yarnDriverLogFetcherMock.parseLogsFromHtml(defaultType, html);
+    }
+
+    @Then("check the type log {string} should not exist")
+    public void checkTheTypeLogPrelaunchErrShouldNotExist(String type) {
+        assertFalse("Should not exist log type: " + type, logsByType.containsKey(type));
     }
 }
