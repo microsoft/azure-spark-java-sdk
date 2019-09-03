@@ -97,7 +97,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     @Override
     public void destroy() {
         getSparkJob().killBatchJob().subscribe(
-                job -> log().trace("Killed Spark batch job " + job.getBatchId()),
+                job -> log().info("Killed Spark batch job " + job.getBatchId()),
                 err -> log().warn("Got error when killing Spark batch job", err),
                 () -> { }
         );
@@ -115,7 +115,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         // Build, deploy and wait for the job done.
         jobSubscription.set(prepareArtifact()
                 .flatMap(this::submitJob)
-                .flatMap(this::awaitForJobStarted)
+                .delay(SparkBatchJob::awaitStarted)
                 .flatMap(this::attachInputStreams)
                 .flatMap(this::awaitForJobDone)
                 .subscribe(
@@ -149,11 +149,6 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                         }));
     }
 
-    private Observable<? extends SparkBatchJob> awaitForJobStarted(final SparkBatchJob job) {
-        return job.awaitStarted()
-                .map(state -> job);
-    }
-
     private Observable<? extends SparkBatchJob> attachJobInputStream(final SparkJobLogInputStream inputStream,
                                                                      final SparkBatchJob job) {
         return Observable.just(inputStream)
@@ -170,13 +165,6 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
 
     public void disconnect() {
         this.isDisconnected = true;
-
-        // FIXME!!! Enable SparkBatch awaitPostDone() method to wait for log fetching completed.
-//        try {
-//            this.jobStdoutLogInputSteam.close();
-//            this.jobStderrLogInputSteam.close();
-//        } catch (IOException ignored) {
-//        }
 
         this.ctrlSubject.onCompleted();
         this.eventSubject.onCompleted();
@@ -254,7 +242,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     private Observable<Pair<String, String>> awaitForJobDone(final SparkBatchJob runningJob) {
         return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
-                .delaySubscription(runningJob
+                .delay(ignored -> runningJob
                         .awaitPostDone()
                         .subscribeOn(schedulers.processBarVisibleAsync(
                                 "Waiting for " + getTitle() + " log aggregation is done")));

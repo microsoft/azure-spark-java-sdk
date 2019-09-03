@@ -1,0 +1,35 @@
+{
+  "id" : "3942fbcb-596e-4625-a047-f3603dcf36d0",
+  "name" : "yarnui_jobhistory_logs_wn2-zhwe-ss4un4f0kknqu5fddjqm2rbsvkdaxinternalcloudappnet_port_30050_container_e01_1555654226340_0207_01_000001_container_e01_1555654226340_0207_01_000001_livy_stderr",
+  "request" : {
+    "url" : "/yarnui/jobhistory/logs/wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30050/container_e01_1555654226340_0207_01_000001/container_e01_1555654226340_0207_01_000001/livy/stderr?start=0",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "yarnui_jobhistory_logs_wn2-zhwe-ss4un4f0kknqu5fddjqm2rbsvkdaxinternalcloudappnet_port_30050_container_e01_1555654226340_0207_01_000001_container_e01_1555654226340_0207_01_000001_livy_stderr-3942fbcb-596e-4625-a047-f3603dcf36d0.txt",
+    "headers" : {
+      "Cache-Control" : "no-cache",
+      "Pragma" : "no-cache",
+      "Content-Type" : "text/html; charset=utf-8",
+      "Expires" : "Tue, 03 Sep 2019 02:56:52 GMT",
+      "request-id" : "3b832d79d4c24923b5a2e9f98f463e00",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Tue, 03 Sep 2019 02:56:52 GMT"
+    }
+  },
+  "uuid" : "3942fbcb-596e-4625-a047-f3603dcf36d0",
+  "persistent" : true,
+  "insertionIndex" : 139
+}

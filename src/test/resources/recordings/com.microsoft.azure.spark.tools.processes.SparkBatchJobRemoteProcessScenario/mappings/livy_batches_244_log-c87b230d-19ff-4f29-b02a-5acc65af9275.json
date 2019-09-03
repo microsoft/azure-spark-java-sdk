@@ -1,0 +1,31 @@
+{
+  "id" : "c87b230d-19ff-4f29-b02a-5acc65af9275",
+  "name" : "livy_batches_244_log",
+  "request" : {
+    "url" : "/livy/batches/244/log?from=11&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":244,\"from\":11,\"total\":19,\"log\":[\"19/09/03 02:56:30 INFO Client: Requesting a new application from cluster with 2 NodeManagers\",\"19/09/03 02:56:30 INFO Client: Verifying our application has not requested more than the maximum memory capability of the cluster (51200 MB per container)\",\"19/09/03 02:56:30 INFO Client: Will allocate AM container, with 1408 MB memory including 384 MB overhead\",\"19/09/03 02:56:30 INFO Client: Setting up container launch context for our AM\",\"19/09/03 02:56:30 INFO Client: Setting up the launch environment for our AM container\",\"19/09/03 02:56:31 INFO Client: Preparing resources for our AM container\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "6723f4042100424ca00a855ff453e4bb",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Tue, 03 Sep 2019 02:56:29 GMT"
+    }
+  },
+  "uuid" : "c87b230d-19ff-4f29-b02a-5acc65af9275",
+  "persistent" : true,
+  "insertionIndex" : 94
+}

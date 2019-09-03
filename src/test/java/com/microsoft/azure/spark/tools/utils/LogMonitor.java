@@ -25,7 +25,7 @@ public class LogMonitor {
     public static Stream<LoggingEvent> getPackageLogsStream(String packageName) {
         return TestLoggerFactory.getInstance().getAllLoggers().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith(packageName))
-                .flatMap(entry -> entry.getValue().getLoggingEvents().stream())
+                .flatMap(entry -> entry.getValue().getAllLoggingEvents().stream())
                 .sorted(Comparator.comparing(LoggingEvent::getTimestamp));
     }
 

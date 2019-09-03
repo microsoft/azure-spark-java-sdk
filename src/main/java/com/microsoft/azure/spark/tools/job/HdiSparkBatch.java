@@ -55,16 +55,8 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher, De
     }
 
     @Override
-    public Observable<String> awaitLogAggregationDone() {
-        return getDriverLogFetcherDelegate()
-                .observable()
-                .flatMap(SparkLogFetcher::awaitLogAggregationDone);
-    }
-
-    @Override
     public Observable<String> awaitPostDone() {
-        return awaitLogAggregationDone()
-                .delaySubscription(super.awaitPostDone());
+        return Observable.empty();
     }
 
     private LaterInit<SparkLogFetcher> getDriverLogFetcherDelegate() {
