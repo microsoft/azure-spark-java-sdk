@@ -7,6 +7,10 @@ import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
 import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
+import com.microsoft.azure.spark.tools.utils.Pair;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -17,6 +21,8 @@ import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -120,5 +126,31 @@ public class LivySparkBatchScenario {
     @And("mock Spark job batch id to {int}")
     public void mockSparkJobBatchIdTo(int expectBatchId) {
         doReturn(expectBatchId).when(jobMock).getBatchId();
+    }
+
+    @Given("setup a mock Livy service with the following scenario {string}")
+    public void setupAMockLivyServiceWithTheFollowingScenarioAwaitJobIsDoneUT(String scenario,
+                                                                              List<Map<String, String>> stubs) {
+        for (Map<String, String> stub : stubs) {
+            httpServerMock.stub(
+                    scenario,
+                    stub.get("PREV_STATE"),
+                    stub.get("NEXT_STATE"),
+                    stub.get("ACTION"),
+                    stub.get("URI"),
+                    Integer.parseInt(stub.get("RESPONSE_STATUS")),
+                    stub.get("RESPONSE_BODY"));
+        }
+    }
+
+    @Then("await Livy Spark job done should get state {string}")
+    public void awaitLivySparkJobDoneShouldGetStateSuccess(String expect) {
+        Pair<String, String> statesWithLogs = jobMock.awaitDone()
+                .toBlocking()
+                .single();
+
+
+        assertEquals(expect, statesWithLogs.getFirst());
+
     }
 }
