@@ -77,6 +77,17 @@ public class MockHttpService {
                                 .withStatus(statusCode).withBody(normalizeResponse(response))));
     }
 
+
+    public void stub(String scenario, String prevState, String nextState, String action, String uri, int statusCode, String response) {
+        WireMock.configureFor(getPort());
+        WireMock.stubFor(
+                WireMock.request(action, WireMock.urlEqualTo(uri))
+                        .inScenario(scenario)
+                        .whenScenarioStateIs(prevState)
+                        .willReturn(WireMock.aResponse().withStatus(statusCode).withBody(normalizeResponse(response)))
+                        .willSetStateTo(nextState));
+    }
+
     public void stubHttps(String action, String path, int statusCode, String response) {
         WireMock.configureFor("https", "localhost", getHttpsPort());
         WireMock.stubFor(WireMock.request(
@@ -187,7 +198,7 @@ public class MockHttpService {
                 // .notifier(new ConsoleNotifier(true))
 
                 // uncomment for debugging with local proxy
-                // .proxyVia("localhost", 8888)
+                 .proxyVia("localhost", 8888)
         );
 
         // Clean up all history recordings

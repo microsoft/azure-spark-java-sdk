@@ -3,10 +3,12 @@
 
 package com.microsoft.azure.spark.tools.job;
 
+import com.google.common.collect.Streams;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Emitter;
 import rx.Observable;
@@ -29,6 +31,7 @@ import com.microsoft.azure.spark.tools.utils.Pair;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -325,15 +328,14 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     @Override
     public Observable<Pair<String, String>> awaitDone() {
         return get()
-                .repeatWhen(ob -> {
-                    log().debug("Deploy " + 1 //getDelaySeconds()
-                            + " seconds for next job status probe");
-                    return ob.delay(
-                            1, //getDelaySeconds(),
-                            TimeUnit.SECONDS);
-                })
-                .takeUntil(batch -> !isDone(batch.state))
-                .filter(batch -> !isDone(batch.state))
+                .repeatWhen(ob -> ob
+                        .doOnNext(v -> log().debug("Deploy " + 1 //getDelaySeconds()
+                                        + " seconds for next job status probe"))
+                        .delay(
+                                1, //getDelaySeconds(),
+                                TimeUnit.SECONDS))
+                .takeUntil(batch -> isDone(batch.state))
+                .filter(batch -> isDone(batch.state))
                 .map(batch -> new Pair<>(batch.state, String.join("\n", batch.submissionLogs)));
     }
 
@@ -356,7 +358,11 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     public Observable<LivySparkBatch> get() {
-        return getSparkBatchRequest()
+        final String caller = Streams.findLast(Arrays.stream(Thread.currentThread().getStackTrace()).limit(3))
+                .map(StackTraceElement::getMethodName)
+                .orElse("Unknown");
+
+        return getSparkBatchRequest(caller)
                 .map(this::updateWithBatchResponse)
                 .defaultIfEmpty(this);
     }
@@ -384,10 +390,13 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
                         .delete(uri.toString(), emptyList(), getHeadersToAddOrReplace()));
     }
 
-    private Observable<Batch> getSparkBatchRequest() {
+    private Observable<Batch> getSparkBatchRequest(final String caller) {
+        final List<Header> headers = new ArrayList<>(getHeadersToAddOrReplace());
+        headers.add(new BasicHeader("X-Invoked-By-Method", caller));
+
         return Observable.fromCallable(this::getUri)
                 .flatMap(uri -> getHttp()
-                .get(uri.toString(), emptyList(), getHeadersToAddOrReplace(), Batch.class)
+                .get(uri.toString(), emptyList(), headers, Batch.class)
                 .map(Pair::getFirst));
     }
 

@@ -19,3 +19,17 @@ Feature: LivySparkBatch unit tests
     And mock Spark job batch id to 9
     Then getting spark job application id, '/batch/9' should be got with 3 times retried
 
+  Scenario: await Spark job is done behavior
+    Given setup a mock Livy service with the following scenario 'awaitJobIsDoneUT'
+      | ACTION | URI      | RESPONSE_STATUS | RESPONSE_BODY                     | PREV_STATE | NEXT_STATE |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "not_started"} | Started    | starting_1 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_1 | starting_2 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_2 | starting_3 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "running"}     | starting_3 | running_1  |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "running"}     | running_1  | running_2  |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "success"}     | running_2  | success_1  |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "dead"}        | success_1  | end        |
+    And mock Spark job connect URI to be 'http://localhost:$port/batch/'
+    And mock Spark job batch id to 9
+    Then await Livy Spark job done should get state 'success'
+
