@@ -88,8 +88,8 @@ public class LivySparkBatchFactory implements SparkBatchJobFactory {
 
     @Override
     public SparkBatchJob factory() {
-        this.ctrlSubject.setIfNull(createLogAsControlSubject(getLoggerForControlSubject()));
-        this.http.setIfNull(createDefaultHttpObservable());
+        this.ctrlSubject.setIfNull(() -> createLogAsControlSubject(getLoggerForControlSubject()));
+        this.http.setIfNull(this::createDefaultHttpObservable);
 
         return createBatch(cluster, submissionParameter, this.http.get(), this.ctrlSubject.get());
     }
