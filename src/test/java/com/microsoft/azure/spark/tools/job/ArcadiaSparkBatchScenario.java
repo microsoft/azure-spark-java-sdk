@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.mockito.Mockito;
 import picocli.CommandLine;
+import uk.org.lidalia.slf4jext.Level;
 import uk.org.lidalia.slf4jtest.LoggingEvent;
 import wiremock.com.google.common.collect.ImmutableMap;
 
@@ -39,6 +40,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.recordSpec;
 import static com.microsoft.azure.spark.tools.utils.LogMonitor.cleanUpSparkToolsLogs;
@@ -123,12 +125,13 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
 
     @Then("no any error after submitting Arcadia Spark job")
     public void noAnyErrorAfterSubmittingArcadiaSparkJob() {
-        getSparkToolsLogsStream().map(LoggingEvent::getMessage).forEach(logEntry -> {
-            if (StringUtils.containsIgnoreCase(logEntry, "ERR")
-                    || StringUtils.containsIgnoreCase(logEntry, "Exception")) {
-                fail(logEntry);
-            }
-        });
+        String errLogs = getSparkToolsLogsStream().filter(loggingEvent -> loggingEvent.getLevel() == Level.ERROR)
+                .map(LoggingEvent::getMessage)
+                .collect(Collectors.joining("\n"));
+
+        if (StringUtils.isNotBlank(errLogs)) {
+            fail(errLogs);
+        }
     }
 
     @CommandLine.Mixin
