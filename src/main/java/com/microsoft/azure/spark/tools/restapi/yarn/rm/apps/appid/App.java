@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-package com.microsoft.azure.spark.tools.restapi.yarn.rm;
+package com.microsoft.azure.spark.tools.restapi.yarn.rm.apps.appid;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.azure.spark.tools.restapi.Convertible;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -75,275 +74,139 @@ public class App implements Convertible {
 
 
     public List<ResourceRequest> getResourceRequests() {
-        return resourceRequests;
-    }
-
-    public void setResourceRequests(List<ResourceRequest> resourceRequests) {
-        this.resourceRequests = resourceRequests;
+        return resourceRequests != null ? resourceRequests : Collections.emptyList();
     }
 
     public float getProgress() {
         return progress;
     }
 
-    public void setProgress(float progress) {
-        this.progress = progress;
-    }
-
     public String getQueue() {
         return queue;
-    }
-
-    public void setQueue(String queue) {
-        this.queue = queue;
     }
 
     public float getClusterUsagePercentage() {
         return clusterUsagePercentage;
     }
 
-    public void setClusterUsagePercentage(float clusterUsagePercentage) {
-        this.clusterUsagePercentage = clusterUsagePercentage;
-    }
-
     public String getTrackingUI() {
         return trackingUI;
-    }
-
-    public void setTrackingUI(String trackingUI) {
-        this.trackingUI = trackingUI;
     }
 
     public String getState() {
         return state;
     }
 
-    public void setState(String state) {
-        this.state = state;
-    }
-
     public String getAmContainerLogs() {
         return amContainerLogs;
-    }
-
-    public void setAmContainerLogs(String amContainerLogs) {
-        this.amContainerLogs = amContainerLogs;
     }
 
     public String getApplicationType() {
         return applicationType;
     }
 
-    public void setApplicationType(String applicationType) {
-        this.applicationType = applicationType;
-    }
-
     public int getPreemptedResourceVCores() {
         return preemptedResourceVCores;
-    }
-
-    public void setPreemptedResourceVCores(int preemptedResourceVCores) {
-        this.preemptedResourceVCores = preemptedResourceVCores;
     }
 
     public int getRunningContainers() {
         return runningContainers;
     }
 
-    public void setRunningContainers(int runningContainers) {
-        this.runningContainers = runningContainers;
-    }
-
     public int getAllocatedMB() {
         return allocatedMB;
-    }
-
-    public void setAllocatedMB(int allocatedMB) {
-        this.allocatedMB = allocatedMB;
     }
 
     public long getPreemptedResourceMB() {
         return preemptedResourceMB;
     }
 
-    public void setPreemptedResourceMB(long preemptedResourceMB) {
-        this.preemptedResourceMB = preemptedResourceMB;
-    }
-
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public boolean isUnmanagedApplication() {
         return unmanagedApplication;
     }
 
-    public void setUnmanagedApplication(boolean unmanagedApplication) {
-        this.unmanagedApplication = unmanagedApplication;
-    }
-
     public String getPriority() {
         return priority;
-    }
-
-    public void setPriority(String priority) {
-        this.priority = priority;
     }
 
     public long getFinishedTime() {
         return finishedTime;
     }
 
-    public void setFinishedTime(long finishedTime) {
-        this.finishedTime = finishedTime;
-    }
-
     public int getAllocatedVCores() {
         return allocatedVCores;
-    }
-
-    public void setAllocatedVCores(int allocatedVCores) {
-        this.allocatedVCores = allocatedVCores;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getLogAggregationStatus() {
         return logAggregationStatus;
-    }
-
-    public void setLogAggregationStatus(String logAggregationStatus) {
-        this.logAggregationStatus = logAggregationStatus;
     }
 
     public long getVcoreSeconds() {
         return vcoreSeconds;
     }
 
-    public void setVcoreSeconds(long vcoreSeconds) {
-        this.vcoreSeconds = vcoreSeconds;
-    }
-
     public int getNumNonAMContainerPreempted() {
         return numNonAMContainerPreempted;
-    }
-
-    public void setNumNonAMContainerPreempted(int numNonAMContainerPreempted) {
-        this.numNonAMContainerPreempted = numNonAMContainerPreempted;
     }
 
     public long getMemorySeconds() {
         return memorySeconds;
     }
 
-    public void setMemorySeconds(long memorySeconds) {
-        this.memorySeconds = memorySeconds;
-    }
-
     public long getElapsedTime() {
         return elapsedTime;
-    }
-
-    public void setElapsedTime(long elapsedTime) {
-        this.elapsedTime = elapsedTime;
     }
 
     public String getAmNodeLabelExpression() {
         return amNodeLabelExpression;
     }
 
-    public void setAmNodeLabelExpression(String amNodeLabelExpression) {
-        this.amNodeLabelExpression = amNodeLabelExpression;
-    }
-
     public String getAmHostHttpAddress() {
         return amHostHttpAddress;
-    }
-
-    public void setAmHostHttpAddress(String amHostHttpAddress) {
-        this.amHostHttpAddress = amHostHttpAddress;
     }
 
     public String getFinalStatus() {
         return finalStatus;
     }
 
-    public void setFinalStatus(String finalStatus) {
-        this.finalStatus = finalStatus;
-    }
-
     public String getTrackingUrl() {
         return trackingUrl;
-    }
-
-    public void setTrackingUrl(String trackingUrl) {
-        this.trackingUrl = trackingUrl;
     }
 
     public int getNumAMContainerPreempted() {
         return numAMContainerPreempted;
     }
 
-    public void setNumAMContainerPreempted(int numAMContainerPreempted) {
-        this.numAMContainerPreempted = numAMContainerPreempted;
-    }
-
     public String getApplicationTags() {
         return applicationTags;
-    }
-
-    public void setApplicationTags(String applicationTags) {
-        this.applicationTags = applicationTags;
     }
 
     public long getClusterId() {
         return clusterId;
     }
 
-    public void setClusterId(long clusterId) {
-        this.clusterId = clusterId;
-    }
-
     public String getUser() {
         return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
     }
 
     public String getDiagnostics() {
         return diagnostics;
     }
 
-    public void setDiagnostics(String diagnostics) {
-        this.diagnostics = diagnostics;
-    }
-
     public long getStartedTime() {
         return startedTime;
     }
 
-    public void setStartedTime(long startedTime) {
-        this.startedTime = startedTime;
-    }
-
     public float getQueueUsagePercentage() {
         return queueUsagePercentage;
-    }
-
-    public void setQueueUsagePercentage(float queueUsagePercentage) {
-        this.queueUsagePercentage = queueUsagePercentage;
     }
 
     /**
@@ -356,16 +219,5 @@ public class App implements Convertible {
 
         return stateUpper.equals("FINISHED") || stateUpper.equals("FAILED") || stateUpper.equals("KILLED");
     }
-
-    /**
-     * Check if it is job submit from livy.
-     *
-     * @return true for livy job.
-     */
-    public boolean isLivyJob() {
-        return getUser().equalsIgnoreCase("livy");
-    }
-
-    public static final List<App> EMPTY_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 }
 

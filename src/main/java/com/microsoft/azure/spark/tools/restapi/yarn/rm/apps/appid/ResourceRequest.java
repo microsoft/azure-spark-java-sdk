@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi.yarn.rm;
+package com.microsoft.azure.spark.tools.restapi.yarn.rm.apps.appid;
 
 
 import com.microsoft.azure.spark.tools.restapi.Convertible;
@@ -24,47 +24,51 @@ public class ResourceRequest implements Convertible {
         return nodeLabelExpression;
     }
 
-    public void setNodeLabelExpression(String nodeLabelExpression) {
-        this.nodeLabelExpression = nodeLabelExpression;
-    }
-
     public Priority getPriority() {
         return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
     }
 
     public String getRelaxLocality() {
         return relaxLocality;
     }
 
-    public void setRelaxLocality(String relaxLocality) {
-        this.relaxLocality = relaxLocality;
-    }
-
     public String getNumContainers() {
         return numContainers;
-    }
-
-    public void setNumContainers(String numContainers) {
-        this.numContainers = numContainers;
     }
 
     public Capability getCapability() {
         return capability;
     }
 
-    public void setCapability(Capability capability) {
-        this.capability = capability;
-    }
-
     public String getResourceName() {
         return resourceName;
     }
 
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
+    public static class Capability implements Convertible {
+        private String virtualCores;
+
+        private String memorySize;
+
+        private String memory;
+
+        public String getVirtualCores() {
+            return virtualCores;
+        }
+
+        public String getMemorySize() {
+            return memorySize;
+        }
+
+        public String getMemory() {
+            return memory;
+        }
+    }
+
+    public static class Priority implements Convertible {
+        private String priority;
+
+        public String getPriority() {
+            return priority;
+        }
     }
 }

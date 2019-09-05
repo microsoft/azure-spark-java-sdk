@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi.yarn.rm;
+package com.microsoft.azure.spark.tools.restapi.yarn.rm.apps.appid;
 
 
 import com.microsoft.azure.spark.tools.restapi.Convertible;
@@ -13,6 +13,4 @@ public class AppResponse implements Convertible {
     public App getApp() {
         return app;
     }
-
-    public static final AppResponse EMPTY = new AppResponse();
 }
