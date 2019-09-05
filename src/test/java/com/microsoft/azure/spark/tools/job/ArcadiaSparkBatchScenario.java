@@ -43,6 +43,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.recordSpec;
+import static com.microsoft.azure.spark.tools.utils.LogMonitor.cleanUpAllLogs;
 import static com.microsoft.azure.spark.tools.utils.LogMonitor.cleanUpSparkToolsLogs;
 import static com.microsoft.azure.spark.tools.utils.LogMonitor.getPackageLogsStream;
 import static com.microsoft.azure.spark.tools.utils.LogMonitor.getSparkToolsLogsStream;
@@ -64,6 +65,8 @@ public class ArcadiaSparkBatchScenario implements Callable<Void> {
     @Before
     public void setUpGlobal() {
         System.setProperty("org.apache.commons.logging.Log", Slf4jTestLogApacheAdapter.class.getCanonicalName());
+
+        cleanUpAllLogs();
     }
 
     @Before("@ArcadiaSparkBatchScenario")

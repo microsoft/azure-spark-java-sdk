@@ -22,6 +22,11 @@ public class LogMonitor {
     public static Stream<LoggingEvent> getSparkToolsLogsStream() {
         return getPackageLogsStream("com.microsoft.azure.spark.tools");
     }
+
+    public static void cleanUpAllLogs() {
+        TestLoggerFactory.getInstance().clearAllLoggers();
+    }
+
     public static Stream<LoggingEvent> getPackageLogsStream(String packageName) {
         return TestLoggerFactory.getInstance().getAllLoggers().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith(packageName))
