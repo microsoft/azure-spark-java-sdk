@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-package com.microsoft.azure.spark.tools.restapi.yarn.rm;
+package com.microsoft.azure.spark.tools.restapi.yarn.rm.apps.appid.appattempts;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -22,71 +22,35 @@ public class AppAttempt {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getNodeId() {
         return nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
     }
 
     public String getNodeHttpAddress() {
         return nodeHttpAddress;
     }
 
-    public void setNodeHttpAddress(String nodeHttpAddress) {
-        this.nodeHttpAddress = nodeHttpAddress;
-    }
-
     public String getLogsLink() {
         return logsLink;
-    }
-
-    public void setLogsLink(String logsLink) {
-        this.logsLink = logsLink;
     }
 
     public String getContainerId() {
         return containerId;
     }
 
-    public void setContainerId(String containerId) {
-        this.containerId = containerId;
-    }
-
     public long getStartTime() {
         return startTime;
-    }
-
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
     }
 
     public long getFinishedTime() {
         return finishedTime;
     }
 
-    public void setFinishedTime(long finishedTime) {
-        this.finishedTime = finishedTime;
-    }
-
     public String getBlacklistedNodes() {
         return blacklistedNodes;
     }
 
-    public void setBlacklistedNodes(String blacklistedNodes) {
-        this.blacklistedNodes = blacklistedNodes;
-    }
-
     public String getAppAttemptId() {
         return appAttemptId;
-    }
-
-    public void setAppAttemptId(String appAttemptId) {
-        this.appAttemptId = appAttemptId;
     }
 }

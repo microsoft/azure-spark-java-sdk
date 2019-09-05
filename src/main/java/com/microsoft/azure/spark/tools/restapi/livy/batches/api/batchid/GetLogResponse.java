@@ -3,6 +3,7 @@
 
 package com.microsoft.azure.spark.tools.restapi.livy.batches.api.batchid;
 
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("nullness")
@@ -25,6 +26,6 @@ public class GetLogResponse {
     }
 
     public List<String> getLog() {
-        return log;
+        return log != null ? log : Collections.emptyList();
     }
 }

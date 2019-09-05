@@ -5,6 +5,7 @@ package com.microsoft.azure.spark.tools.restapi.livy.batches;
 
 import com.microsoft.azure.spark.tools.restapi.Convertible;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -22,11 +23,11 @@ public class Batch implements Convertible {
     }
 
     public Map<String, String> getAppInfo() {
-        return appInfo;
+        return appInfo != null ? appInfo : Collections.emptyMap();
     }
 
     public List<String> getLog() {
-        return log;
+        return log != null ? log : Collections.emptyList();
     }
 
     public int getId() {
