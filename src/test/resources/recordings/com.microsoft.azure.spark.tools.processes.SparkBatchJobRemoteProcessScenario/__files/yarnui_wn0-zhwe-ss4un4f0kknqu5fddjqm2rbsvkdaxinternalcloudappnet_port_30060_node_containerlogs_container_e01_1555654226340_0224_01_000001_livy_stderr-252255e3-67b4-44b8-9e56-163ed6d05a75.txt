@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <title>
+    Logs for container_e01_1555654226340_0224_01_000001
+  </title>
+  <link rel="stylesheet" href="/yarnui/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/yarnui/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/yarnui/static/dt-1.9.4/css/jui-dt.css">
+  <script type="text/javascript" src="/yarnui/static/jquery/jquery-1.8.2.min.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/jquery/jquery-ui-1.9.1.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/dt-1.9.4/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/yarnui/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    });
+  </script>
+  <div id="jsnotice" class="ui-state-error">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              
+            </div>
+            <div id="logo">
+              <img src="/yarnui/static/hadoop-st.png">
+            </div>
+            <h1>
+              Logs for container_e01_1555654226340_0224_01_000001
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav">
+            <h3>
+              ResourceManager
+            </h3>
+            <ul>
+              <li>
+                <a href="http://hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:8088">RM Home</a>
+            </ul>
+            <h3>
+              NodeManager
+            </h3>
+            <ul>
+              <li>
+                <a href="/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/node/node">Node Information</a>
+              <li>
+                <a href="/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/node/allApplications">List of Applications</a>
+              <li>
+                <a href="/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/node/allContainers">List of Containers</a>
+            </ul>
+            <h3>
+              Tools
+            </h3>
+            <ul>
+              <li>
+                <a href="/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/conf">Configuration</a>
+              <li>
+                <a href="/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/logs">Local logs</a>
+              <li>
+                <a href="/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/stacks">Server stacks</a>
+              <li>
+                <a href="/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/jmx?qry=Hadoop:*">Server metrics</a>
+            </ul>
+          </div>
+        </td>
+        <td class="content">
+          <pre>SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/usr/hdp/2.6.5.3006-29/spark2/jars/slf4j-log4j12-1.7.16.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/usr/hdp/2.6.5.3006-29/hadoop/lib/slf4j-log4j12-1.7.10.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/usr/hdp/2.6.5.3006-29/spark_llap/spark-llap-assembly-1.0.0.2.6.5.3006-29.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]
+19/09/05 02:46:29 INFO SignalUtils: Registered signal handler for TERM
+19/09/05 02:46:29 INFO SignalUtils: Registered signal handler for HUP
+19/09/05 02:46:29 INFO SignalUtils: Registered signal handler for INT
+19/09/05 02:46:29 INFO SecurityManager: Changing view acls to: yarn,livy
+19/09/05 02:46:29 INFO SecurityManager: Changing modify acls to: yarn,livy
+19/09/05 02:46:29 INFO SecurityManager: Changing view acls groups to: 
+19/09/05 02:46:29 INFO SecurityManager: Changing modify acls groups to: 
+19/09/05 02:46:29 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(yarn, livy); groups with view permissions: Set(); users  with modify permissions: Set(yarn, livy); groups with modify permissions: Set()
+19/09/05 02:46:30 INFO ApplicationMaster: Preparing Local resources
+19/09/05 02:46:31 INFO ApplicationMaster: ApplicationAttemptId: appattempt_1555654226340_0224_000001
+19/09/05 02:46:31 INFO ApplicationMaster: Starting the user application in a separate Thread
+19/09/05 02:46:31 INFO ApplicationMaster: Waiting for spark context initialization...
+19/09/05 02:46:31 INFO SparkContext: Running Spark version 2.3.2.2.6.5.3006-29
+19/09/05 02:46:31 INFO SparkContext: Submitted application: Log Query
+19/09/05 02:46:31 INFO SecurityManager: Changing view acls to: yarn,livy
+19/09/05 02:46:31 INFO SecurityManager: Changing modify acls to: yarn,livy
+19/09/05 02:46:31 INFO SecurityManager: Changing view acls groups to: 
+19/09/05 02:46:31 INFO SecurityManager: Changing modify acls groups to: 
+19/09/05 02:46:31 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(yarn, livy); groups with view permissions: Set(); users  with modify permissions: Set(yarn, livy); groups with modify permissions: Set()
+19/09/05 02:46:31 INFO Utils: Successfully started service 'sparkDriver' on port 46453.
+19/09/05 02:46:31 INFO SparkEnv: Registering MapOutputTracker
+19/09/05 02:46:31 INFO SparkEnv: Registering BlockManagerMaster
+19/09/05 02:46:31 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+19/09/05 02:46:31 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+19/09/05 02:46:31 INFO DiskBlockManager: Created local directory at /mnt/resource/hadoop/yarn/local/usercache/livy/appcache/application_1555654226340_0224/blockmgr-ad9ffabb-2389-4211-8668-7427215b4d91
+19/09/05 02:46:31 INFO MemoryStore: MemoryStore started with capacity 366.3 MB
+19/09/05 02:46:31 INFO SparkEnv: Registering OutputCommitCoordinator
+19/09/05 02:46:31 INFO log: Logging initialized @3163ms
+19/09/05 02:46:31 INFO JettyUtils: Adding filter org.apache.hadoop.yarn.server.webproxy.amfilter.AmIpFilter to /jobs, /jobs/json, /jobs/job, /jobs/job/json, /stages, /stages/json, /stages/stage, /stages/stage/json, /stages/pool, /stages/pool/json, /storage, /storage/json, /storage/rdd, /storage/rdd/json, /environment, /environment/json, /executors, /executors/json, /executors/threadDump, /executors/threadDump/json, /static, /, /api, /jobs/job/kill, /stages/stage/kill.
+19/09/05 02:46:31 INFO Server: jetty-9.3.z-SNAPSHOT, build timestamp: unknown, git hash: unknown
+19/09/05 02:46:31 INFO Server: Started @3247ms
+19/09/05 02:46:31 INFO AbstractConnector: Started ServerConnector@7ebf1362{HTTP/1.1,[http/1.1]}{0.0.0.0:34859}
+19/09/05 02:46:31 INFO Utils: Successfully started service 'SparkUI' on port 34859.
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@41af5043{/jobs,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@4a5b7983{/jobs/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@7bb2930a{/jobs/job,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@3987447{/jobs/job/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@129e82d6{/stages,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@7d5b794c{/stages/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@2bf30bc0{/stages/stage,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@2bd056d9{/stages/stage/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@184ee568{/stages/pool,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@38227a14{/stages/pool/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@b0f2c7f{/storage,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@2240c559{/storage/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@4dca11dc{/storage/rdd,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@669330ab{/storage/rdd/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@140d94d2{/environment,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@30c3f107{/environment/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@2d9a5232{/executors,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@52f33942{/executors/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@2a208cca{/executors/threadDump,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@5c41b40{/executors/threadDump/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@7ab0d208{/static,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@2050f466{/,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@1c42cef3{/api,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@70abdd12{/jobs/job/kill,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@6021fe15{/stages/stage/kill,null,AVAILABLE,@Spark}
+19/09/05 02:46:31 INFO SparkUI: Bound SparkUI to 0.0.0.0, and started at http://wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:34859
+19/09/05 02:46:31 INFO YarnClusterScheduler: Created YarnClusterScheduler
+19/09/05 02:46:32 INFO SchedulerExtensionServices: Starting Yarn extension services with app application_1555654226340_0224 and attemptId Some(appattempt_1555654226340_0224_000001)
+19/09/05 02:46:32 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 41283.
+19/09/05 02:46:32 INFO NettyBlockTransferService: Server created on wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:41283
+19/09/05 02:46:32 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+19/09/05 02:46:32 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, 41283, None)
+19/09/05 02:46:32 INFO BlockManagerMasterEndpoint: Registering block manager wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:41283 with 366.3 MB RAM, BlockManagerId(driver, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, 41283, None)
+19/09/05 02:46:32 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, 41283, None)
+19/09/05 02:46:32 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, 41283, None)
+19/09/05 02:46:32 INFO JettyUtils: Adding filter org.apache.hadoop.yarn.server.webproxy.amfilter.AmIpFilter to /metrics/json.
+19/09/05 02:46:32 INFO ContextHandler: Started o.s.j.s.ServletContextHandler@55562d5e{/metrics/json,null,AVAILABLE,@Spark}
+19/09/05 02:46:32 INFO EventLoggingListener: Logging events to adl:/hdp/spark2-events/application_1555654226340_0224_1
+19/09/05 02:46:32 INFO EnhancementSparkListener: Enhancement listener is enabled
+19/09/05 02:46:32 INFO SparkContext: Registered listener com.microsoft.hdinsight.spark.metrics.SparkMetricsListener
+19/09/05 02:46:32 INFO SparkContext: Registered listener org.apache.spark.sql.scheduler.EnhancementSparkListener
+19/09/05 02:46:32 INFO ApplicationMaster: 
+===============================================================================
+YARN executor launch context:
+  env:
+    CLASSPATH -&gt; {{PWD}}&lt;CPS&gt;{{PWD}}/__spark_conf__&lt;CPS&gt;{{PWD}}/__spark_libs__/*&lt;CPS&gt;/usr/hdp/current/spark2-client/jars/*&lt;CPS&gt;$HADOOP_CONF_DIR&lt;CPS&gt;/usr/hdp/current/hadoop-client/*&lt;CPS&gt;/usr/hdp/current/hadoop-client/lib/*&lt;CPS&gt;/usr/hdp/current/hadoop-hdfs-client/*&lt;CPS&gt;/usr/hdp/current/hadoop-hdfs-client/lib/*&lt;CPS&gt;/usr/hdp/current/hadoop-yarn-client/*&lt;CPS&gt;/usr/hdp/current/hadoop-yarn-client/lib/*&lt;CPS&gt;$PWD/mr-framework/hadoop/share/hadoop/mapreduce/*:$PWD/mr-framework/hadoop/share/hadoop/mapreduce/lib/*:$PWD/mr-framework/hadoop/share/hadoop/common/*:$PWD/mr-framework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:$PWD/mr-framework/hadoop/share/hadoop/tools/lib/*:/usr/hdp/2.6.5.3006-29/hadoop/lib/hadoop-lzo-0.6.0.2.6.5.3006-29.jar:/etc/hadoop/conf/secure:/usr/lib/hdinsight-datalake/*&lt;CPS&gt;:/usr/hdp/current/spark2-client/jars/*:/usr/lib/hdinsight-datalake/*:/usr/hdp/current/spark_llap/*:/usr/hdp/current/spark2-client/conf:&lt;CPS&gt;{{PWD}}/__spark_conf__/__hadoop_conf__
+    SPARK_DIST_CLASSPATH -&gt; :/usr/hdp/current/spark2-client/jars/*:/usr/lib/hdinsight-datalake/*:/usr/hdp/current/spark_llap/*:/usr/hdp/current/spark2-client/conf:
+    SPARK_YARN_STAGING_DIR -&gt; adl://home/user/livy/.sparkStaging/application_1555654226340_0224
+    SPARK_USER -&gt; livy
+
+  command:
+    LD_LIBRARY_PATH=&quot;/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64:$LD_LIBRARY_PATH&quot; \ 
+      {{JAVA_HOME}}/bin/java \ 
+      -server \ 
+      -Xmx9216m \ 
+      '-Dhdp.version=' \ 
+      '-Detwlogger.component=sparkexecutor' \ 
+      '-DlogFilter.filename=SparkLogFilters.xml' \ 
+      '-DpatternGroup.filename=SparkPatternGroups.xml' \ 
+      '-Dlog4jspark.root.logger=INFO,console,RFA,ETW,Anonymizer' \ 
+      '-Dlog4jspark.log.dir=/var/log/sparkapp/\${user.name}' \ 
+      '-Dlog4jspark.log.file=sparkexecutor.log' \ 
+      '-Dlog4j.configuration=file:/usr/hdp/current/spark2-client/conf/log4j.properties' \ 
+      '-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl' \ 
+      '-XX:+UseParallelGC' \ 
+      '-XX:+UseParallelOldGC' \ 
+      -Djava.io.tmpdir={{PWD}}/tmp \ 
+      '-Dspark.history.ui.port=18080' \ 
+      -Dspark.yarn.app.container.log.dir=&lt;LOG_DIR&gt; \ 
+      -XX:OnOutOfMemoryError='kill %p' \ 
+      org.apache.spark.executor.CoarseGrainedExecutorBackend \ 
+      --driver-url \ 
+      spark://CoarseGrainedScheduler@wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:46453 \ 
+      --executor-id \ 
+      &lt;executorId&gt; \ 
+      --hostname \ 
+      &lt;hostname&gt; \ 
+      --cores \ 
+      3 \ 
+      --app-id \ 
+      application_1555654226340_0224 \ 
+      --user-class-path \ 
+      file:$PWD/__app__.jar \ 
+      1&gt;&lt;LOG_DIR&gt;/stdout \ 
+      2&gt;&lt;LOG_DIR&gt;/stderr
+
+  resources:
+    __app__.jar -&gt; resource { scheme: &quot;adl&quot; host: &quot;home&quot; port: -1 file: &quot;/user/livy/.sparkStaging/application_1555654226340_0224/default_artifact.jar&quot; } size: 67643 timestamp: 1567651586875 type: FILE visibility: PRIVATE
+    __spark_conf__ -&gt; resource { scheme: &quot;adl&quot; host: &quot;home&quot; port: -1 file: &quot;/user/livy/.sparkStaging/application_1555654226340_0224/__spark_conf__.zip&quot; } size: 261805 timestamp: 1567651587453 type: ARCHIVE visibility: PRIVATE
+
+===============================================================================
+19/09/05 02:46:32 INFO YarnRMClient: Registering the ApplicationMaster
+19/09/05 02:46:32 INFO RequestHedgingRMFailoverProxyProvider: Looking for the active RM in [rm1, rm2]...
+19/09/05 02:46:32 INFO RequestHedgingRMFailoverProxyProvider: Found active RM [rm1]
+19/09/05 02:46:32 INFO YarnAllocator: Will request 2 executor container(s), each with 3 core(s) and 9600 MB memory (including 384 MB of overhead)
+19/09/05 02:46:32 INFO YarnSchedulerBackend$YarnSchedulerEndpoint: ApplicationMaster registered as NettyRpcEndpointRef(spark://YarnAM@wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:46453)
+19/09/05 02:46:32 INFO YarnAllocator: Submitted 2 unlocalized container requests.
+19/09/05 02:46:32 INFO ApplicationMaster: Started progress reporter thread with (heartbeat : 5000, initial allocation : 200) intervals
+19/09/05 02:46:33 INFO AMRMClientImpl: Received new token for : wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050
+19/09/05 02:46:33 INFO YarnAllocator: Launching container container_e01_1555654226340_0224_01_000002 on host wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net for executor with ID 1
+19/09/05 02:46:33 INFO YarnAllocator: Received 1 containers from YARN, launching executors on 1 of them.
+19/09/05 02:46:33 INFO ContainerManagementProtocolProxy: yarn.client.max-cached-nodemanagers-proxies : 0
+19/09/05 02:46:33 INFO ContainerManagementProtocolProxy: Opening proxy : wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050
+19/09/05 02:46:34 INFO AMRMClientImpl: Received new token for : wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050
+19/09/05 02:46:34 INFO YarnAllocator: Launching container container_e01_1555654226340_0224_01_000003 on host wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net for executor with ID 2
+19/09/05 02:46:34 INFO YarnAllocator: Received 1 containers from YARN, launching executors on 1 of them.
+19/09/05 02:46:34 INFO ContainerManagementProtocolProxy: yarn.client.max-cached-nodemanagers-proxies : 0
+19/09/05 02:46:34 INFO ContainerManagementProtocolProxy: Opening proxy : wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050
+19/09/05 02:46:36 INFO YarnSchedulerBackend$YarnDriverEndpoint: Registered executor NettyRpcEndpointRef(spark-client://Executor) (10.0.0.6:33754) with ID 1
+19/09/05 02:46:36 INFO BlockManagerMasterEndpoint: Registering block manager wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:40093 with 4.6 GB RAM, BlockManagerId(1, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, 40093, None)
+19/09/05 02:46:36 INFO YarnSchedulerBackend$YarnDriverEndpoint: Registered executor NettyRpcEndpointRef(spark-client://Executor) (10.0.0.4:33788) with ID 2
+19/09/05 02:46:37 INFO BlockManagerMasterEndpoint: Registering block manager wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:34601 with 4.6 GB RAM, BlockManagerId(2, wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, 34601, None)
+19/09/05 02:46:37 INFO YarnClusterSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.8
+19/09/05 02:46:37 INFO YarnClusterScheduler: YarnClusterScheduler.postStartHook done
+19/09/05 02:46:37 INFO SparkContext: Starting job: collect at LogQuery.scala:87
+19/09/05 02:46:37 INFO DAGScheduler: Registering RDD 1 (map at LogQuery.scala:85)
+19/09/05 02:46:37 INFO DAGScheduler: Got job 0 (collect at LogQuery.scala:87) with 6 output partitions
+19/09/05 02:46:37 INFO DAGScheduler: Final stage: ResultStage 1 (collect at LogQuery.scala:87)
+19/09/05 02:46:37 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 0)
+19/09/05 02:46:37 INFO DAGScheduler: Missing parents: List(ShuffleMapStage 0)
+19/09/05 02:46:37 INFO DAGScheduler: Submitting ShuffleMapStage 0 (MapPartitionsRDD[1] at map at LogQuery.scala:85), which has no missing parents
+19/09/05 02:46:37 INFO MemoryStore: Block broadcast_0 stored as values in memory (estimated size 3.4 KB, free 366.3 MB)
+19/09/05 02:46:37 INFO MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 2.2 KB, free 366.3 MB)
+19/09/05 02:46:37 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:41283 (size: 2.2 KB, free: 366.3 MB)
+19/09/05 02:46:37 INFO SparkContext: Created broadcast 0 from broadcast at DAGScheduler.scala:1039
+19/09/05 02:46:37 INFO DAGScheduler: Submitting 6 missing tasks from ShuffleMapStage 0 (MapPartitionsRDD[1] at map at LogQuery.scala:85) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5))
+19/09/05 02:46:37 INFO YarnClusterScheduler: Adding task set 0.0 with 6 tasks
+19/09/05 02:46:37 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0, wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, executor 2, partition 0, PROCESS_LOCAL, 7729 bytes)
+19/09/05 02:46:37 INFO TaskSetManager: Starting task 1.0 in stage 0.0 (TID 1, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, executor 1, partition 1, PROCESS_LOCAL, 7729 bytes)
+19/09/05 02:46:37 INFO TaskSetManager: Starting task 2.0 in stage 0.0 (TID 2, wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, executor 2, partition 2, PROCESS_LOCAL, 8214 bytes)
+19/09/05 02:46:37 INFO TaskSetManager: Starting task 3.0 in stage 0.0 (TID 3, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, executor 1, partition 3, PROCESS_LOCAL, 7729 bytes)
+19/09/05 02:46:37 INFO TaskSetManager: Starting task 4.0 in stage 0.0 (TID 4, wn2-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, executor 2, partition 4, PROCESS_LOCAL, 7729 bytes)
+19/09/05 02:46:37 INFO TaskSetManager: Starting task 5.0 in stage 0.0 (TID 5, wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net, executor 1, partition 5, PROCESS_LOCAL, 8213 bytes)
+</pre>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</html>
