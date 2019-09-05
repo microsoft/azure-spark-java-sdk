@@ -9,6 +9,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
+import java.util.function.Supplier;
+
 public class LaterInit<T> {
     private final BehaviorSubject<T> delegation = BehaviorSubject.create();
 
@@ -25,9 +27,14 @@ public class LaterInit<T> {
     }
 
     public synchronized void setIfNull(final T value) {
-        try {
+        if (!isInitialized()) {
             set(value);
-        } catch (InitializedException ignored) {
+        }
+    }
+
+    public synchronized void setIfNull(final Supplier<T> valueGetter) {
+        if (!isInitialized()) {
+            set(valueGetter.get());
         }
     }
 
