@@ -1,0 +1,37 @@
+{
+  "id" : "bcca6129-a831-4b55-a1f5-e8e72007ea3e",
+  "name" : "yarnui_ws_v1_cluster_apps_application_1555654226340_0224",
+  "request" : {
+    "url" : "/yarnui/ws/v1/cluster/apps/application_1555654226340_0224",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"app\":{\"id\":\"application_1555654226340_0224\",\"user\":\"livy\",\"name\":\"sample.LogQuery\",\"queue\":\"default\",\"state\":\"FINISHED\",\"finalStatus\":\"SUCCEEDED\",\"progress\":100.0,\"trackingUI\":\"History\",\"trackingUrl\":\"http://hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:8088/proxy/application_1555654226340_0224/\",\"diagnostics\":\"\",\"clusterId\":1555654226340,\"applicationType\":\"SPARK\",\"applicationTags\":\"livy-batch-261-hup35t8q\",\"priority\":0,\"startedTime\":1567651587688,\"finishedTime\":1567651598933,\"elapsedTime\":11245,\"amContainerLogs\":\"http://wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30060/node/containerlogs/container_e01_1555654226340_0224_01_000001/livy\",\"amHostHttpAddress\":\"wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30060\",\"allocatedMB\":-1,\"allocatedVCores\":-1,\"runningContainers\":-1,\"memorySeconds\":177911,\"vcoreSeconds\":26,\"queueUsagePercentage\":0.0,\"clusterUsagePercentage\":0.0,\"preemptedResourceMB\":0,\"preemptedResourceVCores\":0,\"numNonAMContainerPreempted\":0,\"numAMContainerPreempted\":0,\"logAggregationStatus\":\"SUCCEEDED\",\"unmanagedApplication\":false,\"amNodeLabelExpression\":\"\"}}",
+    "headers" : {
+      "Cache-Control" : "no-cache",
+      "Pragma" : "no-cache",
+      "Content-Type" : "application/json",
+      "Expires" : "Thu, 05 Sep 2019 02:46:44 GMT",
+      "request-id" : "b5ec8398ac0d408794f53ec1f3ce21bb",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 05 Sep 2019 02:46:43 GMT"
+    }
+  },
+  "uuid" : "bcca6129-a831-4b55-a1f5-e8e72007ea3e",
+  "persistent" : true,
+  "scenarioName" : "scenario-yarnui-ws-v1-cluster-apps-application_1555654226340_0224",
+  "requiredScenarioState" : "scenario-yarnui-ws-v1-cluster-apps-application_1555654226340_0224-5",
+  "insertionIndex" : 107
+}

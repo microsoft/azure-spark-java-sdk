@@ -1,0 +1,31 @@
+{
+  "id" : "46689ebd-a776-4ea7-8125-b90061a997f7",
+  "name" : "livy_batches_261_log",
+  "request" : {
+    "url" : "/livy/batches/261/log?from=19&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":261,\"from\":19,\"total\":42,\"log\":[\"19/09/05 02:46:27 INFO SecurityManager: Changing view acls to: livy\",\"19/09/05 02:46:27 INFO SecurityManager: Changing modify acls to: livy\",\"19/09/05 02:46:27 INFO SecurityManager: Changing view acls groups to: \",\"19/09/05 02:46:27 INFO SecurityManager: Changing modify acls groups to: \",\"19/09/05 02:46:27 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(livy); groups with view permissions: Set(); users  with modify permissions: Set(livy); groups with modify permissions: Set()\",\"19/09/05 02:46:27 INFO Client: Submitting application application_1555654226340_0224 to ResourceManager\",\"19/09/05 02:46:27 INFO YarnClientImpl: Submitted application application_1555654226340_0224\",\"19/09/05 02:46:27 INFO Client: Application report for application_1555654226340_0224 (state: ACCEPTED)\",\"19/09/05 02:46:27 INFO Client: \",\"\\t client token: N/A\",\"\\t diagnostics: [Thu Sep 05 02:46:27 +0000 2019] Application is Activated, waiting for resources to be assigned for AM.  Details : AM Partition = <DEFAULT_PARTITION> ; Partition Resource = <memory:102400, vCores:30> ; Queue's Absolute capacity = 50.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 100.0 % ; \",\"\\t ApplicationMaster host: N/A\",\"\\t ApplicationMaster RPC port: -1\",\"\\t queue: default\",\"\\t start time: 1567651587688\",\"\\t final status: UNDEFINED\",\"\\t tracking URL: http://hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:8088/proxy/application_1555654226340_0224/\",\"\\t user: livy\",\"19/09/05 02:46:27 INFO ShutdownHookManager: Shutdown hook called\",\"19/09/05 02:46:27 INFO ShutdownHookManager: Deleting directory /tmp/spark-3cf5a288-ea58-4ab8-9a58-ba3e62081e35\",\"19/09/05 02:46:27 INFO ShutdownHookManager: Deleting directory /tmp/spark-4a381a1c-a375-4661-8812-7ab8b4528b74\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "9f58b414c3df429bac137e4008c3585e",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 05 Sep 2019 02:46:27 GMT"
+    }
+  },
+  "uuid" : "46689ebd-a776-4ea7-8125-b90061a997f7",
+  "persistent" : true,
+  "insertionIndex" : 70
+}

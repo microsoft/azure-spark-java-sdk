@@ -1,0 +1,38 @@
+{
+  "id" : "588d4251-2ddb-4659-b8ba-e35d99dd7d38",
+  "name" : "yarnui_ws_v1_cluster_apps_application_1555654226340_0224_appattempts",
+  "request" : {
+    "url" : "/yarnui/ws/v1/cluster/apps/application_1555654226340_0224/appattempts",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"appAttempts\":{\"appAttempt\":[{\"id\":1,\"startTime\":1567651587726,\"finishedTime\":1567651598932,\"containerId\":\"container_e01_1555654226340_0224_01_000001\",\"nodeHttpAddress\":\"wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30060\",\"nodeId\":\"wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050\",\"logsLink\":\"http://wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30060/node/containerlogs/container_e01_1555654226340_0224_01_000001/livy\",\"blacklistedNodes\":\"\",\"appAttemptId\":\"appattempt_1555654226340_0224_000001\"}]}}",
+    "headers" : {
+      "Cache-Control" : "no-cache",
+      "Pragma" : "no-cache",
+      "Content-Type" : "application/json",
+      "Expires" : "Thu, 05 Sep 2019 02:46:41 GMT",
+      "request-id" : "788967773bde4ae8a4e9668bbf1fef43",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 05 Sep 2019 02:46:41 GMT"
+    }
+  },
+  "uuid" : "588d4251-2ddb-4659-b8ba-e35d99dd7d38",
+  "persistent" : true,
+  "scenarioName" : "scenario-yarnui-ws-v1-cluster-apps-application_1555654226340_0224-appattempts",
+  "requiredScenarioState" : "scenario-yarnui-ws-v1-cluster-apps-application_1555654226340_0224-appattempts-4",
+  "newScenarioState" : "scenario-yarnui-ws-v1-cluster-apps-application_1555654226340_0224-appattempts-5",
+  "insertionIndex" : 100
+}

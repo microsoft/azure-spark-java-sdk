@@ -3,32 +3,37 @@
 
 package com.microsoft.azure.spark.tools.job;
 
+import cucumber.api.java.After;
+import cucumber.api.java.Before;
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import org.apache.commons.lang3.StringEscapeUtils;
+import uk.org.lidalia.slf4jtest.TestLogger;
+import uk.org.lidalia.slf4jtest.TestLoggerFactory;
+
 import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
 import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.MockHttpService;
 import com.microsoft.azure.spark.tools.utils.Pair;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.stubbing.Scenario;
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
-import cucumber.api.java.en.And;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import rx.Observable;
-import uk.org.lidalia.slf4jtest.TestLogger;
-import uk.org.lidalia.slf4jtest.TestLoggerFactory;
-
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class LivySparkBatchScenario {
     private HttpObservable httpMock;
@@ -37,6 +42,7 @@ public class LivySparkBatchScenario {
     private MockHttpService httpServerMock;
     private LivySparkBatch jobMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(LivySparkBatchScenario.class);
+    private Map<LivySparkBatch.LivyLogType, List<String>> parsedLivyLogs = Collections.emptyMap();
 
     @Before("@LivySparkBatchScenario")
     public void setUp() throws Throwable {
@@ -80,8 +86,12 @@ public class LivySparkBatchScenario {
     public void checkGetSparkJobApplicationId(
             String expectedApplicationId) throws Throwable {
         caught = null;
+        LaterInit<String> mockAppId = new LaterInit<>();
+        when(jobMock.getLaterAppId()).thenReturn(mockAppId);
         try {
-            assertEquals(expectedApplicationId, jobMock.getSparkJobApplicationId().toBlocking().first());
+            assertEquals(
+                    expectedApplicationId,
+                    jobMock.get().map(LivySparkBatch::getSparkJobApplicationId).toBlocking().single());
         } catch (Exception e) {
             caught = e;
             assertEquals(expectedApplicationId, "__exception_got__" + e);
@@ -96,7 +106,7 @@ public class LivySparkBatchScenario {
         when(jobMock.getRetriesMax()).thenReturn(3);
 
         try {
-            jobMock.getSparkJobApplicationId().retry(expectedRetriedCount - 1).toBlocking().first();
+            jobMock.get().retry(expectedRetriedCount - 1).toBlocking().first();
         } catch (Exception ignore) { }
 
         verify(expectedRetriedCount, getRequestedFor(urlEqualTo(getUrl)));
@@ -104,7 +114,7 @@ public class LivySparkBatchScenario {
 
     @And("^mock method getSparkJobApplicationId to return '(.+)' Observable$")
     public void mockMethodGetSparkJobApplicationIdObservable(String appIdMock) {
-        when(jobMock.getSparkJobApplicationId()).thenReturn(Observable.just(appIdMock));
+        when(jobMock.getSparkJobApplicationId()).thenReturn(appIdMock);
     }
 
     @And("^mock Spark job connect URI to be '(.+)'$")
@@ -151,6 +161,35 @@ public class LivySparkBatchScenario {
 
 
         assertEquals(expect, statesWithLogs.getFirst());
+    }
 
+    @Given("parse Livy Logs from the following")
+    public void parseLivyLogsFromTheFollowing(List<String> mockLivyLogs) {
+        this.parsedLivyLogs = this.jobMock.parseLivyLogs(LivySparkBatch.LivyLogType.STDOUT,
+                mockLivyLogs.stream()
+                        .map(StringEscapeUtils::unescapeJava)
+                        .collect(Collectors.toList()));
+    }
+
+    private void assertLogsMatchedByType(LivySparkBatch.LivyLogType logType, List<String> expectLogsToUnescape) {
+        assertThat(this.parsedLivyLogs.get(logType))
+                .containsExactlyElementsOf(expectLogsToUnescape.stream()
+                        .map(StringEscapeUtils::unescapeJava)
+                        .collect(Collectors.toList()));
+    }
+
+    @Then("check parsed Livy logs stdout should be")
+    public void checkParsedLivyLogsStdoutShouldBe(List<String> expectLogs) {
+        assertLogsMatchedByType(LivySparkBatch.LivyLogType.STDOUT, expectLogs);
+    }
+
+    @Then("check parsed Livy logs stderr should be")
+    public void checkParsedLivyLogsStderrShouldBe(List<String> expectLogs) {
+        assertLogsMatchedByType(LivySparkBatch.LivyLogType.STDERR, expectLogs);
+    }
+
+    @Then("check parsed Livy logs yarn diagnostics should be")
+    public void checkParsedLivyLogsYarnDiagnosticsShouldBe(List<String> expectLogs) {
+        assertLogsMatchedByType(LivySparkBatch.LivyLogType.YARN_DIAGNOSTICS, expectLogs);
     }
 }

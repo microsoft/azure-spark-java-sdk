@@ -1,0 +1,31 @@
+{
+  "id" : "c0f09d7e-430f-4d55-bf35-64faec4c00b7",
+  "name" : "livy_batches_261_log",
+  "request" : {
+    "url" : "/livy/batches/261/log?from=1&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":261,\"from\":1,\"total\":9,\"log\":[\"SLF4J: Class path contains multiple SLF4J bindings.\",\"SLF4J: Found binding in [jar:file:/usr/hdp/2.6.5.3006-29/spark2/jars/slf4j-log4j12-1.7.16.jar!/org/slf4j/impl/StaticLoggerBinder.class]\",\"SLF4J: Found binding in [jar:file:/usr/hdp/2.6.5.3006-29/spark_llap/spark-llap-assembly-1.0.0.2.6.5.3006-29.jar!/org/slf4j/impl/StaticLoggerBinder.class]\",\"SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.\",\"SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]\",\"Warning: Master yarn-cluster is deprecated since 2.0. Please use master \\\"yarn\\\" with specified deploy mode instead.\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "f43f387b1d7c4907a951080954f0dd8f",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 05 Sep 2019 02:46:20 GMT"
+    }
+  },
+  "uuid" : "c0f09d7e-430f-4d55-bf35-64faec4c00b7",
+  "persistent" : true,
+  "insertionIndex" : 54
+}

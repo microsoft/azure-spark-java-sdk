@@ -1,0 +1,38 @@
+{
+  "id" : "bcaef4ff-2504-4834-95bb-7d0cc5ea83ce",
+  "name" : "yarnui_wn0-zhwe-ss4un4f0kknqu5fddjqm2rbsvkdaxinternalcloudappnet_port_30060_node_containerlogs_container_e01_1555654226340_0224_01_000001_livy_stderr",
+  "request" : {
+    "url" : "/yarnui/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30060/node/containerlogs/container_e01_1555654226340_0224_01_000001/livy/stderr?start=42908",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 307,
+    "body" : "Redirecting to log server : http://hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:19888/jobhistory/logs/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net:30050/container_e01_1555654226340_0224_01_000001/container_e01_1555654226340_0224_01_000001/livy/stderr?start=42908\n",
+    "headers" : {
+      "Cache-Control" : "no-cache",
+      "Pragma" : "no-cache",
+      "Content-Type" : "text/plain; charset=utf-8",
+      "Expires" : "Thu, 05 Sep 2019 02:46:42 GMT",
+      "Location" : "/yarnui/jobhistory/logs/wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net/port/30050/container_e01_1555654226340_0224_01_000001/container_e01_1555654226340_0224_01_000001/livy/stderr?start=42908",
+      "request-id" : "c73d91f31dd74a7db8f66cb67f362810",
+      "x-ms-hdi-active" : "wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 05 Sep 2019 02:46:42 GMT"
+    }
+  },
+  "uuid" : "bcaef4ff-2504-4834-95bb-7d0cc5ea83ce",
+  "persistent" : true,
+  "scenarioName" : "scenario-yarnui-wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net-port-30060-node-containerlogs-container_e01_1555654226340_0224_01_000001-livy-stderr",
+  "requiredScenarioState" : "scenario-yarnui-wn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net-port-30060-node-containerlogs-container_e01_1555654226340_0224_01_000001-livy-stderr-2",
+  "insertionIndex" : 103
+}

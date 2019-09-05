@@ -4,6 +4,7 @@
 package com.microsoft.azure.spark.tools.job;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.http.NameValuePair;
@@ -195,8 +196,10 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
 
             if (isUriValid(uriProbe).toBlocking().firstOrDefault(false)) {
                 // Find usable one
-                log().debug("The Yarn log URL conversion mode is {} with pattern {}",
-                        probeMode.name, probeMode.publicPathTemplate);
+                log().debug("The Yarn log URL conversion mode is "
+                                + probeMode.name
+                                + " with pattern "
+                                + probeMode.publicPathTemplate);
 
                 logConversionMode.set(probeMode);
 
@@ -370,7 +373,8 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
                 }
 
                 // Only take the first `<pre>` element content as log
-                final String logs = String.valueOf(children.get(0));
+                // And there are HTML escape codes, such as `2&gt;&lt;LOG_DIR&gt`, which has to be unescaped
+                final String logs = StringEscapeUtils.unescapeHtml4(String.valueOf(children.get(0)));
 
                 // Only take non-empty logs
                 if (StringUtils.isNotEmpty(logs)) {

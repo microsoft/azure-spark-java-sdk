@@ -144,13 +144,14 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
         SparkBatchJobRemoteProcess sparkJobRemoteProcess = scenario.createSparkJobRemoteProcess(
                 recordingProxyService, scenario.createSubmitParamFromArgs());
         sparkJobRemoteProcess.start();
-        String stdout = IOUtils.toString(sparkJobRemoteProcess.getInputStream(), StandardCharsets.UTF_8);
-        System.out.println("========= stdout =========");
-        System.out.print(stdout);
 
         System.out.println("========= stderr =========");
         String stderr = IOUtils.toString(sparkJobRemoteProcess.getErrorStream(), StandardCharsets.UTF_8);
         System.out.print(stderr);
+
+        System.out.println("========= stdout =========");
+        String stdout = IOUtils.toString(sparkJobRemoteProcess.getInputStream(), StandardCharsets.UTF_8);
+        System.out.print(stdout);
 
         recordingProxyService.getServer().stopRecording();
         recordingProxyService.getServer().stop();

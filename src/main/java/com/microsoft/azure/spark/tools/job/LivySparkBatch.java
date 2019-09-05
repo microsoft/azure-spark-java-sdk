@@ -10,7 +10,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import rx.Emitter;
 import rx.Observable;
 import rx.Observer;
 
@@ -33,30 +32,27 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.UnknownFormatConversionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Debug;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Log;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
+import static rx.Observable.from;
 
 public class LivySparkBatch implements SparkBatchJob, Logger {
-    public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
-    public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
-
     private final Observer<Pair<MessageInfoType, String>> ctrlSubject;
 
     /**
      * The LIVY Spark batch job ID got from job submission.
      */
     private LaterInit<Integer> batchId = new LaterInit<>();
+    private LaterInit<String> appId = new LaterInit<>();
 
     /**
      * The Spark Batch Job submission parameter.
@@ -78,9 +74,6 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     private @Nullable String destinationRootPath;
     private String state = "__new_instance";
-
-    private @Nullable String appId;
-    private Map<String, String> appInfo = emptyMap();
 
     private List<String> submissionLogs = emptyList();
 
@@ -142,7 +135,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
      */
     @Override
     public int getBatchId() {
-        return batchId.get();
+        return getLaterBatchId().get();
     }
 
     LaterInit<Integer> getLaterBatchId() {
@@ -213,48 +206,100 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     /**
-     * New RxAPI: Get current job application Id.
+     * Get current job application Id.
      *
      * @return Application Id Observable
      */
-    Observable<@Nullable String> getSparkJobApplicationId() {
-        return get()
-                .map(batch -> batch.appId);
+    String getSparkJobApplicationId() {
+        return this.getLaterAppId().get();
+    }
+
+    LaterInit<String> getLaterAppId() {
+        return this.appId;
     }
 
     @Override
     public Observable<Pair<MessageInfoType, String>> getSubmissionLog() {
+        final int maxLinesPerGet = 128;
+        final AtomicInteger start = new AtomicInteger(0);
+        final LivyLogType defaultLogType = LivyLogType.STDOUT;
+
+        return get()
+                .flatMap(batch -> getSparkBatchLogRequest(start.get(), maxLinesPerGet)
+                        .map(logResponse -> parseLivyLogs(defaultLogType, logResponse.getLog())))
+                .doOnNext(typedLogs -> start.getAndAdd(typedLogs.get(defaultLogType).size()))
+                .repeatWhen(repeat -> repeat.delay(200, TimeUnit.MILLISECONDS))
+                .takeUntil(typedLogs -> isNoMoreLivyLogs(defaultLogType, typedLogs))
+                .flatMap(typedLogs -> from(typedLogs.get(defaultLogType)) // handle other type logs later
+                                                .map(line -> new Pair<>(Log, line)))
+                .concatWith(Observable.fromCallable(start::get)
+                        // spacial fetch for other type logs
+                        .flatMap(end -> getSparkBatchLogRequest(end, maxLinesPerGet))
+                        .map(logResponse -> parseLivyLogs(defaultLogType, logResponse.getLog()))
+                        .flatMap(typedLogs -> from(typedLogs.entrySet()).flatMap(entry -> {
+                            switch (entry.getKey()) {
+                                case STDERR:
+                                case YARN_DIAGNOSTICS:
+                                    return entry.getValue().size() > 1
+                                            ? from(entry.getValue()).map(line -> Pair.of(MessageInfoType.Error, line))
+                                            : Observable.empty();
+                                default:
+                                    return from(entry.getValue()).map(line -> Pair.of(MessageInfoType.Warning, line));
+                            }
+                        })))
+                .onErrorReturn(err -> new Pair<>(MessageInfoType.Error, err.getMessage()));
+    }
+
+    boolean isNoMoreLivyLogs(final LivyLogType defaultLogType, final Map<LivyLogType, List<String>> typedLogs) {
+        return typedLogs.get(defaultLogType).isEmpty()
+                && ((!StringUtils.equalsIgnoreCase(getState(), "starting") && this.appId.isInitialized())
+                        || StringUtils.equalsIgnoreCase(getState(), "dead"));
+    }
+
+    public enum LivyLogType {
+        STDOUT("stdout:"),
+        STDERR("\nstderr:"),
+        YARN_DIAGNOSTICS("\nyarn diagnostics:");
+
+        private final String titlePrefix;
+
+        LivyLogType(String titlePrefix) {
+            this.titlePrefix = titlePrefix;
+        }
+
+        public String getTitlePrefix() {
+            return titlePrefix;
+        }
+    }
+
+    Map<LivyLogType, List<String>> parseLivyLogs(final LivyLogType defaultLogType, final List<String> mixLogs) {
         // Those lines are carried per response,
         // if there is no value followed, the line should not be sent to console
-        final Set<String> ignoredEmptyLines = new HashSet<>(Arrays.asList(
-                "stdout:",
-                "stderr:",
-                "yarn diagnostics:"));
+        //     "stdout:"
+        //     "\nstderr:"
+        //     "\nyarn diagnostics:"
 
-        final int maxLinesPerGet = 128;
-        return Observable.create(ob -> {
-            AtomicInteger start = new AtomicInteger(0);
+        LivyLogType logTypeFound = defaultLogType;
+        final Map<LivyLogType, List<String>> logsParsed = Arrays.stream(LivyLogType.values())
+                .map(logType -> Pair.of(logType, (List<String>) new ArrayList<String>()))
+                .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
 
-            Predicate<Pair<String, GetLogResponse>> noMoreLogs = appIdWithLog ->
-                    appIdWithLog.getRight().getLog().size() == 0
-                            && ((!StringUtils.equalsIgnoreCase(getState(), "starting")
-                                    && appIdWithLog.getLeft() != null)
-                                || StringUtils.equalsIgnoreCase(getState(), "dead"));
+        for (String log : mixLogs) {
+            for (LivyLogType logTypeToTest : LivyLogType.values()) {
+                if (StringUtils.startsWithIgnoreCase(log, logTypeToTest.getTitlePrefix())) {
+                    if (!logsParsed.getOrDefault(logTypeToTest, emptyList()).isEmpty()) {
+                        throw new UnknownFormatConversionException("Duplicated log type " + logTypeToTest + " found.");
+                    }
 
-            getSparkJobApplicationId()
-                    .flatMap(applicationId -> getSparkBatchLogRequest(start.get(), maxLinesPerGet), Pair::of)
-                    .doOnNext(appIdWithLog -> start.getAndAdd(appIdWithLog.getRight().getLog().size()))
-                    .repeatWhen(repeat -> repeat.delay(200, TimeUnit.MILLISECONDS))
-                    .takeUntil(noMoreLogs::test)
-                    .filter(appIdWithLog -> !noMoreLogs.test(appIdWithLog))
-                    .map(appIdWithLog -> appIdWithLog.getRight().getLog())
-                    .subscribe(logs -> logs.stream()
-                                    .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
-                                    .forEach(line -> ob.onNext(new Pair<>(Log, line))),
-                            err -> ob.onNext(new Pair<>(MessageInfoType.Error, err.getMessage())),
-                            () -> ob.onCompleted());
+                    logTypeFound = logTypeToTest;
+                    break;
+                }
+            }
 
-        }, Emitter.BackpressureMode.BUFFER);
+            logsParsed.get(logTypeFound).add(log);
+        }
+
+        return logsParsed;
     }
 
     @Override
@@ -410,10 +455,11 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     }
 
     private LivySparkBatch updateWithBatchResponse(final Batch batch) {
-        getLaterBatchId().setIfNull(batch.getId());
+        this.getLaterBatchId().setIfNull(batch.getId());
+        if (batch.getAppId() != null) {
+            this.getLaterAppId().setIfNull(batch.getAppId());
+        }
         this.state = batch.getState();
-        this.appId = batch.getAppId();
-        this.appInfo = batch.getAppInfo() != null ? batch.getAppInfo() : emptyMap();
         this.submissionLogs = (batch.getLog() == null) ? emptyList() : batch.getLog();
 
         return this;

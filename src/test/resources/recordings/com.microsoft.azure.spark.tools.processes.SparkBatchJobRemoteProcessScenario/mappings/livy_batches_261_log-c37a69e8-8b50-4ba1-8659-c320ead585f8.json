@@ -1,0 +1,33 @@
+{
+  "id" : "c37a69e8-8b50-4ba1-8659-c320ead585f8",
+  "name" : "livy_batches_261_log",
+  "request" : {
+    "url" : "/livy/batches/261/log?from=17&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":261,\"from\":17,\"total\":21,\"log\":[\"19/09/05 02:46:26 INFO Client: Uploading resource adl://zhwespkwesteu.azuredatalakestore.net/clusters/zhwe-spk23-adlsgen1/SparkSubmission/2019/04/28/4c017893-dd57-4a01-8bf9-593f002cd391/default_artifact.jar -> adl://home/user/livy/.sparkStaging/application_1555654226340_0224/default_artifact.jar\",\"19/09/05 02:46:27 INFO Client: Uploading resource file:/tmp/spark-4a381a1c-a375-4661-8812-7ab8b4528b74/__spark_conf__7192377845475844656.zip -> adl://home/user/livy/.sparkStaging/application_1555654226340_0224/__spark_conf__.zip\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "ac4857156c634efc9b1c6e7627ce989a",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 05 Sep 2019 02:46:27 GMT"
+    }
+  },
+  "uuid" : "c37a69e8-8b50-4ba1-8659-c320ead585f8",
+  "persistent" : true,
+  "scenarioName" : "scenario-livy-batches-261-log",
+  "requiredScenarioState" : "scenario-livy-batches-261-log-4",
+  "insertionIndex" : 68
+}

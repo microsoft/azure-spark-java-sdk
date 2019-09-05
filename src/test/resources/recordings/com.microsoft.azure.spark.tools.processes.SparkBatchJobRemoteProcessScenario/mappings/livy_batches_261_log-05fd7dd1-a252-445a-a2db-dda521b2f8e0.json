@@ -1,0 +1,31 @@
+{
+  "id" : "05fd7dd1-a252-445a-a2db-dda521b2f8e0",
+  "name" : "livy_batches_261_log",
+  "request" : {
+    "url" : "/livy/batches/261/log?from=9&size=128",
+    "method" : "GET",
+    "headers" : {
+      "Content-Type" : {
+        "equalTo" : "application/json",
+        "caseInsensitive" : true
+      },
+      "X-Requested-By" : {
+        "equalTo" : "ambari"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"id\":261,\"from\":9,\"total\":19,\"log\":[\"19/09/05 02:46:22 INFO RequestHedgingRMFailoverProxyProvider: Looking for the active RM in [rm1, rm2]...\",\"19/09/05 02:46:22 INFO RequestHedgingRMFailoverProxyProvider: Found active RM [rm1]\",\"19/09/05 02:46:22 INFO Client: Requesting a new application from cluster with 2 NodeManagers\",\"19/09/05 02:46:23 INFO Client: Verifying our application has not requested more than the maximum memory capability of the cluster (51200 MB per container)\",\"19/09/05 02:46:23 INFO Client: Will allocate AM container, with 1408 MB memory including 384 MB overhead\",\"19/09/05 02:46:23 INFO Client: Setting up container launch context for our AM\",\"19/09/05 02:46:23 INFO Client: Setting up the launch environment for our AM container\",\"19/09/05 02:46:23 INFO Client: Preparing resources for our AM container\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "request-id" : "8fd9e0c628684e3bbbe6b8d2a80afc2b",
+      "x-ms-hdi-active" : "hn0-zhwe-s.s4un4f0kknqu5fddjqm2rbsvkd.ax.internal.cloudapp.net",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Date" : "Thu, 05 Sep 2019 02:46:23 GMT"
+    }
+  },
+  "uuid" : "05fd7dd1-a252-445a-a2db-dda521b2f8e0",
+  "persistent" : true,
+  "insertionIndex" : 60
+}

@@ -33,3 +33,36 @@ Feature: LivySparkBatch unit tests
     And mock Spark job batch id to 9
     Then await Livy Spark job done should get state 'success'
 
+  Scenario: parseLivyLogs unit tests
+    Given parse Livy Logs from the following
+      | stdout:  |
+      | one      |
+      | two      |
+      | \\nstderr: |
+      | \\nYARN Diagnostics: |
+    Then check parsed Livy logs stdout should be
+      | stdout:  |
+      | one      |
+      | two      |
+    Then check parsed Livy logs stderr should be
+      | \\nstderr: |
+    Then check parsed Livy logs yarn diagnostics should be
+      | \\nYARN Diagnostics: |
+    Given parse Livy Logs from the following
+      | one      |
+      | two      |
+      | \\nstderr: |
+      | err 1      |
+      | \\nYARN Diagnostics: |
+      | error log 1          |
+      | error log 2          |
+    Then check parsed Livy logs stdout should be
+      | one      |
+      | two      |
+    Then check parsed Livy logs stderr should be
+      | \\nstderr: |
+      | err 1      |
+    Then check parsed Livy logs yarn diagnostics should be
+      | \\nYARN Diagnostics: |
+      | error log 1          |
+      | error log 2          |

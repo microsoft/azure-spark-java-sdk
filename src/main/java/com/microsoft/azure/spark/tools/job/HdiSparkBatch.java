@@ -6,7 +6,6 @@ package com.microsoft.azure.spark.tools.job;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
 import rx.Observer;
-import rx.functions.Action1;
 
 import com.microsoft.azure.spark.tools.clusters.HdiCluster;
 import com.microsoft.azure.spark.tools.clusters.YarnCluster;
@@ -15,9 +14,6 @@ import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.restapi.livy.batches.api.PostBatches;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
 import com.microsoft.azure.spark.tools.utils.Pair;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher, DeployableBatch {
     private final LaterInit<SparkLogFetcher> driverLogFetcherDelegate = new LaterInit<>();
@@ -66,20 +62,15 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher, De
     @Override
     public Observable<String> awaitStarted() {
         return super.awaitStarted()
-                .flatMap(state -> super.getSparkJobApplicationId()
-                        .repeatWhen(repeat -> repeat.delay(getDelaySeconds(), TimeUnit.SECONDS))
-                        .takeUntil(Objects::nonNull)
-                        .filter(Objects::nonNull)
-                        .doOnNext(new Action1<String>() { // Anonymous function to avoid Nullness check error
-                            @Override
-                            public void call(final String appId) {
-                                YarnContainerLogFetcher driverContainerLogFetcher = new YarnContainerLogFetcher(
-                                        appId,
-                                        (YarnCluster) HdiSparkBatch.this.getCluster(),
-                                        HdiSparkBatch.this.getHttp());
+                .flatMap(state -> super.getLaterAppId()
+                        .observable()
+                        .doOnNext(appId -> {
+                            YarnContainerLogFetcher driverContainerLogFetcher = new YarnContainerLogFetcher(
+                                    appId,
+                                    (YarnCluster) HdiSparkBatch.this.getCluster(),
+                                    HdiSparkBatch.this.getHttp());
 
-                                driverLogFetcherDelegate.setIfNull(driverContainerLogFetcher);
-                            }
+                            driverLogFetcherDelegate.setIfNull(driverContainerLogFetcher);
                         })
                 );
     }
