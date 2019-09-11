@@ -47,6 +47,7 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher, De
                                                 final int size) {
         return getDriverLogFetcherDelegate()
                 .observable()
+                .first()
                 .flatMap(delegate -> delegate.fetch(type, logOffset, size));
     }
 
@@ -64,6 +65,7 @@ public class HdiSparkBatch extends LivySparkBatch implements SparkLogFetcher, De
         return super.awaitStarted()
                 .flatMap(state -> super.getLaterAppId()
                         .observable()
+                        .first()
                         .doOnNext(appId -> {
                             YarnContainerLogFetcher driverContainerLogFetcher = new YarnContainerLogFetcher(
                                     appId,

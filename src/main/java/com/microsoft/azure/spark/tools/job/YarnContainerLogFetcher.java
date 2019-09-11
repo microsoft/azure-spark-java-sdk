@@ -186,7 +186,9 @@ public class YarnContainerLogFetcher implements SparkLogFetcher, Logger {
 
     private Observable<URI> convertToPublicLogUri(final URI internalLogUri) {
         if (logConversionMode.isInitialized()) {
-            return logConversionMode.observable().map(conversionMode -> conversionMode.toPublic(internalLogUri));
+            return logConversionMode.observable()
+                    .first()
+                    .map(conversionMode -> conversionMode.toPublic(internalLogUri));
         }
 
         while (this.logConversionProbingModes.hasNext()) {

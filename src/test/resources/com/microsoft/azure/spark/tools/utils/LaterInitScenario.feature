@@ -36,7 +36,7 @@ Feature: LaterInit unit tests
     When init a String type LaterInit
     And set value "hello" to LaterInit
     And set value "world" to LaterInit
-    Then check LaterInit initialized exception thrown
+    Then check LaterInit's later subscriber onNext "world" should be got
 
   Scenario: Set value if null
     When init a String type LaterInit
