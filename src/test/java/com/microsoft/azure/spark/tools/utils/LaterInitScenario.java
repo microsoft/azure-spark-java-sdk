@@ -70,6 +70,7 @@ public class LaterInitScenario {
         assertFalse(isComplete.get());
 
         laterInitValue.observable()
+                .first()
                 .subscribe(
                         value -> actureValue.set(value),
                         err -> fail("Shouldn't get any error, but got " + err),
@@ -82,6 +83,7 @@ public class LaterInitScenario {
         assertFalse(isComplete.get());
 
         Subscription sub = laterInitValue.observable()
+                .first()
                 .doOnUnsubscribe(() -> isComplete.set(true))
                 .subscribe(
                         value -> fail("Shouldn't get any value"),
@@ -105,6 +107,7 @@ public class LaterInitScenario {
     @Then("^check LaterInit's later subscriber onNext (.*) should be got$")
     public void checkLaterInitLaterSubscriberOnNext(String expect) {
         String actual = laterInitValue.observable()
+                .first()
                 .toBlocking()
                 .single();
 

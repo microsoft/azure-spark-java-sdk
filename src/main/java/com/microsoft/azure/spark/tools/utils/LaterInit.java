@@ -3,7 +3,6 @@
 
 package com.microsoft.azure.spark.tools.utils;
 
-import com.microsoft.azure.spark.tools.errors.InitializedException;
 import com.microsoft.azure.spark.tools.errors.NotInitializedException;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import rx.Observable;
@@ -15,14 +14,10 @@ public class LaterInit<T> {
     private final BehaviorSubject<T> delegation = BehaviorSubject.create();
 
     public Observable<T> observable() {
-        return delegation.filter(obj -> obj != null).first();
+        return delegation.filter(obj -> obj != null);
     }
 
     public synchronized void set(final T value) {
-        if (isInitialized()) {
-            throw new InitializedException(this.toString() + " delegation has already been initialized.");
-        }
-
         delegation.onNext(value);
     }
 

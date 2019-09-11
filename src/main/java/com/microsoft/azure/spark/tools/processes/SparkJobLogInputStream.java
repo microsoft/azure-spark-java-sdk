@@ -40,6 +40,7 @@ public class SparkJobLogInputStream extends InputStream {
         if (bufferPos >= buffer.length) {
             try {
                 final String logSlice = sparkLogFetcher.observable()
+                        .first()
                         .flatMap(fetcher -> fetcher.fetch(getLogType(), offset, -1))
                         .toBlocking()
                         .first();
