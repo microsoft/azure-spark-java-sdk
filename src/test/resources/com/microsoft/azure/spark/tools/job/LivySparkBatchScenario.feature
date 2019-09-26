@@ -6,6 +6,8 @@ Feature: LivySparkBatch unit tests
     And mock Spark job connect URI to be 'http://localhost:$port/batch/'
     And mock Spark job batch id to 9
     Then getting spark job application id should be 'application_1492415936046_0015'
+    Then check the spark job request 'GET' to '/batch/9' should include headers
+      | X-Invoked-By-Method | invoke0 |
 
   Scenario: getSparkJobApplicationId negative integration test with broken Livy response
     Given setup a mock Livy service for GET request '/batch/9' to return '{"id":9,' with status code 200
@@ -33,7 +35,43 @@ Feature: LivySparkBatch unit tests
     And mock Spark job batch id to 9
     Then await Livy Spark job done should get state 'success'
 
-  Scenario: parseLivyLogs unit tests
+  Scenario: await Spark job is started with running behavior
+    Given setup a mock Livy service with the following scenario 'awaitJobIsStartedWithRunningUT'
+      | ACTION | URI      | RESPONSE_STATUS | RESPONSE_BODY                     | PREV_STATE | NEXT_STATE |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "not_started"} | Started    | starting_1 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_1 | starting_2 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_2 | starting_3 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "running"}     | starting_3 | success_1  |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "dead"}        | success_1  | end        |
+    And mock Spark job connect URI to be 'http://localhost:$port/batch/'
+    And mock Spark job batch id to 9
+    Then await Livy Spark job is started should get state 'running'
+
+  Scenario: await Spark job is started with success behavior
+    Given setup a mock Livy service with the following scenario 'awaitJobIsStartedWithSuccessUT'
+      | ACTION | URI      | RESPONSE_STATUS | RESPONSE_BODY                     | PREV_STATE | NEXT_STATE |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "not_started"} | Started    | starting_1 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_1 | starting_2 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_2 | starting_3 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "success"}     | starting_3 | success_1  |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "dead"}        | success_1  | end        |
+    And mock Spark job connect URI to be 'http://localhost:$port/batch/'
+    And mock Spark job batch id to 9
+    Then await Livy Spark job is started should get state 'success'
+
+  Scenario: await Spark job is started with dead behavior
+    Given setup a mock Livy service with the following scenario 'awaitJobIsStartedWithDeadUT'
+      | ACTION | URI      | RESPONSE_STATUS | RESPONSE_BODY                     | PREV_STATE | NEXT_STATE |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "not_started"} | Started    | starting_1 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_1 | starting_2 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "starting"}    | starting_2 | starting_3 |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "dead", "log": ["mock", "failure"]} | starting_3 | dead       |
+      | GET    | /batch/9 | 200             | {"id": 9, "state": "not_reach"}   | dead       | end        |
+    And mock Spark job connect URI to be 'http://localhost:$port/batch/'
+    And mock Spark job batch id to 9
+    Then await Livy Spark job is started should get Exception 'com.microsoft.azure.spark.tools.errors.SparkJobException' with 'The Spark job failed to start due to mock\nfailure'
+
+  Scenario: parseLivyLogs unit tests at beginning
     Given parse Livy Logs from the following
       | stdout:  |
       | one      |
@@ -48,6 +86,8 @@ Feature: LivySparkBatch unit tests
       | \\nstderr: |
     Then check parsed Livy logs yarn diagnostics should be
       | \\nYARN Diagnostics: |
+
+  Scenario: parseLivyLogs unit tests in the middle of submission with error logs
     Given parse Livy Logs from the following
       | one      |
       | two      |
