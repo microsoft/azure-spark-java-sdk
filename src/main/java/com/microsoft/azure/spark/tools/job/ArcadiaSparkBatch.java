@@ -52,7 +52,12 @@ public class ArcadiaSparkBatch extends LivySparkBatch implements DeployableBatch
     @Override
     public Observable<String> awaitStarted() {
         // No submission log and driver log fetching supports
-        return Observable.just("no_waiting");
+        return Observable.empty();
+    }
+
+    @Override
+    public Observable<Pair<String, String>> awaitDone() {
+        return Observable.empty();
     }
 
     @Override

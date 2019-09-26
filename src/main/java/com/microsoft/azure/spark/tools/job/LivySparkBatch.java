@@ -374,7 +374,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
     public Observable<Pair<String, String>> awaitDone() {
         return get()
                 .repeatWhen(ob -> ob
-                        .doOnNext(v -> log().debug("Deploy " + 1 //getDelaySeconds()
+                        .doOnNext(v -> log().debug("Delay " + 1 //getDelaySeconds()
                                         + " seconds for next job status probe"))
                         .delay(
                                 1, //getDelaySeconds(),
@@ -404,6 +404,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
 
     public Observable<LivySparkBatch> get() {
         final String caller = Streams.findLast(Arrays.stream(Thread.currentThread().getStackTrace()).limit(3))
+                // skip `getStackTrace` and the current frame
                 .map(StackTraceElement::getMethodName)
                 .orElse("Unknown");
 

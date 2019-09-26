@@ -3,15 +3,19 @@
 
 package com.microsoft.azure.spark.tools.job;
 
+import com.github.tomakehurst.wiremock.http.RequestMethod;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import org.apache.commons.lang3.StringEscapeUtils;
+import rx.subjects.PublishSubject;
 import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
+import com.microsoft.azure.spark.tools.events.MessageInfoType;
 import com.microsoft.azure.spark.tools.http.AmbariHttpObservable;
 import com.microsoft.azure.spark.tools.http.HttpObservable;
 import com.microsoft.azure.spark.tools.utils.LaterInit;
@@ -24,12 +28,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -43,6 +49,7 @@ public class LivySparkBatchScenario {
     private LivySparkBatch jobMock;
     private TestLogger logger = TestLoggerFactory.getTestLogger(LivySparkBatchScenario.class);
     private Map<LivySparkBatch.LivyLogType, List<String>> parsedLivyLogs = Collections.emptyMap();
+    private PublishSubject<Pair<MessageInfoType, String>> mockCtrlSubject = PublishSubject.create();
 
     @Before("@LivySparkBatchScenario")
     public void setUp() throws Throwable {
@@ -52,6 +59,7 @@ public class LivySparkBatchScenario {
         jobMock = mock(LivySparkBatch.class, CALLS_REAL_METHODS);
         when(jobMock.getHttp()).thenReturn(httpMock);
         when(jobMock.getLaterBatchId()).thenReturn(batchIdMock);
+        when(jobMock.getCtrlSubject()).thenReturn(mockCtrlSubject);
 
         caught = null;
 
@@ -159,7 +167,6 @@ public class LivySparkBatchScenario {
                 .toBlocking()
                 .single();
 
-
         assertEquals(expect, statesWithLogs.getFirst());
     }
 
@@ -191,5 +198,43 @@ public class LivySparkBatchScenario {
     @Then("check parsed Livy logs yarn diagnostics should be")
     public void checkParsedLivyLogsYarnDiagnosticsShouldBe(List<String> expectLogs) {
         assertLogsMatchedByType(LivySparkBatch.LivyLogType.YARN_DIAGNOSTICS, expectLogs);
+    }
+
+    @Then("check the spark job request {string} to {string} should include headers")
+    public void checkTheSparkJobRequestGETToBatchShouldIncludeHeaders(String method, String targetUrl, Map<String, String> expectHeaders) {
+        RequestPatternBuilder requestPatternBuilder = new RequestPatternBuilder(
+                RequestMethod.fromString(method.toUpperCase()), urlEqualTo(targetUrl));
+
+        for (Map.Entry<String, String> header : expectHeaders.entrySet()) {
+            requestPatternBuilder = requestPatternBuilder.withHeader(header.getKey(), equalTo(header.getValue()));
+        }
+
+        verify(requestPatternBuilder);
+    }
+
+    @Then("await Livy Spark job is started should get state {string}")
+    public void awaitLivySparkJobIsStartedShouldGetStateRunning(String expectedState) {
+        String actualState = jobMock.awaitStarted()
+                .toBlocking()
+                .single();
+
+        assertEquals(expectedState, actualState);
+    }
+
+    @Then("await Livy Spark job is started should get Exception {string} with {string}")
+    public void awaitLivySparkJobIsStartedShouldGetException(String expectExpType, String expectExpMessage) {
+        caught = null;
+
+        try {
+            jobMock.awaitStarted()
+                    .toBlocking()
+                    .single();
+
+            fail("Should get exceptions.");
+        } catch (Exception got) {
+            Throwable cause = got.getCause();
+            assertEquals(expectExpType, cause.getClass().getName());
+            assertEquals(StringEscapeUtils.unescapeJava(expectExpMessage), cause.getMessage());
+        }
     }
 }

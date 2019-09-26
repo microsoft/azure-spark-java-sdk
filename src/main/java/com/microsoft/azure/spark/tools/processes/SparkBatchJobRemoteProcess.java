@@ -6,6 +6,7 @@ package com.microsoft.azure.spark.tools.processes;
 import com.microsoft.azure.spark.tools.errors.SparkJobFinishedException;
 import com.microsoft.azure.spark.tools.errors.SparkJobUploadArtifactException;
 import com.microsoft.azure.spark.tools.events.MessageInfoType;
+import com.microsoft.azure.spark.tools.events.SparkBatchJobKilledEvent;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmissionEvent;
 import com.microsoft.azure.spark.tools.events.SparkBatchJobSubmittedEvent;
 import com.microsoft.azure.spark.tools.job.DeployableBatch;
@@ -95,16 +96,23 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     }
 
     @Override
-    public void destroy() {
-        getSparkJob().killBatchJob().subscribe(
-                job -> log().info("Killed Spark batch job " + job.getBatchId()),
-                err -> log().warn("Got error when killing Spark batch job", err),
-                () -> { }
-        );
-
-        this.isDestroyed = true;
-
-        this.disconnect();
+    public synchronized void destroy() {
+        if (!isDestroyed()) {
+            getSparkJob().killBatchJob()
+                    .doOnEach(notification -> {
+                        if (notification.isOnError()) {
+                            getCtrlSubject().onError(notification.getThrowable());
+                        } else if (notification.isOnNext()) {
+                            getEventSubject().onNext(new SparkBatchJobKilledEvent());
+                        }
+                        this.isDestroyed = true;
+                        this.disconnect();
+                    })
+                    .subscribe(
+                            job -> log().info("Killed Spark batch job " + job.getBatchId()),
+                            err -> log().warn("Got error when killing Spark batch job", err),
+                            () -> { });
+        }
     }
 
     public SparkBatchJob getSparkJob() {
