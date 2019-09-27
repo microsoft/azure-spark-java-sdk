@@ -461,7 +461,7 @@ public class LivySparkBatch implements SparkBatchJob, Logger {
             this.getLaterAppId().setIfNull(batch.getAppId());
         }
         this.state = batch.getState();
-        this.submissionLogs = (batch.getLog() == null) ? emptyList() : batch.getLog();
+        this.submissionLogs = batch.getLog();
 
         return this;
     }
