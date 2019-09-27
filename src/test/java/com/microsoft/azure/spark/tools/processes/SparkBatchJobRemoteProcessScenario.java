@@ -62,10 +62,10 @@ public class SparkBatchJobRemoteProcessScenario implements Callable<Void> {
     }
 
     @And("^submit HDInsight Spark job")
-    public void submitJob() {
+    public void submitJob() throws Throwable {
         sparkJobRemoteProcess = createSparkJobRemoteProcess(hdiServiceMock, postBatches);
         sparkJobRemoteProcess.start();
-        assertEquals(0, sparkJobRemoteProcess.exitValue());
+        assertEquals(0, sparkJobRemoteProcess.waitFor());
     }
 
     @Then("^check the HDInsight Spark job stdout should be")

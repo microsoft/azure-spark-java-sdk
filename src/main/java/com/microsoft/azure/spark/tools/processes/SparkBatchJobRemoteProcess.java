@@ -30,9 +30,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import static com.microsoft.azure.spark.tools.events.MessageInfoType.Info;
+import static com.microsoft.azure.spark.tools.events.MessageInfoType.Error;
 
 
 public class SparkBatchJobRemoteProcess extends Process implements Logger {
+    public static final int EXIT_OK = 0;
+    public static final int EXIT_ERROR_GENERAL = 1;
+    public static final int EXIT_ERROR_UNEXPECTED_STOP = (1 << 8) | 1;
+    public static final int EXIT_ERROR_KILLED_BY_USER = (2 << 8) | 1;
+    public static final int EXIT_ERROR_CANNOT_BE_KILLED = (3 << 8) | 1;
+
     private IdeSchedulers schedulers;
     private @Nullable File artifactPath;
     private final String title;
@@ -43,6 +50,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     private final SparkBatchJob sparkJob;
     private final PublishSubject<SparkBatchJobSubmissionEvent> eventSubject = PublishSubject.create();
     private boolean isDestroyed = false;
+    private @Nullable Integer exitValue = null;
 
     private boolean isDisconnected;
 
@@ -86,13 +94,23 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     }
 
     @Override
-    public int waitFor() {
-        return 0;
+    public int waitFor() throws InterruptedException {
+        synchronized (this) {
+            while (exitValue == null) {
+                wait();
+            }
+        }
+
+        return exitValue;
     }
 
     @Override
     public int exitValue() {
-        return 0;
+        if (exitValue == null) {
+            throw new IllegalThreadStateException("The Spark batch job has not finished yet.");
+        }
+
+        return exitValue;
     }
 
     @Override
@@ -100,13 +118,15 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         if (!isDestroyed()) {
             getSparkJob().killBatchJob()
                     .doOnEach(notification -> {
+                        this.isDestroyed = true;
+
                         if (notification.isOnError()) {
                             getCtrlSubject().onError(notification.getThrowable());
+                            this.disconnect(EXIT_ERROR_CANNOT_BE_KILLED);
                         } else if (notification.isOnNext()) {
                             getEventSubject().onNext(new SparkBatchJobKilledEvent());
+                            this.disconnect(EXIT_ERROR_KILLED_BY_USER);
                         }
-                        this.isDestroyed = true;
-                        this.disconnect();
                     })
                     .subscribe(
                             job -> log().info("Killed Spark batch job " + job.getBatchId()),
@@ -146,14 +166,14 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                                 // we will get exception with `job is finished` error message
                                 ctrlError("Job is already finished.");
                                 isDestroyed = true;
-                                disconnect();
+                                disconnect(EXIT_ERROR_UNEXPECTED_STOP);
                             } else {
                                 ctrlError(err.getMessage());
                                 destroy();
                             }
                         },
                         () -> {
-                            disconnect();
+                            disconnect(EXIT_OK);
                         }));
     }
 
@@ -171,7 +191,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
                 });
     }
 
-    public void disconnect() {
+    public void disconnect(int code) {
         this.isDisconnected = true;
 
         this.ctrlSubject.onCompleted();
@@ -180,6 +200,11 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
         if (this.jobSubscription.isInitialized()) {
             this.jobSubscription.get().unsubscribe();
         }
+
+        synchronized (this) {
+            exitValue = code;
+            notifyAll();
+        }
     }
 
     protected void ctrlInfo(final String message) {
@@ -187,7 +212,7 @@ public class SparkBatchJobRemoteProcess extends Process implements Logger {
     }
 
     protected void ctrlError(final String message) {
-        ctrlSubject.onNext(new Pair<>(MessageInfoType.Error, message));
+        ctrlSubject.onNext(new Pair<>(Error, message));
     }
 
     public PublishSubject<SparkBatchJobSubmissionEvent> getEventSubject() {
