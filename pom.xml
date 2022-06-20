@@ -18,7 +18,7 @@
         <reflections.version>0.9.11</reflections.version>
         <junit.version>4.12</junit.version>
         <mockito.version>2.22.0</mockito.version>
-        <kotlin.version>1.3.21</kotlin.version>
+        <kotlin.version>1.6.0</kotlin.version>
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
